@@ -34,8 +34,8 @@ function valid()
 #
 # Check for tws-3rdparty-macosx-el-capitan.tar.gz
 #
-if [ ! -f ./eows-3rdparty-0.1.0-linux-ubuntu-14.04.tar.gz ]; then
-  echo "Please, make sure to have eows-3rdparty-0.1.0-linux-ubuntu-14.04.tar.gz in the current directory!"
+if [ ! -f ./eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz ]; then
+  echo "Please, make sure to have eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz in the current directory!"
   exit
 fi
 
@@ -46,7 +46,7 @@ fi
 echo "extracting packages..."
 sleep 1s
 
-tar xzvf eows-3rdparty-0.1.0-linux-ubuntu-14.04.tar.gz
+tar xzvf eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz
 valid $? "Error: could not extract 3rd party libraries (eows-3rdparty-linux-ubuntu-14.04.tar.gz)"
 
 echo "packages extracted!"
@@ -56,8 +56,8 @@ sleep 1s
 #
 # Go to 3rd party libraries dir
 #
-cd eows-3rdparty-0.1.0-linux-ubuntu-14.04
-valid $? "Error: could not enter 'eows-3rdparty-0.1.0-linux-ubuntu-14.04' dir"
+cd eows-3rdparty-0.3.0-linux-ubuntu-14.04
+valid $? "Error: could not enter 'eows-3rdparty-0.3.0-linux-ubuntu-14.04' dir"
 
 
 #
