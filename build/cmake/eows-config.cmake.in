@@ -1,0 +1,27 @@
+# The following variables will be defined:
+#   - EOWS_INCLUDE_DIR: include directory for EOWS
+#   - EOWS_LIBRARIES:   libraries to link against
+#   - EOWS_EXECUTABLE   the EOWS main executable
+
+# 
+# Compute where this cmake file scripts is living: build-tree x install-tree!
+# => If it is in the build tree, CMAKE_CURRENT_LIST_FILE will point to the build-tree location.
+# => If it is in the installed version, it will point out to the install path.
+#
+get_filename_component(EOWS_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+message(STATUS "EOWS: CMAKE_CURRENT_LIST_FILE = ${CMAKE_CURRENT_LIST_FILE}")
+message(STATUS "EOWS: EOWS_CMAKE_DIR = ${EOWS_CMAKE_DIR}")
+
+set(EOWS_INCLUDE_DIRS "@EOWS_CONF_INCLUDE_DIRS@")
+message(STATUS "EOWS: EOWS_INCLUDE_DIRS = ${EOWS_INCLUDE_DIRS}")
+ 
+#
+# Get our library dependencies (it contains definitions for IMPORTED targets)
+#
+include("${EOWS_CMAKE_DIR}/eows-targets.cmake")
+
+
+# These are IMPORTED targets created by FooBarTargets.cmake
+#set(FOOBAR_LIBRARIES foo)
+#set(FOOBAR_EXECUTABLE bar)

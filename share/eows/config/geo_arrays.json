@@ -1,0 +1,192 @@
+{
+  "arrays": [
+    { "name": "mod13q1",
+      "cluster_id": "chronos:modis",
+      "description": "Vegetation Indices 16-Day L3 Global 250m",
+      "detail": "https://lpdaac.usgs.gov/products/modis_products_table/mod13q1",
+      "dimensions": {
+        "x": { "name": "col_id", "min_idx": 0, "max_idx": 35 },
+        "y": { "name": "row_id", "min_idx": 0, "max_idx": 17 },
+        "t": { "name": "time_id", "min_idx": 0, "max_idx": 3 }
+      },
+      "attributes": [
+        { "name": "evi",
+          "description": "250m 16 days EVI",
+          "datatype": "int16",
+          "valid_range": { "min": -2000, "max": 10000 },
+          "scale_factor": 0.0001,
+          "missing_value": -3000
+        },
+        { "name": "red",
+          "description": "250m 16 days red reflectance (Band 1)",
+          "datatype": "int16",
+          "valid_range": { "min": 0, "max": 10000 },
+          "scale_factor": 0.0001,
+          "missing_value": -1000
+        },
+        { "name": "nir",
+          "description": "250m 16 days NIR reflectance (Band 2)",
+          "datatype": "int16",
+          "valid_range": { "min": 0, "max": 10000 },
+          "scale_factor": 0.0001,
+          "missing_value": -1000
+        },
+        { "name": "blue",
+          "description": "250m 16 days blue reflectance (Band 3)",
+          "datatype": "int16",
+          "valid_range": { "min": 0, "max": 10000 },
+          "scale_factor": 0.0001,
+          "missing_value": -1000
+        },
+        { "name": "reliability",
+          "description": "250m 16 days pixel reliability summary QA",
+          "datatype": "int8",
+          "valid_range": { "min": 0, "max": 3 },
+          "scale_factor": 1,
+          "missing_value": -1
+        }
+      ],
+      "spatial_extent": {
+        "xmin": -180.0,
+        "ymin": -90.0,
+        "xmax": 180.0,
+        "ymax": 90.0
+      },
+      "spatial_resolution": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "srid": 4326,
+      "time_line": ["2001-01-01", "2001-01-17", "2001-02-02", "2002-02-18"],
+      "internal_metadata": {
+        "spatial_extent": {
+          "xmin": -180.0,
+          "ymin": -90.0,
+          "xmax": 180.0,
+          "ymax": 90.0
+        },
+        "spatial_resolution": {
+          "x": 10.0,
+          "y": 10.0
+        },
+        "srid": 4326
+      }
+    },
+    { "name": "mod09q1",
+      "cluster_id": "chronos:modis",
+      "description": "Surface Reflectance 8-Day L3 Global 250m",
+      "detail": "https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod09q1",
+      "dimensions": {
+        "x": { "name": "col_id", "min_idx": 0, "max_idx": 172799 },
+        "y": { "name": "row_id", "min_idx": 0, "max_idx": 86399 },
+        "t": { "name": "time_id", "min_idx": 0, "max_idx": 3 }
+      },
+      "attributes": [
+        { "name": "red",
+          "description": "250m Surface Reflectance Band 1 (620–670 nm)",
+          "datatype": "int16",
+          "valid_range": { "min": -100, "max": 16000 },
+          "scale_factor": 0.0001,
+          "missing_value": -28672
+        },
+        { "name": "nir",
+          "description": "250m Surface Reflectance Band 2 (841–876 nm)",
+          "datatype": "int16",
+          "valid_range": { "min": -100, "max": 16000 },
+          "scale_factor": 0.0001,
+          "missing_value": -28672
+        },
+        { "name": "quality",
+          "description": "250m Reflectance Band Quality",
+          "datatype": "uint16",
+          "valid_range": { "min": 0, "max": 32767 },
+          "scale_factor": 1,
+          "missing_value": 65535
+        }
+      ],
+      "spatial_extent": {
+        "xmin": -180.0,
+        "ymin": -90.0,
+        "xmax": 180.0,
+        "ymax": 90.0
+      },
+      "spatial_resolution": {
+        "x": 0.00208334,
+        "y": 0.00208334
+      },
+      "srid": 4326,
+      "time_line": ["2001-01-01", "2001-01-17", "2001-02-02", "2002-02-18"],
+      "internal_metadata": {
+        "spatial_extent": {
+          "xmin": -20015109.354005993,
+          "ymin": -10007554.676993998,
+          "xmax": 20015109.354005993,
+          "ymax": 10007554.676993998
+        },
+        "spatial_resolution": {
+          "x": 231.65635826395825,
+          "y": 231.65635826374995
+        },
+        "srid": 6974
+      }
+    },
+    { "name": "landsat",
+      "cluster_id": "terrama2:landsat",
+      "description": "Surface Reflectance 8-Day L3 Global 250m",
+      "detail": "https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod09q1",
+      "dimensions": {
+        "x": { "name": "col_id", "min_idx": 1, "max_idx": 6676 },
+        "y": { "name": "row_id", "min_idx": 1, "max_idx": 6053 },
+        "t": { "name": "time_id", "min_idx": 0, "max_idx": 3 }
+      },
+      "attributes": [
+        { "name": "red",
+          "description": "250m Surface Reflectance Band 1 (620–670 nm)",
+          "datatype": "int16",
+          "valid_range": { "min": -100, "max": 16000 },
+          "scale_factor": 0.0001,
+          "missing_value": -28672
+        },
+        { "name": "nir",
+          "description": "250m Surface Reflectance Band 2 (841–876 nm)",
+          "datatype": "int16",
+          "valid_range": { "min": -100, "max": 16000 },
+          "scale_factor": 0.0001,
+          "missing_value": -28672
+        },
+        { "name": "quality",
+          "description": "250m Reflectance Band Quality",
+          "datatype": "uint16",
+          "valid_range": { "min": 0, "max": 32767 },
+          "scale_factor": 1,
+          "missing_value": 65535
+        }
+      ],
+      "spatial_extent": {
+        "xmin": -49.8595688667436647,
+        "ymin": -21.0684570263455377,
+        "xmax": -47.9927625055835563,
+        "ymax": -19.3758598268095668
+      },
+      "spatial_resolution": {
+        "x": 0.000279629,
+        "y": 0.000279629
+      },
+      "srid": 4326,
+      "time_line": ["2001-01-01", "2001-01-17", "2001-02-02", "2002-02-18"],
+      "internal_metadata": {
+        "spatial_extent": {
+          "xmin": -49.8595688667436647,
+          "ymin": -21.0684570263455377,
+          "xmax": -47.9927625055835563,
+          "ymax": -19.3758598268095668
+        },
+        "spatial_resolution": {
+          "x": 0.000279629,
+          "y": 0.000279629
+        },
+        "srid": 4326
+      }
+    }
+  ]
+}

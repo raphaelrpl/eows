@@ -27,3 +27,15 @@
 *.exe
 *.out
 *.app
+
+# Mac OS X
+.DS_Store
+
+# Python
+*.autosave
+*.pyc
+*.user
+*.*~
+*.egg-info
+.idea/
+*/dist/

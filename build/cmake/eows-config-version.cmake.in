@@ -1,0 +1,22 @@
+set(PACKAGE_VERSION "@EOWS_VERSION_STRING@")
+
+message(STATUS "EOWS: package version: '${PACKAGE_VERSION}'")
+
+if(NOT "${PACKAGE_FIND_VERSION}" VERSION_GREATER "@EOWS_VERSION_STRING@")
+    set(PACKAGE_VERSION_COMPATIBLE 1)
+
+    message(STATUS "EOWS: requested package version is compatible!'")
+
+    if("${PACKAGE_FIND_VERSION}" VERSION_EQUAL "@EOWS_VERSION_STRING@")
+        set(PACKAGE_VERSION_EXACT 1)
+
+        message(STATUS "EOWS: requested package version is exact!'")
+    endif()
+  
+else()
+
+    #set(PACKAGE_VERSION_UNSUITABLE 1)
+
+    message(STATUS "EOWS: requested package version is incompatible!'")
+
+endif()
