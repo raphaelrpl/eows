@@ -121,19 +121,23 @@ eows::scidb::connection_pool::get(const std::string& cluster_id)
 
 // now we have one more physical connection
     ++(it->num_connections);
-    
+
+    assert(it->available_connections <= it->num_connections);
+    assert(it->num_connections == it->connections.size());
+    assert(it->num_connections <= it->cluster_info.max_connections);
+
     return connection(conn.release());
   }
   else // ok! there is an available connection in the pool
   {
     --(it->available_connections);
-    
+
+    assert(it->available_connections <= it->num_connections);
+    assert(it->num_connections == it->connections.size());
+    assert(it->num_connections <= it->cluster_info.max_connections);
+
     return connection(it->connections[it->available_connections]);
   }
-  
-  assert(it->available_connections <= it->num_connections);
-  assert(it->num_connections == it->connections.size());
-  assert(it->num_connections <= it->cluster_info.max_connections);
 }
 
 void

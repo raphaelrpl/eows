@@ -73,6 +73,10 @@
 #include "../ogc/wcs/wcs.hpp"
 #endif
 
+#ifdef EOWS_SERVICE_WMS_ENABLED
+#include "../ogc/wms/wms.hpp"
+#endif
+
 // STL
 #include <cstdlib>
 #include <iostream>
@@ -181,16 +185,20 @@ int main(int argc, char *argv[])
     eows::wtss::initialize();
 #endif
 
+#ifdef EOWS_SERVICE_WCS_ENABLED
+    eows::ogc::wcs::initialize();
+#endif
+
+#ifdef EOWS_SERVICE_WMS_ENABLED
+    eows::ogc::wms::initialize();
+#endif
+
 #ifdef EOWS_HTTP_CPPNETLIB_ENABLED
     eows::http::cppnetlib::initialize();
 #endif
 
 #ifdef EOWS_HTTP_CROW_ENABLED
     eows::http::crow::initialize();
-#endif
-
-#ifdef EOWS_SERVICE_WCS_ENABLED
-    eows::ogc::wcs::initialize();
 #endif
 
 // find out the HTTP server to be used

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.2.1, 2017-02-14T16:01:14. -->
+<!-- Written by QtCreator 4.2.1, 2017-02-16T14:52:12. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -69,7 +69,9 @@
     <valuelist type="QVariantList" key="CMake.Configuration">
      <value type="QString">CMAKE_BUILD_TYPE:STRING=Debug</value>
      <value type="QString">CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++</value>
+     <value type="QString">CMAKE_CXX_FLAGS:STRING=-I/opt/scidb/15.12/3rdparty/extern</value>
      <value type="QString">CMAKE_C_COMPILER:FILEPATH=/usr/bin/cc</value>
+     <value type="QString">CMAKE_INSTALL_PREFIX:PATH=/home/gribeiro/eows</value>
      <value type="QString">CMAKE_PREFIX_PATH:PATH=/home/gribeiro/eows/3rdparty;/opt/scidb/15.12/3rdparty/boost</value>
      <value type="QString">EOWS_GEOARRAY_ENABLED:BOOL=ON</value>
      <value type="QString">EOWS_HTTP_CROW_ENABLED:BOOL=ON</value>

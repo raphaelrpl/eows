@@ -54,6 +54,10 @@ if(EOWS_SERVICE_WCS_ENABLED)
   target_link_libraries(eows_app_server eows_wcs)
 endif()
 
+if(EOWS_SERVICE_WMS_ENABLED)
+  target_link_libraries(eows_app_server eows_ogcwms)
+endif()
+
 install(TARGETS eows_app_server
         EXPORT eows-targets
         RUNTIME DESTINATION ${EOWS_INSTALL_BIN_DIR} COMPONENT runtime

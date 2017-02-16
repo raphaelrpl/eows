@@ -24,9 +24,9 @@
 #
 
 #
-# Warning: EOWS requires at least CMake 3.1.2
+# Warning: EOWS requires at least CMake 2.8
 #
-cmake_minimum_required(VERSION 3.1.2)
+cmake_minimum_required(VERSION 2.8)
 
 #
 # Project codename: eows
@@ -128,7 +128,7 @@ find_package(Boost 1.54.0 QUIET REQUIRED system date_time chrono log timer files
 
 if(Boost_FOUND)
     message(STATUS "EOWS: Boost Libraries found!")
-    include_directories(${Boost_INCLUDE_DIR})
+    include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 else()
     message(FATAL_ERROR "EOWS: could not find required Boost libraries. Please, refer to the EOWS build documentation!")
 endif()
@@ -137,7 +137,7 @@ find_package(SciDB QUIET)
 
 if(SciDB_FOUND)
     message(STATUS "EOWS: SciDB runtime found!")
-    include_directories(${SCIDB_INCLUDE_DIR})
+    include_directories(SYSTEM ${SCIDB_INCLUDE_DIR})
     add_definitions(-DSCIDB_CLIENT)
 
     if(NOT DEFINED EOWS_SCIDB_MAJOR_VERSION)
@@ -170,7 +170,7 @@ find_package(Crow QUIET)
 
 if(Crow_FOUND)
     message(STATUS "EOWS: Crow Library found!")
-    include_directories(${CROW_INCLUDE_DIR})
+    include_directories(SYSTEM ${CROW_INCLUDE_DIR})
     add_definitions(-DEOWS_CROW_ENABLED)
 else()
     if(cppnetlib_FOUND)
@@ -240,6 +240,8 @@ CMAKE_DEPENDENT_OPTION(EOWS_OGC_OWS_ENABLED "Build OGC OWS support?" ON "EOWS_GE
 CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WTSS_ENABLED "Build WTSS service?" ON "EOWS_GEOARRAY_ENABLED" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WCS_ENABLED "Build OGC WCS service?" ON "RAPIDXML_FOUND;EOWS_OGC_OWS_ENABLED" OFF)
+
+CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WMS_ENABLED "Build OGC WMS service?" ON "LibGD_FOUND;EOWS_OGC_OWS_ENABLED" OFF)
 
 #
 # Define installation directories
@@ -338,6 +340,11 @@ endif()
 if(EOWS_SERVICE_WCS_ENABLED)
   add_definitions(-DEOWS_SERVICE_WCS_ENABLED)
   add_subdirectory(wcs)
+endif()
+
+if(EOWS_SERVICE_WMS_ENABLED)
+  add_definitions(-DEOWS_SERVICE_WMS_ENABLED)
+  add_subdirectory(wms)
 endif()
 
 if(EOWS_APP_SERVER_ENABLED)
