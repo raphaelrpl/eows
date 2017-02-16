@@ -34,6 +34,7 @@
 // STL
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <iterator>
 #include <map>
 #include <string>
