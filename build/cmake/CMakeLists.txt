@@ -243,6 +243,8 @@ CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WCS_ENABLED "Build OGC WCS service?" ON "RAP
 
 CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WMS_ENABLED "Build OGC WMS service?" ON "LibGD_FOUND;EOWS_OGC_OWS_ENABLED" OFF)
 
+CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WTSCS_ENABLED "Build Web Time Series Classification service?" ON "EOWS_GEOARRAY_ENABLED" OFF)
+
 #
 # Define installation directories
 #
@@ -345,6 +347,11 @@ endif()
 if(EOWS_SERVICE_WMS_ENABLED)
   add_definitions(-DEOWS_SERVICE_WMS_ENABLED)
   add_subdirectory(wms)
+endif()
+
+if(EOWS_SERVICE_WTSCS_ENABLED)
+  add_definitions(-DEOWS_SERVICE_WTSCS_ENABLED)
+  add_subdirectory(wtscs)
 endif()
 
 if(EOWS_APP_SERVER_ENABLED)

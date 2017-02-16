@@ -77,6 +77,10 @@
 #include "../ogc/wms/wms.hpp"
 #endif
 
+#ifdef EOWS_SERVICE_WTSCS_ENABLED
+#include "../wtscs/wtscs.hpp"
+#endif
+
 // STL
 #include <cstdlib>
 #include <iostream>
@@ -191,6 +195,10 @@ int main(int argc, char *argv[])
 
 #ifdef EOWS_SERVICE_WMS_ENABLED
     eows::ogc::wms::initialize();
+#endif
+
+#ifdef EOWS_SERVICE_WTSCS_ENABLED
+    eows::wtscs::initialize();
 #endif
 
 #ifdef EOWS_HTTP_CPPNETLIB_ENABLED
