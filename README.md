@@ -87,9 +87,9 @@ $ make install
 
 The file ```eows.json``` installed under the folder ```~/eows/share/eows/config``` contains several running options.
 
-You will need to edit at least the place where the log will be placed:
+If you want to change the log file position, you need to modify the next line:
 ```json
-"log_file": "home/user/eows/log/eows_%Y-%m-%d_%H-%M-%S.%N.log"
+"log_file": "../../eows/log/eows_%Y-%m-%d_%H-%M-%S.%N.log"
 ```
 
 ## Running the Services
