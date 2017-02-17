@@ -96,6 +96,6 @@ You will need to edit at least the place where the log will be placed:
 
 After configuring EOWS, you can launch the application web server:
 ```bash
-$ ~/eows/bin/eows_app_server --base_dir "/home/user/eows"
+$ ~/eows/bin/eows_app_server --base-dir "/home/user/eows"
 ```
 
