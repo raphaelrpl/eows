@@ -18,7 +18,7 @@ http://myserver/wtss/list_coverages
 ```
 
 It will return a JSON document such as:
-```
+```json
 {
   "coverages": [
     "chronos:modis:mod09q1",
@@ -36,7 +36,7 @@ http://myserver/wtss/describe_coverage?name=mod09q1
 ```
 
 The result of ```describe_coverage``` operation is a JSON document such as:
-```
+```json
 {
     "name": "mod09q1",
     "cluster_id": "chronos:modis",
@@ -113,7 +113,7 @@ You can retrieve the time series for a given location through the  ```time_serie
 http://myserver/wtss/time_series?coverage=mod09q1&attributes=red,nir&longitude=-54.0&latitude=-5.0&start_date=2000-02-18&end_date=2000-03-21
 ```
 The result of ```time_series``` is a JSON document such as:
-```
+```json
 {
   "result": {
     "attributes": [
