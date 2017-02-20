@@ -9,6 +9,9 @@ WTSS is based on three operations:
 - **```describe_coverage```:** returns the metadata of a given coverage.
 - **```time_series```:** query the database for the list of values for a given location and time interval.
 
+
+## ```list_coverages```
+
 The ```list_coverages``` operation can be used as follow:
 ```
 http://myserver/wtss/list_coverages
@@ -23,6 +26,9 @@ It will return a JSON document such as:
   ]
 }
 ```
+
+
+## ```describe_coverage```
 
 If you need the metadata of a given coverage you can use the ```describe_coverage``` operation as follow:
 ```
@@ -98,6 +104,9 @@ The result of ```describe_coverage``` operation is a JSON document such as:
     "time_line": ["2001-01-01", "2001-01-17", "2001-02-02", "2002-02-18"]
 }
 ```
+
+
+## ```time_series```
 
 You can retrieve the time series for a given location through the  ```time_series```:
 ```
