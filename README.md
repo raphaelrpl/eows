@@ -3,7 +3,7 @@
 **Earth Observation Web Services (EOWS)** is a free and open source platform for the development of web services that must handle massive Earth Observation data.
 
 The following services are under development:
-- **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. Read more about it.
+- **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtss.md).
 
 - **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB.
 
