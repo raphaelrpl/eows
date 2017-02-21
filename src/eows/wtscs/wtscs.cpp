@@ -17,15 +17,6 @@
   e-sensing team at <esensing-team@dpi.inpe.br>.
  */
 
-/*!
-  \file eows/wtscs/wtscs.cpp
-
-  \brief Web Time Series Classification Service.
-
-  \author Eduardo Llapa Rodriguez
-  \author Gilberto Ribeiro de Queiroz
- */
-
 // EOWS
 #include "wtscs.hpp"
 #include "../core/http_response.hpp"
@@ -46,8 +37,7 @@ void eows::wtscs::handler::do_get(const eows::core::http_request& req,
   res.write(return_msg.c_str(), return_msg.size());
 }
 
-void
-eows::wtscs::initialize()
+void eows::wtscs::initialize()
 {
   EOWS_LOG_INFO("Initializing WTSCS...");
 

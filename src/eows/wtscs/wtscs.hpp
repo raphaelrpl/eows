@@ -22,8 +22,11 @@
 
   \brief Web Time Series Classification Service.
 
+  Web Time Series Classification Service, or WTSCS for short, is a web service for classification of time series data from remote sensing imagery.
+
+  \author Eduardo Llapa Rodriguez
   \author Gilberto Ribeiro de Queiroz
- */
+*/
 
 #ifndef __EOWS_WTSCS_WTSCS_HPP__
 #define __EOWS_WTSCS_WTSCS_HPP__
@@ -36,10 +39,26 @@ namespace eows
   namespace wtscs
   {
  
-    //! Process a WMS request.
     /*!
+      \brief list_algorithms_handler Class
+
+      List the name of algorithms managed by the server.
+      http://localhost:7654/wtscs/list_algorithms
+    */
+    class list_algorithms_handler : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request& req,
+                  eows::core::http_response& res);
+    };
+
+    /*!
+      \brief handler Class
+
+      Process a WTSCS request.
       http://localhost:7654/wtscs
-     */
+    */
     class handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
@@ -48,7 +67,11 @@ namespace eows
                     eows::core::http_response& res);
     };
     
-    //! Initialize the service.
+    /*!
+      \brief initialize Function
+
+      Initialize the wtscs service.
+    */
     void initialize();
 
   }   // end namespace wtscs
