@@ -33,17 +33,35 @@
 // EOWS
 #include "../core/web_service_handler.hpp"
 
-//! Define the eows context.
+//! Define the EOWS Context.
 namespace eows
 {
-  //! Define the wtscs context.
+  //! Define the WTSCS Context.
   namespace wtscs
   {
  
-    /*! \brief list_algorithms_handler Class.
+    /*! \brief Check the Status of your Request.
      *
-     *  List algorithms managed by the server.
-     *  An example request would be: http://localhost:7654/wtscs/list_algorithms
+     *  You can use the status operator to display the current status of your request.
+     *  You may check this regulary until your request is completed to avoid delays.
+     *  This check is based on the following status:
+     *  1) Completed - The request has been completed.
+     *  2) In progress - The request is currently in progress.
+     *  3) Scheduled - The request is submitted.
+     *  Example sentence would be: http://localhost:7654/wtscs/status
+     */
+    class status_handler : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request& req,
+                  eows::core::http_response& res);
+    };
+
+    /*! \brief List the Algorithms Provided by the Service.
+     *
+     *  Getting a list of available classification algorithms for remote sensing.
+     *  Example sentence would be: http://localhost:7654/wtscs/list_algorithms
      */
     class list_algorithms_handler : public eows::core::web_service_handler
     {
@@ -53,22 +71,23 @@ namespace eows
                   eows::core::http_response& res);
     };
 
-    /*! \brief handler Class.
+    /*! \brief Operator Used to Perform Classification Algorithms.
      *
-     *  Process a WTSCS request.
-     *  An example request would be: http://localhost:7654/wtscs
+     *  This operator classifies time series data through a certain classification algorithm.
+     *  You must assign an available classification algorithm and its parameters required.
+     *  Example sentence would be: http://localhost:7654/wtscs/classify
      */
-    class handler : public eows::core::web_service_handler
+    class classify_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
-      
+
       void do_get(const eows::core::http_request& req,
-                    eows::core::http_response& res);
+                  eows::core::http_response& res);
     };
-    
-    /*! \brief initialize Function.
+
+    /*! \brief Service Features.
      *
-     *  Record the wtscs service operations.
+     *  Record the WTSCS service operations.
      */
     void initialize();
 
