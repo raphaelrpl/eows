@@ -24,8 +24,21 @@
 #include "../core/logger.hpp"
 #include "../core/service_operations_manager.hpp"
 
-void eows::wtscs::handler::do_get(const eows::core::http_request& req,
-                                  eows::core::http_response& res)
+void eows::wtscs::list_algorithms_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  std::string return_msg("\"list_algorithms_handler\"");
+
+  res.set_status(eows::core::http_response::OK);
+
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
+  res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+
+  res.write(return_msg.c_str(), return_msg.size());
+
+}
+
+
+void eows::wtscs::handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   std::string return_msg("\"Hello from WTSCS\"");
 
@@ -41,8 +54,11 @@ void eows::wtscs::initialize()
 {
   EOWS_LOG_INFO("Initializing WTSCS...");
 
-  std::unique_ptr<handler> h(new handler);
+  std::unique_ptr<eows::wtscs::handler> h(new eows::wtscs::handler);
   eows::core::service_operations_manager::instance().insert("/wtscs", std::move(h));
+
+  std::unique_ptr<eows::wtscs::list_algorithms_handler> la_h(new eows::wtscs::list_algorithms_handler);
+  eows::core::service_operations_manager::instance().insert("/wtscs/list_algorithms", std::move(la_h));
 
   EOWS_LOG_INFO("WTSCS service initialized!");
 }
