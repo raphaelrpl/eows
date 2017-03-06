@@ -81,10 +81,10 @@ namespace eows
         ~app_settings();
 
 // no copy allowed
-        app_settings(app_settings&);
-        app_settings(app_settings&&);
-        app_settings& operator=(app_settings&);
-        app_settings& operator=(app_settings&&);
+        app_settings(app_settings&) = delete;
+        app_settings(app_settings&&) = delete;
+        app_settings& operator=(app_settings&) = delete;
+        app_settings& operator=(app_settings&&) = delete;
       
       private:
       
