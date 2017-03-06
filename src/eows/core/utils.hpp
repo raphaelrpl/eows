@@ -94,10 +94,14 @@ namespace eows
     template<class InputIterator, class Writer> void
     copy_numeric_array(InputIterator first, InputIterator last, Writer& w);
 
+    //! Copy the JSON string array to a range beginning at result.
+    template<class OutputIterator> void
+    copy_string_array(const rapidjson::Value& jvalues, OutputIterator result);
+
   }  // end namespace core
 }    // end namespace eows
 
-template<class InputIterator, class Writer> void
+template<class InputIterator, class Writer> inline void
 eows::core::write_string_array(InputIterator first, InputIterator last, Writer& w)
 {
   w.StartArray();
@@ -108,7 +112,7 @@ eows::core::write_string_array(InputIterator first, InputIterator last, Writer& 
   w.EndArray();
 }
 
-template<class InputIterator, class Writer> void
+template<class InputIterator, class Writer> inline void
 eows::core::write_array(InputIterator first, InputIterator last, Writer& w)
 {
   w.StartArray();
@@ -118,7 +122,7 @@ eows::core::write_array(InputIterator first, InputIterator last, Writer& w)
   w.EndArray();
 }
 
-template<class InputIterator, class Writer> void
+template<class InputIterator, class Writer> inline void
 eows::core::copy_numeric_array(InputIterator first, InputIterator last, Writer& w)
 {
   w.StartArray();
@@ -127,6 +131,32 @@ eows::core::copy_numeric_array(InputIterator first, InputIterator last, Writer& 
                              { w.Double(v); });
 
   w.EndArray();
+}
+
+template<class OutputIterator> inline void
+eows::core::copy_string_array(const rapidjson::Value& jvalues,
+                              OutputIterator result)
+{
+  if(!jvalues.IsArray())
+    throw std::invalid_argument("copy_string_array: jvalues argument must be a JSON array.");
+
+  if(jvalues.Empty())
+    return;
+
+  const rapidjson::SizeType nelements = jvalues.Size();
+
+  for(rapidjson::SizeType i = 0; i != nelements; ++i)
+  {
+    const rapidjson::Value& jelement = jvalues[i];
+
+    if(!jelement.IsString())
+      throw std::invalid_argument("copy_string_array: only string elements are allowed in array.");
+
+    if(jelement.IsNull())
+      continue;
+
+    *result++ = jelement.GetString();
+  }
 }
 
 #endif  // __EOWS_CORE_UTILS_HPP__
