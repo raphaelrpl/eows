@@ -39,3 +39,6 @@
 *.egg-info
 .idea/
 */dist/
+
+# Chronos specific files
+*.chronos

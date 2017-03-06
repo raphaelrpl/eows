@@ -238,9 +238,6 @@ Writer& operator<<(Writer& writer, const eows::geoarray::geoarray_t& geo_array)
   writer.Key("name", static_cast<rapidjson::SizeType>(sizeof("name") -1));
   writer.String(geo_array.name.c_str(), static_cast<rapidjson::SizeType>(geo_array.name.length()));
 
-  writer.Key("cluster_id", static_cast<rapidjson::SizeType>(sizeof("cluster_id") - 1));
-  writer.String(geo_array.cluster_id.c_str(), static_cast<rapidjson::SizeType>(geo_array.cluster_id.length()));
-
   writer.Key("description", static_cast<rapidjson::SizeType>(sizeof("description") - 1));
   writer.String(geo_array.description.c_str(), static_cast<rapidjson::SizeType>(geo_array.description.length()));
 
@@ -273,7 +270,7 @@ Writer& operator<<(Writer& writer, const eows::geoarray::geoarray_t& geo_array)
 
   writer.EndObject();
 
-  writer.Key("time_line", static_cast<rapidjson::SizeType>(sizeof("time_line") - 1));
+  writer.Key("timeline", static_cast<rapidjson::SizeType>(sizeof("timeline") - 1));
   eows::core::write_string_array(geo_array.timeline.time_points().begin(),
                                  geo_array.timeline.time_points().end(),
                                  writer);

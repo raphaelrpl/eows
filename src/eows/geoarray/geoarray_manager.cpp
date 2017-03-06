@@ -47,18 +47,16 @@ struct eows::geoarray::geoarray_manager::impl
 void
 eows::geoarray::geoarray_manager::insert(const geoarray_t& a)
 {
-  std::string idx_entry(a.cluster_id + ":" + a.name);
-  
-  std::map<std::string, geoarray_t>::const_iterator it = pimpl_->arrays.find(idx_entry);
+  std::map<std::string, geoarray_t>::const_iterator it = pimpl_->arrays.find(a.name);
 
   if(it != std::end(pimpl_->arrays))
   {
     boost::format err_msg("GeoArray '%1%' is already registered.");
     
-    throw std::invalid_argument((err_msg % idx_entry).str());
+    throw std::invalid_argument((err_msg % a.name).str());
   }
 
-  pimpl_->arrays.insert(std::make_pair(std::move(idx_entry), a));
+  pimpl_->arrays.insert(std::make_pair(a.name, a));
 }
 
 std::vector<std::string>
@@ -82,18 +80,15 @@ eows::geoarray::geoarray_manager::list_arrays() const
 }
 
 const eows::geoarray::geoarray_t&
-eows::geoarray::geoarray_manager::get(const std::string& cluster_id,
-                                      const std::string& array_name) const
+eows::geoarray::geoarray_manager::get(const std::string& array_name) const
 {
-  std::string idx_entry(cluster_id + ":" + array_name);
-  
-  std::map<std::string, geoarray_t>::const_iterator it = pimpl_->arrays.find(idx_entry);
+  std::map<std::string, geoarray_t>::const_iterator it = pimpl_->arrays.find(array_name);
 
   if(it == std::end(pimpl_->arrays))
   {
     boost::format err_msg("Could not find metadata for array: '%1%'.");
 
-    throw std::invalid_argument((err_msg % idx_entry).str());
+    throw std::invalid_argument((err_msg % array_name).str());
   }
 
   return it->second;

@@ -89,7 +89,6 @@ namespace eows
     struct timeseries_request_parameters
     {
       std::string cv_name;
-      std::string cluster_id;
       std::vector<std::string> queried_attributes;
       double longitude;
       double latitude;
@@ -191,18 +190,7 @@ eows::wtss::describe_coverage_handler::do_get(const eows::core::http_request& re
     if(it == qstr.end())
       throw std::runtime_error("Error in operation 'describe_coverage' for WTSS: missing coverage name.");
 
-    std::string::size_type pos = it->second.rfind(":");
-
-    if(pos == std::string::npos)
-    {
-      boost::format err_msg("WTSS 'describe_coverage' operation error: invalid array name => '%1%'.");
-      throw std::invalid_argument((err_msg % it->second).str());
-    }
-
-    std::string cluster_id(it->second.substr(0, pos));
-    std::string array_name(it->second.substr(pos + 1));
-
-    const eows::geoarray::geoarray_t& geo_array = eows::geoarray::geoarray_manager::instance().get(cluster_id, array_name);
+    const eows::geoarray::geoarray_t& geo_array = eows::geoarray::geoarray_manager::instance().get(it->second);
 
     rapidjson::StringBuffer buff;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
@@ -284,9 +272,8 @@ eows::wtss::time_series_handler::do_get(const eows::core::http_request& req,
 
     writer.StartObject();
 
-    std::string cv_name = parameters.cluster_id + ":" + parameters.cv_name;
     writer.Key("coverage", static_cast<rapidjson::SizeType>(sizeof("coverage") -1));
-    writer.String(cv_name.c_str(), static_cast<rapidjson::SizeType>(cv_name.length()));
+    writer.String(parameters.cv_name.c_str(), static_cast<rapidjson::SizeType>(parameters.cv_name.length()));
 
     writer.Key("attributes", static_cast<rapidjson::SizeType>(sizeof("attributes") -1));
     eows::core::write_string_array(std::begin(parameters.queried_attributes),
@@ -298,6 +285,12 @@ eows::wtss::time_series_handler::do_get(const eows::core::http_request& req,
 
     writer.Key("latitude", static_cast<rapidjson::SizeType>(sizeof("latitude") -1));
     writer.Double(parameters.latitude);
+
+    writer.Key("start_date", static_cast<rapidjson::SizeType>(sizeof("start_date") -1));
+    writer.String(parameters.start_time_point.c_str(), static_cast<rapidjson::SizeType>(parameters.start_time_point.length()));
+
+    writer.Key("end_date", static_cast<rapidjson::SizeType>(sizeof("end_date") -1));
+    writer.String(parameters.end_time_point.c_str(), static_cast<rapidjson::SizeType>(parameters.end_time_point.length()));
 
     writer.EndObject();  // query
 
@@ -512,17 +505,7 @@ eows::wtss::decode_timeseries_request(const eows::core::query_string_t& qstr)
   if(it == it_end)
     throw std::invalid_argument("WTSS 'time_series' operation error: \"coverage\" parameter is missing.");
 
-  std::string::size_type pos = it->second.rfind(":");
-
-  if(pos == std::string::npos)
-  {
-    boost::format err_msg("WTSS 'time_series' operation error: invalid array name => '%1%'.");
-
-    throw std::invalid_argument((err_msg % it->second).str());
-  }
-
-  parameters.cluster_id = it->second.substr(0, pos);
-  parameters.cv_name = it->second.substr(pos + 1);
+  parameters.cv_name = it->second;
 
 // get queried attributes
   it = qstr.find("attributes");
@@ -570,7 +553,7 @@ eows::wtss::valid(const timeseries_request_parameters& parameters)
   timeseries_validated_parameters vparameters;
 
 // retrieve the underlying geoarray
-  vparameters.geo_array = &(eows::geoarray::geoarray_manager::instance().get(parameters.cluster_id, parameters.cv_name));
+  vparameters.geo_array = &(eows::geoarray::geoarray_manager::instance().get(parameters.cv_name));
 
 // valid queried attributes
   if(parameters.queried_attributes.empty())
