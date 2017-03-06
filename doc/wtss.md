@@ -29,7 +29,7 @@ It will return a JSON document such as:
 
 If you need the metadata of a given coverage you can use the ```describe_coverage``` operation as follow:
 ```
-http://myserver/wtss/describe_coverage?name=mod09q1
+http://myserver/wtss/describe_coverage?name=mod13q1
 ```
 
 The result of ```describe_coverage``` operation is a JSON document such as:
