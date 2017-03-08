@@ -34,9 +34,9 @@ EOWS is built on top of the following libraries:
 - [RapidXML](http://rapidxml.sourceforge.net): a fast XML parser. Version 1.13 is required.
 - [LibGD](https://libgd.github.io/): the GD graphics library.
 
-For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/fosslibraries/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz. **(not available yet!)**
+For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz.
 
-We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/eows/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package. **(under  preparation!)**
+We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/eows/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package.
 
 The note below will explain in depth how to prepare the build environment.
 
@@ -57,7 +57,7 @@ cmake version 3.7.2
 
 **2.** We are goin to install the third-party libraries into the folder ```~/eows/3rdparty```
 
-**3.** Download the third-party libraries package we have prepared [eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz](http://www.dpi.inpe.br/eows/3rdparty/eows-3rdparty-0.1.0-linux-ubuntu-14.04.tar.gz) to the following folder:
+**3.** Download the third-party libraries package we have prepared [eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz](http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz) to the following folder:
 ```bash
 $ mkdir -p ~/eows/3rdparty-src
 
