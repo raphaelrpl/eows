@@ -5,11 +5,14 @@
 The following services are under development:
 - **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtss.md).
 
-- **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB.
+- **Web Time Series Service (WTSCS):** a web service for the classification of time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
 
-- **Spatio-Temporal Web Map Service (WMS):** a web map service for visualizing remote sensing imagery data as dynamic maps (space + time) stored as 3D arrays in SciDB.
+- **Spatio-Temporal Web Map Service (WMS):** a web map service for visualizing remote sensing imagery data as dynamic maps (space + time) stored as 3D arrays in SciDB. (**under development for version 0.6.0**)
+
+- **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.7.0**)
 
 Subscribe to the mailing list: https://groups.google.com/d/forum/eows.
+
 
 ## Downloading EOWS
 
@@ -19,6 +22,7 @@ $ mkdir -p ~/eows/codebase
 $ git clone http://github.com/eows/eows ~/eows/codebase
 ```
 
+
 ## Dependencies
 
 EOWS is built on top of the following libraries:
@@ -26,13 +30,13 @@ EOWS is built on top of the following libraries:
 - [Boost Libraries](http://www.boost.org): we recommend to use the same version used and installed by SciDB (1.54.0). In general, it is installed under a folder such as ```/opt/scidb/15.12/3rdparty/boost```.
 - [Proj.4](http://proj4.org): Cartographic projection library. Version 4.8.0 or above is required.
 - [RapidJSON](https://github.com/miloyip/rapidjson): a fast JSON parser for C++. Version 1.1.0 is required.
-- [Crow](https://github.com/ipkn/crow): a micro web framework in C++. Version. This library is not mandatory if C++ Network Library is used. 
+- [Crow](https://github.com/ipkn/crow): a micro web framework in C++. Version. 
 - [RapidXML](http://rapidxml.sourceforge.net): a fast XML parser. Version 1.13 is required.
 - [LibGD](https://libgd.github.io/): the GD graphics library.
 
-For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/eows/3rdparty/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz. 
+For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/fosslibraries/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz. **(not available yet!)**
 
-We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/eows/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package.
+We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/eows/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package. **(under  preparation!)**
 
 The note below will explain in depth how to prepare the build environment.
 
