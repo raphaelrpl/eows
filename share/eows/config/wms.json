@@ -1,0 +1,69 @@
+{
+  "WMS_Capabilities": {
+    "Service": {
+      "Title": "e-Sensing Web Map Service",
+      "Abstract": "Web Map Service maintained by the e-Sensing team for visualization of global Land Use and Land Cover maps",
+      "KeywordList": [ "Amazônia", "Cerrado", "Caatinga", "MODIS", "LandSat" ],
+      "OnlineResource": "http://www.esensing.org",
+      "ContactInformation" : {
+        "ContactPersonPrimary": {
+          "ContactPerson": "Gilberto Queiroz",
+          "ContactOrganization": "Brazilian National Institute For Space Research"
+        },
+        "ContactPosition": "Computer Scientist",
+        "ContactAddress": {
+          "AddressType": "postal",
+          "Address": "Av. Astronautas, 1758",
+          "City": "São José dos Campos",
+          "StateOrProvince": "SP",
+          "PostCode": "12227-010",
+          "Country": "Brazil"
+        },
+        "ContactVoiceTelephone": "3208",
+        "ContactFacsimileTelephone": "3209",
+        "ContactEletronicMailAddress": "gribeiro"
+      },
+      "MaxWidth": 4800,
+      "MaxHeight": 4800
+    },
+    "Capability": {
+      "Request": { 
+        "GetCapabilities": {
+          "FormatList": [ "text/xml" ],
+          "DCPType": {
+            "Get": "http://localhost:7654/wms",
+            "Post": null
+          }
+        },
+        "GetMap": {
+          "FormatList": [ "image/png", "image/jpeg" ],
+          "DCPType": {
+            "Get": "http://localhost:7654/wms",
+            "Post": null
+          }
+        },
+        "GetFeatureInfo": {
+          "FormatList": [ "text/plain" ],
+          "DCPType": {
+            "Get": "http://localhost:7654/wms",
+            "Post": null
+          }
+        }
+      },
+      "Exception": {
+        "FormatList": [ "text/xml" ]
+      },
+      "Layer": {
+        "Name": "esensing",
+        "Title": "Global Map",
+        "Abstract": "Global Map",
+        "KeywordList": ["MODIS","LandSat"],
+        "LayerList": [
+          {
+            "Name": "mod13q1"
+          }
+        ]
+      }
+    }
+  }
+}

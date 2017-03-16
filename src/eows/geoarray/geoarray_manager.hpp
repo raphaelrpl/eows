@@ -68,8 +68,7 @@ namespace eows
         /*!
           \exception std::invalid_argument If no array is found.
          */
-        const geoarray_t& get(const std::string& cluster_id,
-                              const std::string& array_name) const;
+        const geoarray_t& get(const std::string& array_name) const;
 
         static geoarray_manager& instance();
 

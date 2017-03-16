@@ -108,7 +108,7 @@ eows::geoarray::read_geo_array(const rapidjson::Value& jgeo_array)
 
   geo_array.srid = jit->value.GetUint();
 
-  jit = jgeo_array.FindMember("time_line");
+  jit = jgeo_array.FindMember("timeline");
 
   if(jit == jgeo_array.MemberEnd())
     throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");

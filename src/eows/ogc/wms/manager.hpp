@@ -18,22 +18,53 @@
  */
 
 /*!
-  \file eows/core/defines.hpp
+  \file eows/ogc/wms/manager.hpp
 
-  \brief Defines for EOWS.
+  \brief A singleton for managing the WMS capabilities.
 
   \author Gilberto Ribeiro de Queiroz
  */
 
-#ifndef __EOWS_CORE_DEFINES_HPP__
-#define __EOWS_CORE_DEFINES_HPP__
+#ifndef __EOWS_OGC_WMS_MANAGER_HPP__
+#define __EOWS_OGC_WMS_MANAGER_HPP__
 
-#define  EOWS_CONFIG_FILE "share/eows/config/eows.json"
+// Boost
+#include <boost/noncopyable.hpp>
 
-#define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
+namespace eows
+{
+  namespace ogc
+  {
+    namespace wms
+    {
 
-#define  EOWS_SRS_FILE "share/eows/config/srs.json"
+      struct capabilities_t;
 
-#define  EOWS_WMS_FILE "share/eows/config/wms.json"
+      class manager : public boost::noncopyable
+      {
+        public:
 
-#endif // __EOWS_CORE_LOGGER_HPP__
+          const capabilities_t& get_capabilities() const;
+
+          void initialize();
+
+          static manager& instance();
+
+        protected:
+
+          manager();
+
+          ~manager();
+
+        private:
+
+          struct impl;
+
+          impl* pimpl_;
+      };
+
+    }  // end namespace wms
+  }    // end namespace ogc
+}      // end namespace eows
+
+#endif // __EOWS_OGC_WMS_MANAGER_HPP__

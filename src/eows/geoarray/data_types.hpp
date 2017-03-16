@@ -492,14 +492,14 @@ namespace eows
       {
         double dcol = (x - geo_array->i_meta.spatial_extent.xmin) / geo_array->i_meta.spatial_resolution.x;
 
-        return std::round(dcol) + geo_array->dimensions.x.min_idx;
+        return static_cast<int64_t>(dcol) + geo_array->dimensions.x.min_idx;
       }
 
       int64_t row(const double& y) const
       {
         double drow = (geo_array->i_meta.spatial_extent.ymax - y) / geo_array->i_meta.spatial_resolution.y;
 
-        return std::round(drow) + geo_array->dimensions.y.min_idx;
+        return static_cast<int64_t>(drow) + geo_array->dimensions.y.min_idx;
       }
 
       double x(int64_t col) const
