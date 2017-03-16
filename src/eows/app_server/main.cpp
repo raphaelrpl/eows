@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
     if(base_dir.empty())
     {
-      throw std::invalid_argument("Option '--base_dir' can not be empty.");
+      throw std::invalid_argument("Option '--base-dir' can not be empty.");
     }
 
 // set application dir and load its JSON configuration file

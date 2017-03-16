@@ -1,0 +1,23 @@
+{
+  "log_file": "../../eows/log/eows_%Y-%m-%d_%H-%M-%S.%N.log",
+  "http_server": "crow",
+  "scidb_clusters": [
+    {
+      "id": "chronos:modis",
+      "coordinator_address": "localhost",
+      "coordinator_port": 1239,
+      "max_connections": 16
+    },
+    {
+      "id": "esensing:esensing",
+      "coordinator_address": "192.168.0.1",
+      "coordinator_port": 1239,
+      "max_connections": 16
+    }
+  ],
+  "crow": {
+    "listen_address": "127.0.0.1",
+    "listening_port": 7654,
+    "threads": 16
+  }
+}
