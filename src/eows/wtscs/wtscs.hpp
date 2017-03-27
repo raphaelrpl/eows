@@ -45,10 +45,10 @@ namespace eows
      *  You can use the status operator to display the current status of your request.
      *  You may check this regulary until your request is completed to avoid delays.
      *  This check is based on the following status:
-     *  1) Completed - The request has been completed.
+     *  1) Scheduled - The request is submitted.
      *  2) In progress - The request is currently in progress.
-     *  3) Scheduled - The request is submitted.
-     *  Example sentence would be: http://localhost:7654/wtscs/status
+     *  3) Completed - The request has been completed.
+     *  Example sentence would be: http://localhost:7654/wtscs/status?UUID=123456687
      */
     class status_handler : public eows::core::web_service_handler
     {
