@@ -57,6 +57,10 @@
 #include "../geoarray/utils.hpp"
 #endif
 
+#ifdef EOWS_GEOCACHE_ENABLED
+#include "../geocache/utils.hpp"
+#endif
+
 #ifdef EOWS_OGC_OWS_ENABLED
 #include "../ogc/ows/utils.hpp"
 #endif
@@ -175,6 +179,10 @@ int main(int argc, char *argv[])
 
 #ifdef EOWS_GEOARRAY_ENABLED
     eows::geoarray::initialize();
+#endif
+
+#ifdef EOWS_GEOCACHE_ENABLED
+    eows::geocache::initialize();
 #endif
 
 #ifdef EOWS_OGC_OWS_ENABLED

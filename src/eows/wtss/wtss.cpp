@@ -195,7 +195,7 @@ eows::wtss::describe_coverage_handler::do_get(const eows::core::http_request& re
     rapidjson::StringBuffer buff;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
 
-    writer << geo_array;
+    eows::geoarray::write(writer, geo_array);
 
     res.set_status(eows::core::http_response::OK);
 
@@ -753,7 +753,7 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
     writer.String(attr_name.c_str(), static_cast<rapidjson::SizeType>(attr_name.length()));
 
     writer.Key("values", static_cast<rapidjson::SizeType>(sizeof("values") -1));
-    eows::core::copy_numeric_array(std::begin(values), std::end(values), writer);
+    eows::core::write_numeric_array(std::begin(values), std::end(values), writer);
 
     writer.EndObject();
   }

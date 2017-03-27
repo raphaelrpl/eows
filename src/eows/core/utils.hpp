@@ -87,12 +87,9 @@ namespace eows
                        InputIterator last,
                        Writer& writer);
 
-    template<class InputIterator, class Writer> void
-    write_array(InputIterator first, InputIterator last, Writer& w);
-
     //! Copy a numeric sequence to a JSON array
     template<class InputIterator, class Writer> void
-    copy_numeric_array(InputIterator first, InputIterator last, Writer& w);
+    write_numeric_array(InputIterator first, InputIterator last, Writer& w);
 
     //! Copy the JSON string array to a range beginning at result.
     template<class OutputIterator> void
@@ -113,17 +110,7 @@ eows::core::write_string_array(InputIterator first, InputIterator last, Writer& 
 }
 
 template<class InputIterator, class Writer> inline void
-eows::core::write_array(InputIterator first, InputIterator last, Writer& w)
-{
-  w.StartArray();
-
-  std::for_each(first, last, [&w](const typename std::iterator_traits<InputIterator>::value_type& v) -> void { w << v; });
-
-  w.EndArray();
-}
-
-template<class InputIterator, class Writer> inline void
-eows::core::copy_numeric_array(InputIterator first, InputIterator last, Writer& w)
+eows::core::write_numeric_array(InputIterator first, InputIterator last, Writer& w)
 {
   w.StartArray();
 

@@ -448,5 +448,5 @@ void eows::geoarray::initialize()
 
   load_geoarrays();
 
-  EOWS_LOG_INFO("Georrays runtime module initialized!");
+  EOWS_LOG_INFO("GeoArrays runtime module initialized!");
 }

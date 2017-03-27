@@ -18,27 +18,29 @@
  */
 
 /*!
-  \file eows/geoarray/exception.hpp
+  \file eows/geocache/utils.hpp
 
-  \brief Specific exception types for GeoArray module.
+  \brief General utility functions.
 
   \author Gilberto Ribeiro de Queiroz
  */
 
-#ifndef __EOWS_GEOARRAY_EXCEPTION_HPP__
-#define __EOWS_GEOARRAY_EXCEPTION_HPP__
+#ifndef __EOWS_GEOCACHE_UTILS_HPP__
+#define __EOWS_GEOCACHE_UTILS_HPP__
 
-// EOWS
-#include "../exception.hpp"
 
 namespace eows
 {
-  //! The namespace for the GeoArray module of EOWS.
-  namespace geoarray
+  namespace geocache
   {
 
+    /*!
+      \exception std::exception May throw exceptions during initialization.
+     */
+    void initialize();
 
-  }  // end namespace geoarray
+  }  // end namespace geocache
 }    // end namespace eows
 
-#endif  // __EOWS_GEOARRAY_EXCEPTION_HPP__
+#endif  // __EOWS_GEOCACHE_UTILS_HPP__
+

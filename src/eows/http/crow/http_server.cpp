@@ -43,7 +43,22 @@ struct ws_handler
   {
     eows::http::crow::http_request req_wrapper(req);
     eows::http::crow::http_response res_wrapper(res);
-    h_->do_get(req_wrapper, res_wrapper);
+
+    switch(req.method)
+    {
+      case crow::HTTPMethod::GET:
+        h_->do_get(req_wrapper, res_wrapper);
+        break;
+
+      case crow::HTTPMethod::POST:
+        h_->do_post(req_wrapper, res_wrapper);
+        break;
+
+      default:
+        break;
+    }
+
+
     res.end();
   }
 };
@@ -55,8 +70,8 @@ static void prepare_routes(crow::SimpleApp& app)
   for(std::string r : routes)
   {
     ws_handler h(eows::core::service_operations_manager::instance().get(r));
-    
-    app.route_dynamic(std::move(r))(h);
+
+    app.route_dynamic(std::move(r)).methods(crow::HTTPMethod::GET, crow::HTTPMethod::POST)(h);
   }
 }
 

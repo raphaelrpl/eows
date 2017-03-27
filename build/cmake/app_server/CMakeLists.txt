@@ -26,6 +26,10 @@ if(EOWS_GEOARRAY_ENABLED)
   target_link_libraries(eows_app_server eows_geoarray)
 endif()
 
+if(EOWS_GEOCACHE_ENABLED)
+  target_link_libraries(eows_app_server eows_geocache)
+endif()
+
 if(EOWS_OGC_OWS_ENABLED)
   target_link_libraries(eows_app_server eows_ows)
 endif()

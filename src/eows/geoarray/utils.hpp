@@ -101,6 +101,27 @@ namespace eows
     internal_metadata_t
     read_internal_metadata(const rapidjson::Value& jinternal_metadata);
 
+    template<class Writer>
+    void write(Writer& writer, const dimension_t& dim);
+
+    template<class Writer>
+    void write(Writer& writer, const dimensions_t& dims);
+
+    template<class Writer>
+    void write(Writer& writer, const numeric_range_t& range);
+
+    template<class Writer>
+    void write(Writer& writer, const attribute_t& attr);
+
+    template<class Writer>
+    void write(Writer& writer, const spatial_resolution_t& res);
+
+    template<class Writer>
+    void write(Writer& writer, const spatial_extent_t& extent);
+
+    template<class Writer>
+    void write(Writer& writer, const geoarray_t& geo_array);
+
     /*!
       \exception std::exception May throw exceptions during initialization.
      */
@@ -110,7 +131,7 @@ namespace eows
 }    // end namespace eows
 
 template<class Writer>
-Writer& operator<<(Writer& writer, const eows::geoarray::dimension_t& dim)
+void eows::geoarray::write(Writer& writer, const dimension_t& dim)
 {
   writer.StartObject();
 
@@ -124,31 +145,27 @@ Writer& operator<<(Writer& writer, const eows::geoarray::dimension_t& dim)
   writer.Uint(dim.max_idx);
 
   writer.EndObject();
-
-  return writer;
 }
 
 template<class Writer>
-Writer& operator<<(Writer& writer, const eows::geoarray::dimensions_t& dims)
+void eows::geoarray::write(Writer& writer, const dimensions_t& dims)
 {
   writer.StartObject();
 
   writer.Key("x", static_cast<rapidjson::SizeType>(sizeof("x") -1));
-  writer << dims.x;
+  write(writer, dims.x);
 
   writer.Key("y", static_cast<rapidjson::SizeType>(sizeof("y") -1));
-  writer << dims.y;
+  write(writer, dims.y);
 
   writer.Key("t", static_cast<rapidjson::SizeType>(sizeof("t") -1));
-  writer << dims.t;
+  write(writer, dims.t);
 
   writer.EndObject();
-
-  return writer;
 }
 
 template<class Writer>
-Writer& operator<<(Writer& writer, const eows::geoarray::numeric_range_t& range)
+void eows::geoarray::write(Writer& writer, const numeric_range_t& range)
 {
   writer.StartObject();
 
@@ -159,12 +176,10 @@ Writer& operator<<(Writer& writer, const eows::geoarray::numeric_range_t& range)
   writer.Double(range.max_val);
 
   writer.EndObject();
-
-  return writer;
 }
 
 template<class Writer>
-Writer& operator<<(Writer& writer, const eows::geoarray::attribute_t& attr)
+void eows::geoarray::write(Writer& writer, const attribute_t& attr)
 {
   writer.StartObject();
 
@@ -179,7 +194,7 @@ Writer& operator<<(Writer& writer, const eows::geoarray::attribute_t& attr)
   writer.String(sdt.c_str(), static_cast<rapidjson::SizeType>(sdt.length()));
 
   writer.Key("valid_range", static_cast<rapidjson::SizeType>(sizeof("valid_range") - 1));
-  writer << attr.valid_range;
+  write(writer, attr.valid_range);
 
   writer.Key("scale_factor", static_cast<rapidjson::SizeType>(sizeof("scale_factor") -1));
   writer.Double(attr.scale_factor);
@@ -188,12 +203,10 @@ Writer& operator<<(Writer& writer, const eows::geoarray::attribute_t& attr)
   writer.Double(attr.missing_value);
 
   writer.EndObject();
-
-  return writer;
 }
 
 template<class Writer>
-Writer& operator<<(Writer& writer, const eows::geoarray::spatial_resolution_t& res)
+void eows::geoarray::write(Writer& writer, const spatial_resolution_t& res)
 {
   writer.StartObject();
 
@@ -204,12 +217,10 @@ Writer& operator<<(Writer& writer, const eows::geoarray::spatial_resolution_t& r
   writer.Double(res.y);
 
   writer.EndObject();
-
-  return writer;
 }
 
 template<class Writer>
-Writer& operator<<(Writer& writer, const eows::geoarray::spatial_extent_t& extent)
+void eows::geoarray::write(Writer& writer, const spatial_extent_t& extent)
 {
   writer.StartObject();
 
@@ -226,12 +237,10 @@ Writer& operator<<(Writer& writer, const eows::geoarray::spatial_extent_t& exten
   writer.Double(extent.ymax);
 
   writer.EndObject();
-
-  return writer;
 }
 
 template<class Writer>
-Writer& operator<<(Writer& writer, const eows::geoarray::geoarray_t& geo_array)
+void eows::geoarray::write(Writer& writer, const geoarray_t& geo_array)
 {
   writer.StartObject();
 
@@ -245,16 +254,20 @@ Writer& operator<<(Writer& writer, const eows::geoarray::geoarray_t& geo_array)
   writer.String(geo_array.detail.c_str(), static_cast<rapidjson::SizeType>(geo_array.detail.length()));
 
   writer.Key("dimensions", static_cast<rapidjson::SizeType>(sizeof("dimensions") - 1));
-  writer << geo_array.dimensions;
+  write(writer, geo_array.dimensions);
 
   writer.Key("attributes", static_cast<rapidjson::SizeType>(sizeof("attributes") - 1));
-  eows::core::write_array(geo_array.attributes.begin(), geo_array.attributes.end(), writer);
+  writer.StartArray();
+  std::for_each(geo_array.attributes.begin(),
+                geo_array.attributes.end(),
+                [&writer](const attribute_t& att) -> void { write(writer, att); });
+  writer.EndArray();
 
   writer.Key("spatial_extent", static_cast<rapidjson::SizeType>(sizeof("spatial_extent") - 1));
-  writer << geo_array.spatial_extent;
+  write(writer, geo_array.spatial_extent);
 
   writer.Key("spatial_resolution", static_cast<rapidjson::SizeType>(sizeof("spatial_resolution") - 1));
-  writer << geo_array.spatial_resolution;
+  write(writer, geo_array.spatial_resolution);
 
   writer.Key("crs", static_cast<rapidjson::SizeType>(sizeof("crs") - 1));
 
@@ -276,8 +289,6 @@ Writer& operator<<(Writer& writer, const eows::geoarray::geoarray_t& geo_array)
                                  writer);
 
   writer.EndObject();
-
-  return writer;
 }
 
 #endif  // __EOWS_GEOARRAY_UTILS_HPP__

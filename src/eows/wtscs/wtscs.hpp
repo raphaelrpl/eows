@@ -36,18 +36,30 @@ namespace eows
   namespace wtscs
   {
  
-    //! Process a WMS request.
+    //! Process a WTSCS list_algorithms request.
     /*!
-      http://localhost:7654/wtscs
+      http://localhost:7654/wtscs/list_algorithms
      */
-    class handler : public eows::core::web_service_handler
+    class list_algorithms_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
-      
+
       void do_get(const eows::core::http_request& req,
                     eows::core::http_response& res);
     };
-    
+
+    //! Process a WTSCS classify request.
+    /*!
+      http://localhost:7654/wtscs/classify
+     */
+    class classify_handler : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_post(const eows::core::http_request& req,
+                   eows::core::http_response& res);
+    };
+
     //! Initialize the service.
     void initialize();
 

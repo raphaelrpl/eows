@@ -82,12 +82,12 @@ namespace eows
 
           const char* content() const
           {
-            return nullptr;;
+            return req_.body.c_str();
           }
 
           std::size_t content_length() const
           {
-            return 0;
+            return req_.body.size();
           }
  
           std::map<std::string, std::string> headers() const
