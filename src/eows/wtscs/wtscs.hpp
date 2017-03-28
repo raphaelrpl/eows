@@ -35,7 +35,7 @@ namespace eows
 {
   namespace wtscs
   {
- 
+
     //! Process a WTSCS list_algorithms request.
     /*!
       http://localhost:7654/wtscs/list_algorithms
