@@ -50,7 +50,7 @@ namespace eows
         void do_get(const eows::core::http_request& req,
                     eows::core::http_response& res);
       };
-    
+
       //! Initialize the service.
       void initialize();
 

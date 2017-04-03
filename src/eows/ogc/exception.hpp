@@ -36,8 +36,15 @@ namespace eows
   //! The namespace for the OGC Runtime module of EOWS.
   namespace ogc
   {
+    struct ogc_error : virtual eows_error { };
 
+    struct missing_parameter_error : virtual std::runtime_error {
+      explicit missing_parameter_error(const std::string& s) : std::runtime_error(s) {}
+    };
 
+    struct not_implemented_error : virtual std::runtime_error {
+      explicit not_implemented_error(const std::string& s) : std::runtime_error(s) {}
+    };
   }  // end namespace ogc
 }    // end namespace eows
 

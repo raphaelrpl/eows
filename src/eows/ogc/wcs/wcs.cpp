@@ -31,27 +31,48 @@
 #include "../../core/http_request.hpp"
 #include "../../core/logger.hpp"
 #include "../../core/service_operations_manager.hpp"
+#include "core/utils.hpp"
+#include "manager.hpp"
+// WCS Operations
+#include "operations/get_capabilities.hpp"
+#include "operations/factory.hpp"
+
+#include <memory>
 
 void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
                                      eows::core::http_response& res)
 {
   eows::core::query_string_t qstr(req.query_string());
 
-  std::string return_msg = qstr.empty() ? std::string("\"Hello from OGC WCS\"")
-                                        : qstr.at("message");
+  try
+  {
+    const eows::ogc::wcs::core::operation* op = operations::build_operation(qstr);
+    std::string output = op->to_string();
 
-  res.set_status(eows::core::http_response::OK);
+    res.set_status(eows::core::http_response::OK);
+    res.add_header(eows::core::http_response::CONTENT_TYPE, op->content_type());
+    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+    res.write(output.c_str(), output.size());
+  }
+  catch(const std::exception& e)
+  {
+    std::string output = "ERROR. TEST";
+
+    res.set_status(eows::core::http_response::bad_request);
+    res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
+    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+    res.write(output.c_str(), output.size());
+  }
   
-  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
-  res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-  
-  res.write(return_msg.c_str(), return_msg.size());
+//  res.write(return_msg.c_str(), return_msg.size());
 }
 
 void
 eows::ogc::wcs::initialize()
 {
   EOWS_LOG_INFO("Initializing OGC WCS...");
+
+  manager::instance().initialize();
 
   std::unique_ptr<handler> h(new handler);
   eows::core::service_operations_manager::instance().insert("/wcs", std::move(h));
