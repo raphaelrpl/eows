@@ -17,12 +17,14 @@
   e-sensing team at <esensing-team@dpi.inpe.br>.
  */
 
-/*!
-  \file eows/wtscs/wtscs.hpp
-
-  \brief Web Time Series Classification Service.
-
-  \author Gilberto Ribeiro de Queiroz
+/*! \file eows/wtscs/wtscs.hpp
+ *
+ *  \brief Web Time Series Classification Service.
+ *
+ *  Web Time Series Classification Service, or WTSCS for short, is a web service for classification of time series data from remote sensing imagery.
+ *
+ *  \author Eduardo Llapa Rodriguez
+ *  \author Gilberto Ribeiro de Queiroz
  */
 
 #ifndef __EOWS_WTSCS_WTSCS_HPP__
@@ -30,37 +32,103 @@
 
 // EOWS
 #include "../core/web_service_handler.hpp"
+#include "../geoarray/data_types.hpp"
 
+// C++ Standard Library
+#include <memory>
+
+//! Define the EOWS Context.
 namespace eows
 {
+  //! Define the WTSCS Context.
   namespace wtscs
   {
 
-    //! Process a WTSCS list_algorithms request.
-    /*!
-      http://localhost:7654/wtscs/list_algorithms
+    /*! \brief Generic input parameters structure.
+     *
+     *
+     */
+    struct base_input_parameters
+    {
+      virtual ~base_input_parameters() = default;
+    };
+
+    /*! \brief Input parameters structure for TWDTW algorithm.
+     *
+     *
+     */
+    struct twdtw_input_parameters : base_input_parameters
+    {
+      std::string cv_name;
+      std::vector<std::string> attributes;
+      eows::geoarray::spatial_extent_t roi;
+      std::string start_date;
+      std::string end_date;
+      std::string by;
+      double overlap;
+      double alpha;
+      double beta;
+      std::string output_array_name;
+    };
+
+    /*! \brief Binomial structure algorithm-input parameters.
+     *
+     *
+     */
+    struct classify_request_parameters
+    {
+      std::string algorithm;
+      std::unique_ptr<base_input_parameters> input_parameters;
+    };
+
+    /*! \brief Check the Status of your Request.
+     *
+     *  You can use the status operator to display the current status of your request.
+     *  You may check this regulary until your request is completed to avoid delays.
+     *  This check is based on the following status:
+     *  1) Scheduled - The request is submitted.
+     *  2) In progress - The request is currently in progress.
+     *  3) Completed - The request has been completed.It  will be accompanied by the links to the resulting images.
+     *  Example sentence would be: http://localhost:7654/wtscs/status?UUID=123456687
+     */
+    class status_handler : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request& req,
+                  eows::core::http_response& res);
+    };
+
+    /*! \brief List the Algorithms Provided by the Service.
+     *
+     *  Getting a list of available classification algorithms for remote sensing.
+     *  Example sentence would be: http://localhost:7654/wtscs/list_algorithms
      */
     class list_algorithms_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
 
-      void do_get(const eows::core::http_request& req,
-                    eows::core::http_response& res);
+
+      void do_get(const eows::core::http_request& req, eows::core::http_response& res);
     };
 
-    //! Process a WTSCS classify request.
-    /*!
-      http://localhost:7654/wtscs/classify
+    /*! \brief Operator Used to Perform Classification Algorithms.
+     *
+     *  This operator classifies time series data through a certain classification algorithm.
+     *  You must assign an available classification algorithm and its parameters required.
+     *  Example sentence would be: http://localhost:7654/wtscs/classify
      */
     class classify_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
 
-      void do_post(const eows::core::http_request& req,
-                   eows::core::http_response& res);
+      void do_post(const eows::core::http_request& req, eows::core::http_response& res);
     };
 
-    //! Initialize the service.
+    /*! \brief Service Features.
+     *
+     *  Record the WTSCS service operations.
+     */
     void initialize();
 
   }   // end namespace wtscs
