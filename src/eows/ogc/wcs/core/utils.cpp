@@ -2,6 +2,7 @@
 #include "data_types.hpp"
 #include "../exception.hpp"
 
+#include<algorithm>
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& capability)
 {
@@ -124,4 +125,25 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
     coverage_summary.coverage_subtype = read_node_as_string(jit->value, "subtype");
     content.summaries.push_back(coverage_summary);
   }
+}
+
+std::map<std::string, std::string> eows::ogc::wcs::core::lowerify(const std::map<std::string, std::string>& given)
+{
+  std::map<std::string, std::string> out;
+
+  for(auto& it: given)
+  {
+    out.insert(std::pair<std::string, std::string>(to_lower(it.first), it.second));
+  }
+
+  return out;
+}
+
+std::string eows::ogc::wcs::core::to_lower(const std::string& str)
+{
+  std::string out;
+  out.resize(str.size());
+  std::transform(str.begin(), str.end(), out.begin(), ::tolower);
+
+  return out;
 }

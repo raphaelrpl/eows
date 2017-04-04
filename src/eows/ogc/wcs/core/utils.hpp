@@ -3,6 +3,7 @@
 
 // STL
 #include <string>
+#include <map>
 
 // RapidJSON
 #include <rapidjson/document.h>
@@ -53,6 +54,18 @@ namespace eows
          * @brief It reads WCS Contents from JSON document and fill values into object
          */
         void read(const rapidjson::Value&, content_t&);
+
+        /**
+         * @brief It transforms a string into lowercase
+         * @return String lowercase
+         */
+        std::string to_lower(const std::string&);
+
+        /**
+         * @brief It applies lower case on given map keys and return a new map with these values
+         * @return Copy map with keys in lowercase
+         */
+        std::map<std::string, std::string> lowerify(const std::map<std::string, std::string>&);
       }
     }
   }

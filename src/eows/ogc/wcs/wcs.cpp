@@ -42,7 +42,7 @@
 void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
                                      eows::core::http_response& res)
 {
-  eows::core::query_string_t qstr(req.query_string());
+  eows::core::query_string_t qstr = eows::ogc::wcs::core::lowerify(req.query_string());
 
   try
   {
@@ -56,7 +56,7 @@ void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
   }
   catch(const std::exception& e)
   {
-    std::string output = "ERROR. TEST";
+    std::string output = e.what();
 
     res.set_status(eows::core::http_response::bad_request);
     res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");

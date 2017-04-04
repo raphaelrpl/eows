@@ -44,7 +44,7 @@ namespace eows
     explicit parse_error(const char* s) : std::runtime_error(s) {}
   };
 
-  struct eows_error : virtual std::runtime_error
+  struct eows_error : public std::runtime_error
   {
     explicit eows_error(const std::string& s) : std::runtime_error(s) {}
     explicit eows_error(const char* s) : std::runtime_error(s) {}
