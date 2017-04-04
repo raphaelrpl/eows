@@ -36,21 +36,39 @@
 // WCS Operations
 #include "operations/get_capabilities.hpp"
 #include "operations/factory.hpp"
-
+#include "operations/error_handler.hpp"
+// STL
 #include <memory>
 
 void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
                                      eows::core::http_response& res)
 {
+  // Putting every request parameters keys to lowercase
   eows::core::query_string_t qstr = eows::ogc::wcs::core::lowerify(req.query_string());
 
   try
   {
+    // Retrieve WCS Operation
     std::unique_ptr<eows::ogc::wcs::core::operation> op(operations::build_operation(qstr));
+
+    // Executing Operation
+    op->execute();
+
+    // Retrieving Result
     std::string output = op->to_string();
 
     res.set_status(eows::core::http_response::OK);
     res.add_header(eows::core::http_response::CONTENT_TYPE, op->content_type());
+    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+    res.write(output.c_str(), output.size());
+  }
+  catch(const eows::ogc::ogc_error& e)
+  {
+    // Use WCS error handler
+    std::string output = operations::handle_error(e);
+
+    res.set_status(eows::core::http_response::bad_request);
+    res.add_header(eows::core::http_response::CONTENT_TYPE, "application/xml");
     res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
     res.write(output.c_str(), output.size());
   }
@@ -63,8 +81,6 @@ void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
     res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
     res.write(output.c_str(), output.size());
   }
-  
-//  res.write(return_msg.c_str(), return_msg.size());
 }
 
 void

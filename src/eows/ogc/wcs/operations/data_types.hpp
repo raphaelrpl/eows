@@ -28,6 +28,8 @@
 #ifndef __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 #define __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 
+#include "../../../core/data_types.hpp"
+#include "../exception.hpp"
 // STL
 #include <string>
 
@@ -41,9 +43,34 @@ namespace eows
       {
         /**
          * @brief It represents a base request structure for WCS access
+         * @throws
          */
-        struct BaseRequest
+        struct base_request
         {
+          base_request(const eows::core::query_string_t& query)
+            : request(), version(), service()
+          {
+            eows::core::query_string_t::const_iterator it = query.find("request");
+
+            if (it == query.end()) {
+              throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
+            }
+            request = it->second;
+
+            it = query.find("service");
+
+            if (it == query.end()) {
+              throw eows::ogc::missing_parameter_error("Missing parameter 'service'", "service");
+            }
+            service = it->second;
+
+            it = query.find("version");
+
+            if (it != query.end()) {
+              version = it->second;
+            }
+          }
+
           std::string request;
           std::string version;
           std::string service;
@@ -51,18 +78,24 @@ namespace eows
         /**
          * @brief Represents a GetCapabilities request structure
          */
-        struct GetCapabilitiesRequest : public BaseRequest { };
+        struct get_capabilities_request : public base_request
+        {
+          get_capabilities_request(const eows::core::query_string_t& query)
+            : base_request(query)
+          {
+          }
+        };
         /**
          * @brief Represents DescriveCoverage Request structure
          */
-        struct DescribeCoverageRequest : public BaseRequest
+        struct describe_coverage_request : public base_request
         {
           std::string coverageId;
         };
         /**
          * @brief Represents GetCoverage request structure
          */
-        struct GetCoverageRequest : public BaseRequest
+        struct get_coverage_request : public base_request
         {
           std::string coverageId;
           // TODO: implement

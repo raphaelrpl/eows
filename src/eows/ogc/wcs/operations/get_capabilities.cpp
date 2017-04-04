@@ -28,14 +28,30 @@
 // EOWS
 #include "get_capabilities.hpp"
 #include "../core/data_types.hpp"
+#include "data_types.hpp"
 #include "../manager.hpp"
+#include "../core/utils.hpp"
 
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
 #include <rapidxml/rapidxml_print.hpp>
 
-eows::ogc::wcs::operations::get_capabilities::get_capabilities()
-  : eows::ogc::wcs::core::operation()
+struct eows::ogc::wcs::operations::get_capabilities::impl
+{
+  impl(const get_capabilities_request& req)
+    : request(req), format("application/xml")
+  {
+
+  }
+
+  eows::ogc::wcs::operations::get_capabilities_request request;
+  std::string xml_representation;
+  std::string format;
+};
+
+eows::ogc::wcs::operations::get_capabilities::get_capabilities(const get_capabilities_request& req)
+  : eows::ogc::wcs::core::operation(),
+    pimpl_(new eows::ogc::wcs::operations::get_capabilities::impl(req))
 {
 
 }
@@ -47,17 +63,21 @@ eows::ogc::wcs::operations::get_capabilities::~get_capabilities()
 
 void eows::ogc::wcs::operations::get_capabilities::execute()
 {
-
-}
-
-const char*eows::ogc::wcs::operations::get_capabilities::content_type() const
-{
-  return "application/gml+xml";
-}
-
-const std::string eows::ogc::wcs::operations::get_capabilities::to_string() const
-{
   const eows::ogc::wcs::core::capabilities_t capabilities = manager::instance().capabilities();
+
+  // Checking WCS version supported with client specified
+  if (!pimpl_->request.version.empty()) {
+    if (capabilities.service.service_type_version != pimpl_->request.version)
+    {
+      throw invalid_parameter_error("WCS Version '" + pimpl_->request.version +
+                                "' is not supported. Use '" + capabilities.service.service_type_version + "'",
+                                "version");
+    }
+  }
+  // Checking WCS service parameter
+  if (eows::ogc::wcs::core::to_lower(pimpl_->request.service) != "wcs")
+    throw invalid_parameter_error("Invalid service parameter '" + pimpl_->request.service + "'",
+                                  "service");
 
   rapidxml::xml_document<> xml_doc;
 
@@ -67,7 +87,7 @@ const std::string eows::ogc::wcs::operations::get_capabilities::to_string() cons
   decl->append_attribute(xml_doc.allocate_attribute("encoding", "UTF-8"));
   xml_doc.append_node(decl);
   // Preparing WCS Root Element
-  rapidxml::xml_node<>* wcs_document = xml_doc.allocate_node(rapidxml::node_element, "wcs:WCSCapabilities");
+  rapidxml::xml_node<>* wcs_document = xml_doc.allocate_node(rapidxml::node_element, "wcs:Capabilities");
   wcs_document->append_attribute(xml_doc.allocate_attribute("version", capabilities.service.service_type_version.c_str()));
   wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns","http://www.opengis.net/ows/2.0"));
   wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:ows","http://www.opengis.net/ows/2.0"));
@@ -177,8 +197,15 @@ const std::string eows::ogc::wcs::operations::get_capabilities::to_string() cons
   }
   wcs_document->append_node(child);
 
-  std::string buff;
-  rapidxml::print(std::back_inserter(buff), xml_doc, 0);
+  rapidxml::print(std::back_inserter(pimpl_->xml_representation), xml_doc, 0);
+}
 
-  return buff;
+const char*eows::ogc::wcs::operations::get_capabilities::content_type() const
+{
+  return pimpl_->format.c_str();
+}
+
+const std::string eows::ogc::wcs::operations::get_capabilities::to_string() const
+{
+  return pimpl_->xml_representation;
 }

@@ -25,13 +25,14 @@
   \author Raphael Willian da Costa
  */
 
-// EOWS WCS
+// EOWS
 #include "factory.hpp"
 #include "../core/operation.hpp"
 #include "../core/utils.hpp"
 #include "../exception.hpp"
 // WCS Operation Data Types
 #include "data_types.hpp"
+// WCS Operation to build
 #include "get_capabilities.hpp"
 
 std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::build_operation(const eows::core::query_string_t& query)
@@ -39,29 +40,24 @@ std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::bui
   eows::core::query_string_t::const_iterator request_it = query.find("request");
 
   if (request_it == query.end()) {
-    throw eows::ogc::missing_parameter_error("Missing parameter 'request'");
-  }
-
-  eows::core::query_string_t::const_iterator it = query.find("service");
-
-  if (it == query.end()) {
-    throw eows::ogc::missing_parameter_error("Missing parameter 'service'");
+    throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
   }
 
   std::unique_ptr<eows::ogc::wcs::core::operation> op;
 
   if (eows::ogc::wcs::core::to_lower(request_it->second) == "getcapabilities")
   {
-    GetCapabilitiesRequest capabilities_request;
-    op.reset(new get_capabilities());
+    get_capabilities_request capabilities_request(query);
+    op.reset(new get_capabilities(capabilities_request));
     return std::move(op);
   }
   else if (eows::ogc::wcs::core::to_lower(request_it->second) == "describecoverage")
   {
-    throw eows::ogc::not_implemented_error("Describe Coverage is not implemented yet");
+    throw eows::ogc::not_implemented_error("Describe Coverage is not implemented yet", "request");
   }
-  else //if (request_it->second == "GetCoverage")
+  else if (request_it->second == "GetCoverage")
   {
-    throw eows::ogc::not_implemented_error("Not implemented yet");
+    throw eows::ogc::not_implemented_error("Not implemented yet", "request");
   }
+  throw eows::ogc::ogc_error("Invalid WCS operation", "OperationNotSupported");
 }

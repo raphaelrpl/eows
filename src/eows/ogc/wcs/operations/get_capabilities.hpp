@@ -39,6 +39,8 @@ namespace eows
     {
       namespace operations
       {
+        struct get_capabilities_request;
+
         /**
          * @brief Represents WCS GetCapabilities implementation
          * It converts cached capability json document as gml+xml style
@@ -46,9 +48,12 @@ namespace eows
         class get_capabilities : public eows::ogc::wcs::core::operation
         {
           public:
-            get_capabilities();
+            get_capabilities(const get_capabilities_request&);
             ~get_capabilities();
 
+            /**
+             * @brief Prepares XML encoder in order to generate WCS GetCapabilities
+             */
             void execute();
 
             /**
@@ -57,8 +62,14 @@ namespace eows
              */
             const char* content_type() const;
 
+            /**
+             * @brief Retrieves XML string representation of WCS GetCapabilities 2.0
+             * @return
+             */
             const std::string to_string() const override;
           private:
+            struct impl;
+            impl* pimpl_;
         };
       }
     }

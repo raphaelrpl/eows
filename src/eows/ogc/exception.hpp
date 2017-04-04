@@ -41,8 +41,13 @@ namespace eows
      */
     struct ogc_error : public eows_error
     {
-      explicit ogc_error(const std::string& s) : eows_error(s) {}
-      explicit ogc_error(const char*& s) : eows_error(s) {}
+      explicit ogc_error(const std::string& s, const std::string& c) : eows_error(s) {
+        error_code = c;
+      }
+      explicit ogc_error(const char*& s, const std::string& c) : eows_error(s), error_code(c) {}
+
+      //! Defines code error useful during exception handling
+      std::string error_code;
     };
 
     /**
@@ -50,8 +55,17 @@ namespace eows
      */
     struct missing_parameter_error : public virtual ogc_error
     {
-      explicit missing_parameter_error(const std::string& s) : ogc_error(s) { }
-      explicit missing_parameter_error(const char* s) : ogc_error(s) { }
+      explicit missing_parameter_error(const std::string& s, const std::string& code) : ogc_error(s, code) { }
+      explicit missing_parameter_error(const char* s, const std::string& code) : ogc_error(s, code) { }
+    };
+
+    /**
+     * @brief Used when user gives parameter, but it seems inconsistent or invalid
+     */
+    struct invalid_parameter_error : public virtual ogc_error
+    {
+      explicit invalid_parameter_error(const std::string& s, const std::string& code) : ogc_error(s, code) { }
+      explicit invalid_parameter_error(const char* s, const std::string& code) : ogc_error(s, code) { }
     };
 
     /**
@@ -59,8 +73,17 @@ namespace eows
      */
     struct not_implemented_error : public virtual ogc_error
     {
-      explicit not_implemented_error(const std::string& s) : ogc_error(s) { }
-      explicit not_implemented_error(const char* s) : ogc_error(s) { }
+      explicit not_implemented_error(const std::string& s, const std::string& code) : ogc_error(s, code) { }
+      explicit not_implemented_error(const char* s, const std::string& code) : ogc_error(s, code) { }
+    };
+
+    /**
+     * @brief Used when a function or operation is not currently supported
+     */
+    struct not_supported_error : public virtual ogc_error
+    {
+      explicit not_supported_error(const std::string& s, const std::string& code) : ogc_error(s, code) { }
+      explicit not_supported_error(const char* s, const std::string& code) : ogc_error(s, code) { }
     };
   }  // end namespace ogc
 }    // end namespace eows
