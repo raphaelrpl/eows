@@ -17,6 +17,12 @@ namespace eows
             get_capabilities();
             ~get_capabilities();
 
+            void execute();
+
+            /**
+             * @brief For WCS GetCapabilities operations, it is fixed to "application/gml+xml"
+             * @return
+             */
             const char* content_type() const;
 
             const std::string to_string() const override;

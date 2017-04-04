@@ -7,7 +7,7 @@
 #include "data_types.hpp"
 #include "get_capabilities.hpp"
 
-const eows::ogc::wcs::core::operation* eows::ogc::wcs::operations::build_operation(const eows::core::query_string_t& query)
+std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::build_operation(const eows::core::query_string_t& query)
 {
   eows::core::query_string_t::const_iterator request_it = query.find("request");
 
@@ -27,12 +27,14 @@ const eows::ogc::wcs::core::operation* eows::ogc::wcs::operations::build_operati
     throw eows::ogc::missing_parameter_error("Missing parameter 'service'");
   }
 
+  std::unique_ptr<eows::ogc::wcs::core::operation> op;
   // Checking which operation should build
   // TODO: Put everything to lowercase-style
   if (request_it->second == "GetCapabilities")
   {
     GetCapabilitiesRequest capabilities_request;
-    return new get_capabilities();
+    op.reset(new get_capabilities());
+    return std::move(op);
   }
   else if (request_it->second == "DescribeCoverage")
   {

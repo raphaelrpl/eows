@@ -1,6 +1,8 @@
 #ifndef __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 #define __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 
+// EOWS
+#include "../../../core/data_types.hpp"
 // STL
 #include <string>
 #include <vector>
@@ -18,6 +20,7 @@ namespace eows
          */
         struct BaseRequest
         {
+          BaseRequest();
           std::string request;
           std::string version;
           std::string service;

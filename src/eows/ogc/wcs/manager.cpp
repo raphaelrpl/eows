@@ -1,12 +1,12 @@
+// EOWS
 #include "manager.hpp"
-#include "exception.hpp"
-#include "core/utils.hpp"
-#include "core/data_types.hpp"
 #include "../../core/app_settings.hpp"
 #include "../../core/utils.hpp"
 #include "../../core/defines.hpp"
 #include "../../core/logger.hpp"
-
+#include "exception.hpp"
+#include "core/utils.hpp"
+#include "core/data_types.hpp"
 
 // Boost
 #include <boost/filesystem.hpp>
@@ -20,6 +20,11 @@ struct eows::ogc::wcs::manager::impl
 eows::ogc::wcs::manager::manager()
   : pimpl_(new impl)
 {
+}
+
+eows::ogc::wcs::manager::~manager()
+{
+  delete pimpl_;
 }
 
 eows::ogc::wcs::manager& eows::ogc::wcs::manager::instance()

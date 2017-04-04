@@ -46,7 +46,7 @@ void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
 
   try
   {
-    const eows::ogc::wcs::core::operation* op = operations::build_operation(qstr);
+    std::unique_ptr<eows::ogc::wcs::core::operation> op(operations::build_operation(qstr));
     std::string output = op->to_string();
 
     res.set_status(eows::core::http_response::OK);

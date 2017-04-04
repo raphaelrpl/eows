@@ -17,6 +17,11 @@ eows::ogc::wcs::operations::get_capabilities::~get_capabilities()
 
 }
 
+void eows::ogc::wcs::operations::get_capabilities::execute()
+{
+
+}
+
 const char*eows::ogc::wcs::operations::get_capabilities::content_type() const
 {
   return "application/gml+xml";
@@ -115,7 +120,34 @@ const std::string eows::ogc::wcs::operations::get_capabilities::to_string() cons
   // ================
   // Service Metadata
   // ================
+  child = xml_doc.allocate_node(rapidxml::node_element, "wcs:ServiceMetadata");
+  for(auto& format: capabilities.service_metadata.formats_supported)
+  {
+    sub_child = xml_doc.allocate_node(rapidxml::node_element, "wcs:formatSupported");
+    sub_child->value(format.c_str());
+    child->append_node(sub_child);
+  }
+  wcs_document->append_node(child);
 
+  // ========
+  // Contents
+  // ========
+  child = xml_doc.allocate_node(rapidxml::node_element, "wcs:Contents");
+  for(const eows::ogc::wcs::core::coverage_summary_t& summary: capabilities.content.summaries)
+  {
+    sub_child = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSummary");
+    {
+      rapidxml::xml_node<>* coverage_node = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageId");
+      coverage_node->value(summary.coverage_id.c_str());
+      sub_child->append_node(coverage_node);
+
+      coverage_node = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSubtype");
+      coverage_node->value(summary.coverage_subtype.c_str());
+      sub_child->append_node(coverage_node);
+    }
+    child->append_node(sub_child);
+  }
+  wcs_document->append_node(child);
 
   std::string buff;
   rapidxml::print(std::back_inserter(buff), xml_doc, 0);
