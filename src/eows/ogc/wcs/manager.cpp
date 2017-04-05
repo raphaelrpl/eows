@@ -30,10 +30,10 @@
 #include "../../core/app_settings.hpp"
 #include "../../core/utils.hpp"
 #include "../../core/defines.hpp"
-#include "../../core/logger.hpp"
-#include "exception.hpp"
+#include "core/logger.hpp"
 #include "core/utils.hpp"
 #include "core/data_types.hpp"
+#include "exception.hpp"
 
 // Boost
 #include <boost/filesystem.hpp>
@@ -71,7 +71,7 @@ void eows::ogc::wcs::manager::initialize()
 
   cfg_file /= EOWS_WCS_FILE;
 
-  EOWS_LOG_INFO("Reading file '" + cfg_file.string() + "'...");
+  EOWS_WCS_LOG_INFO("Reading file '" + cfg_file.string() + "'...");
 
   rapidjson::Document doc = eows::core::open_json_file(cfg_file.string());
 
@@ -82,5 +82,5 @@ void eows::ogc::wcs::manager::initialize()
 
   core::read(jcapabilities, pimpl_->capabilities);
 
-  EOWS_LOG_INFO("Finished reading file '" + cfg_file.string() + "'!");
+  EOWS_WCS_LOG_INFO("Finished reading file '" + cfg_file.string() + "'!");
 }

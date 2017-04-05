@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "../../../geoarray/data_types.hpp"
+
 namespace eows
 {
   namespace ogc

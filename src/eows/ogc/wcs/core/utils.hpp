@@ -4,6 +4,7 @@
 // STL
 #include <string>
 #include <map>
+#include <vector>
 
 // RapidJSON
 #include <rapidjson/document.h>
@@ -72,6 +73,14 @@ namespace eows
          * @return Copy map with keys in lowercase
          */
         std::map<std::string, std::string> lowerify(const std::map<std::string, std::string>&);
+
+        /**
+         * @brief It splits string using delimiter
+         * @param string - String to split
+         * @param delimiter - Delimiter to use during string parse
+         * @return Splited strings
+         */
+        std::vector<std::string> split(const std::string&, const char&);
       }
     }
   }

@@ -65,20 +65,6 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
 {
   const eows::ogc::wcs::core::capabilities_t capabilities = manager::instance().capabilities();
 
-  // Checking WCS version supported with client specified
-  if (!pimpl_->request.version.empty()) {
-    if (capabilities.service.service_type_version != pimpl_->request.version)
-    {
-      throw invalid_parameter_error("WCS Version '" + pimpl_->request.version +
-                                "' is not supported. Use '" + capabilities.service.service_type_version + "'",
-                                "version");
-    }
-  }
-  // Checking WCS service parameter
-  if (eows::ogc::wcs::core::to_lower(pimpl_->request.service) != "wcs")
-    throw invalid_parameter_error("Invalid service parameter '" + pimpl_->request.service + "'",
-                                  "service");
-
   rapidxml::xml_document<> xml_doc;
 
   // Preparing Meta document

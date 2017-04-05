@@ -34,7 +34,6 @@
 #include "core/utils.hpp"
 #include "manager.hpp"
 // WCS Operations
-#include "operations/get_capabilities.hpp"
 #include "operations/factory.hpp"
 #include "operations/error_handler.hpp"
 // STL
