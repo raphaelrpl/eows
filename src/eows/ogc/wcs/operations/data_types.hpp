@@ -71,6 +71,8 @@ namespace eows
             }
           }
 
+          virtual ~base_request() {}
+
           std::string request;
           std::string version;
           std::string service;
