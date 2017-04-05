@@ -41,13 +41,18 @@ namespace eows
      */
     struct ogc_error : public eows_error
     {
-      explicit ogc_error(const std::string& s, const std::string& c) : eows_error(s) {
+      explicit ogc_error(const std::string& s, const std::string& c)
+        : eows_error(s)
+      {
         error_code = c;
       }
-      explicit ogc_error(const char*& s, const std::string& c) : eows_error(s), error_code(c) {}
+      explicit ogc_error(const char*& s, const std::string& c)
+        : eows_error(s), error_code(c) {}
 
       //! Defines code error useful during exception handling
       std::string error_code;
+      //! Defines value user typed during OGC request
+      std::string locator;
     };
 
     /**

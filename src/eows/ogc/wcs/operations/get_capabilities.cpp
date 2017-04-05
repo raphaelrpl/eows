@@ -32,6 +32,7 @@
 #include "../manager.hpp"
 #include "../core/utils.hpp"
 
+#include <iostream>
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
 #include <rapidxml/rapidxml_print.hpp>
@@ -93,6 +94,7 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:ows","http://www.opengis.net/ows/2.0"));
   wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:wcs","http://www.opengis.net/wcs/2.0"));
   wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:gml","http://www.opengis.net/gml/3.2"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:xlink", "http://www.w3.org/1999/xlink"));
   wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance"));
   wcs_document->append_attribute(xml_doc.allocate_attribute("xsi:schemaLocation","http://www.opengis.net/wcs/2.0 http://schemas.opengis.net/wcs/2.0/wcsAll.xsd"));
   xml_doc.append_node(wcs_document);
@@ -152,18 +154,24 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   // ===================
   // Operations Metadata
   // ===================
-  // Attribute Iterator
-  rapidxml::xml_attribute<>* attr_it = xml_doc.allocate_attribute("name", "GetCapabilities");
+
   child = xml_doc.allocate_node(rapidxml::node_element, "ows:OperationsMetadata");
-  // GetCapabilities Operation
-  sub_child = xml_doc.allocate_node(rapidxml::node_element, "ows:Operation");
-  sub_child->append_attribute(attr_it);
-  rapidxml::xml_node<>* dcp_node = xml_doc.allocate_node(rapidxml::node_element, "ows:DCP");
-  rapidxml::xml_node<>* http_node = xml_doc.allocate_node(rapidxml::node_element, "ows:HTTP");
-  attr_it = xml_doc.allocate_attribute("xlink:href", "http://localhost:7654/wcs");// TODO: apply it dynammically
-  http_node->append_attribute(attr_it);
-  dcp_node->append_node(http_node);
-  sub_child->append_node(dcp_node);
+  const eows::ogc::wcs::core::operation_metadata_t& operation_metadata = capabilities.operation_metadata;
+  for(auto& operation: operation_metadata.operations)
+  {
+    sub_child = xml_doc.allocate_node(rapidxml::node_element, "ows:Operation");
+    sub_child->append_attribute(xml_doc.allocate_attribute("name", operation.name.c_str()));
+
+    rapidxml::xml_node<>* dcp_node = xml_doc.allocate_node(rapidxml::node_element, "ows:DCP");
+    rapidxml::xml_node<>* http_node = xml_doc.allocate_node(rapidxml::node_element, "ows:HTTP");
+    rapidxml::xml_node<>* get_node = xml_doc.allocate_node(rapidxml::node_element, "ows:Get");
+    get_node->append_attribute(xml_doc.allocate_attribute("xlink:href", operation.dcp.get.c_str()));
+    http_node->append_node(get_node);
+    dcp_node->append_node(http_node);
+    sub_child->append_node(dcp_node);
+    child->append_node(sub_child);
+  }
+  wcs_document->append_node(child);
 
   // ================
   // Service Metadata
@@ -198,6 +206,7 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   wcs_document->append_node(child);
 
   rapidxml::print(std::back_inserter(pimpl_->xml_representation), xml_doc, 0);
+  std::cout << pimpl_->xml_representation << std::endl;
 }
 
 const char*eows::ogc::wcs::operations::get_capabilities::content_type() const

@@ -22,6 +22,7 @@ namespace eows
         struct service_provider_t;
         struct service_metadata_t;
         struct content_t;
+        struct operation_metadata_t;
 
         /**
          * @brief It tries to read rapidjson node value as string.
@@ -54,6 +55,11 @@ namespace eows
          * @brief It reads WCS Contents from JSON document and fill values into object
          */
         void read(const rapidjson::Value&, content_t&);
+
+        /**
+         * @brief It reads WCS Operations metadata from JSON document and fill values into object
+         */
+        void read(const rapidjson::Value &, operation_metadata_t&);
 
         /**
          * @brief It transforms a string into lowercase

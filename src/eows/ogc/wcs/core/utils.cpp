@@ -34,6 +34,12 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& cap
 
   read(jit->value, capability.service_metadata);
 
+  // Reading WCS Operations Metadata
+  jit = doc.FindMember("OperationsMetadata");
+  if (jit == doc.MemberEnd())
+    throw eows::parse_error("Key 'OperationsMetadata' were not found in JSON document");
+  read(jit->value, capability.operation_metadata);
+
   // Reading WCS Contents
   jit = doc.FindMember("Contents");
 
@@ -146,4 +152,34 @@ std::string eows::ogc::wcs::core::to_lower(const std::string& str)
   std::transform(str.begin(), str.end(), out.begin(), ::tolower);
 
   return out;
+}
+
+void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::operation_metadata_t& operation_meta)
+{
+  // Validating OperationsMetadata structure (must be an array)
+  if(!jservice.IsArray())
+    throw eows::parse_error("Key 'OperationsMetadata' must be a valid JSON Array.");
+
+  for(const rapidjson::Value& json_operation: jservice.GetArray())
+  {
+    eows::ogc::wcs::core::operation_t op;
+    op.name = read_node_as_string(json_operation, "name");
+    /*
+      TODO: Is there other type like Distributed Computing Platforms(DCPs)?
+            Support another Operations that just HTTP.. i.e SOAP?
+    */
+    rapidjson::Value::ConstMemberIterator jit = json_operation.FindMember("DCP");
+    if (jit == json_operation.MemberEnd() || !jit->value.IsObject())
+      throw eows::parse_error("Key 'DCP' must be a valid JSON object.");
+
+    rapidjson::Value::ConstMemberIterator sub_it = jit->value.FindMember("HTTP");
+    if (sub_it == jit->value.MemberEnd() || !sub_it->value.IsObject())
+      throw eows::parse_error("Key 'HTTP' must be a valid JSON object.");
+
+    // TODO: Add support for POST
+    op.dcp.get = read_node_as_string(sub_it->value, "GET");
+
+    // Appending into loaded operations
+    operation_meta.operations.push_back(op);
+  }
 }

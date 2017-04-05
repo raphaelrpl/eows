@@ -29,6 +29,8 @@
 // EOWS
 #include "error_handler.hpp"
 #include "../exception.hpp"
+#include "../core/data_types.hpp"
+#include "../manager.hpp"
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
 #include <rapidxml/rapidxml_print.hpp>
@@ -41,9 +43,12 @@ const std::string eows::ogc::wcs::operations::handle_error(const ogc_error& e)
   decl->append_attribute(xml_doc.allocate_attribute("version", "1.0"));
   decl->append_attribute(xml_doc.allocate_attribute("encoding", "UTF-8"));
   xml_doc.append_node(decl);
+
+  const eows::ogc::wcs::core::capabilities_t& capabilities = eows::ogc::wcs::manager::instance().capabilities();
+  const std::string& wcs_version = capabilities.service.service_type_version;
   // Preparing WCS Root element
   rapidxml::xml_node<>* root = xml_doc.allocate_node(rapidxml::node_element, "ows:ExceptionReport");
-  root->append_attribute(xml_doc.allocate_attribute("version", "2.0.0"));
+  root->append_attribute(xml_doc.allocate_attribute("version", wcs_version.c_str()));
   root->append_attribute(xml_doc.allocate_attribute("xmlns","http://www.opengis.net/ows/2.0"));
   root->append_attribute(xml_doc.allocate_attribute("xmlns:ows","http://www.opengis.net/ows/2.0"));
   root->append_attribute(xml_doc.allocate_attribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance"));
@@ -53,6 +58,7 @@ const std::string eows::ogc::wcs::operations::handle_error(const ogc_error& e)
   rapidxml::xml_node<>* exception = xml_doc.allocate_node(rapidxml::node_element, "ows:Exception");
   rapidxml::xml_attribute<>* attr = xml_doc.allocate_attribute("exceptionCode", e.error_code.c_str());
   exception->append_attribute(attr);
+  // TODO: Retrieve what the user specified
   attr = xml_doc.allocate_attribute("locator", "");
   exception->append_attribute(attr);
   // Preparing WCS exception text
