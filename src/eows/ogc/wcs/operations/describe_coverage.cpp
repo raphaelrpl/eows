@@ -33,11 +33,6 @@
 #include "../core/utils.hpp"
 #include "../core/logger.hpp"
 
-#include <boost/lexical_cast.hpp>
-
-
-#include <iostream>
-
 // EOWS GeoArray
 #include "../../../geoarray/geoarray_manager.hpp"
 
@@ -210,7 +205,14 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
           string_allocator.push_back(interval);
         }
       }
-
+      // Preparing Service Parameters
+      {
+        rapidxml::xml_node<>* parameters = xml_doc.allocate_node(rapidxml::node_element, "wcs:ServiceParameters");
+        coverage->append_node(parameters);
+        // TODO: Is it dynamically?
+        parameters->append_node(xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSubtype", "RectifiedGridCoverage"));
+        parameters->append_node(xml_doc.allocate_node(rapidxml::node_element, "wcs:nativeFormat", "image/tiff"));
+      }
       // Appending CoverageDescription into WCS document
       wcs_document->append_node(coverage);
     }
@@ -227,8 +229,7 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
   for(const std::string* str: string_allocator)
     delete str;
 
-//  EOWS_LOG_INFO(pimpl_->xml_representation);
-  std::cout << pimpl_->xml_representation << std::endl;
+  EOWS_LOG_DEBUG(pimpl_->xml_representation);
 }
 
 const char*eows::ogc::wcs::operations::describe_coverage::content_type() const
