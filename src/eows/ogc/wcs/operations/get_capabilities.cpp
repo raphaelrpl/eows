@@ -32,7 +32,6 @@
 #include "../manager.hpp"
 #include "../core/utils.hpp"
 
-#include <iostream>
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
 #include <rapidxml/rapidxml_print.hpp>
@@ -206,7 +205,6 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   wcs_document->append_node(child);
 
   rapidxml::print(std::back_inserter(pimpl_->xml_representation), xml_doc, 0);
-  std::cout << pimpl_->xml_representation << std::endl;
 }
 
 const char*eows::ogc::wcs::operations::get_capabilities::content_type() const
