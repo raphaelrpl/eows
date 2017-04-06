@@ -66,7 +66,7 @@ namespace eows
              * @brief Retrieves XML string representation of WCS GetCapabilities 2.0
              * @return
              */
-            const std::string to_string() const override;
+            const std::string& to_string() const override;
           private:
             struct impl;
             impl* pimpl_;

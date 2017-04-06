@@ -78,7 +78,8 @@ namespace eows
         {
           get_coverage_request(const eows::core::query_string_t& query);
 
-          std::string coverageId;
+          std::string coverage_id;
+          std::string format;
           // TODO: implement
         };
       }

@@ -198,7 +198,7 @@ const char*eows::ogc::wcs::operations::get_capabilities::content_type() const
   return pimpl_->format.c_str();
 }
 
-const std::string eows::ogc::wcs::operations::get_capabilities::to_string() const
+const std::string& eows::ogc::wcs::operations::get_capabilities::to_string() const
 {
   return pimpl_->xml_representation;
 }

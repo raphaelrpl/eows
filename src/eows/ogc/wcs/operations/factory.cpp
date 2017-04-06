@@ -35,6 +35,7 @@
 // WCS Operation to build
 #include "get_capabilities.hpp"
 #include "describe_coverage.hpp"
+#include "get_coverage.hpp"
 
 std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::build_operation(const eows::core::query_string_t& query)
 {
@@ -60,7 +61,9 @@ std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::bui
   }
   else if (request_it->second == "GetCoverage")
   {
-    throw eows::ogc::not_implemented_error("Not implemented yet", "request");
+    get_coverage_request request(query);
+    op.reset(new get_coverage(request));
+    return std::move(op);
   }
   throw eows::ogc::ogc_error("Invalid WCS operation", "OperationNotSupported");
 }
