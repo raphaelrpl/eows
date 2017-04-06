@@ -30,7 +30,6 @@ function valid()
   fi
 }
 
-
 #
 # Check for tws-3rdparty-macosx-el-capitan.tar.gz
 #
@@ -59,6 +58,32 @@ sleep 1s
 cd eows-3rdparty-0.3.0-linux-ubuntu-14.04
 valid $? "Error: could not enter 'eows-3rdparty-0.3.0-linux-ubuntu-14.04' dir"
 
+#
+# Check for cmake 3.7.2
+#
+if [ ! -f ./cmake-3.7.2.tar.gz ]; then
+  wget -O cmake-3.7.2.tar.gz https://cmake.org/files/v3.7/cmake-3.7.2.tar.gz
+  valid $? "Error: Could not download cmake 3.7.2"
+fi
+
+#
+# Qt5 (Required for CMake GUI)
+#
+sudo apt-get -y install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev libqt5designer5
+
+#
+# Installing CMake
+#
+cmake_expr_test=`cmake --version | awk 'NR==1{print $3}'` # Retrieving values only first line and third column
+if [ "$cmake_expr_test" != "3.7.2" ]; then
+  tar zxf cmake-3.7.2.tar.gz
+  valid $? "Could not extract CMake 3.7.2 tar.gz"
+  cd cmake-3.7.2
+  ./configure --qt-gui
+  make
+  sudo make install
+  cd ..
+fi
 
 #
 # Check installation dir
@@ -121,10 +146,10 @@ if [ ! -f "$EOWS_LIBS_DIR/include/rapidjson/rapidjson.h" ]; then
   echo "installing RapidJSON..."
   sleep 1s
   
-  unzip rapidjson-1.1.0.zip
+  unzip -o rapidjson-1.1.0.zip
   valid $? "Error: RapidJSON!"
 
-  mkdir rapidjson-build
+  mkdir -p rapidjson-build
   valid $? "Error: RapidJSON!"
 
   cd rapidjson-build
@@ -154,7 +179,7 @@ if [ ! -f "$EOWS_LIBS_DIR/include/rapidxml/rapidxml.hpp" ]; then
   echo "installing RapidXML..."
   sleep 1s
 
-  unzip rapidxml-1.13.zip
+  unzip -o rapidxml-1.13.zip
   valid $? "Error: RapidXML!"
 
   mv rapidxml-1.13 $EOWS_LIBS_DIR/include/rapidxml
@@ -170,7 +195,7 @@ if [ ! -f "$EOWS_LIBS_DIR/include/crow_all.h" ]; then
   echo "installing Crow..."
   sleep 1s
 
-  unzip crow-master.zip
+  unzip -o crow-master.zip
   valid $? "Error: Crow!"
 
   cp crow-master/amalgamate/crow_all.h $EOWS_LIBS_DIR/include/
