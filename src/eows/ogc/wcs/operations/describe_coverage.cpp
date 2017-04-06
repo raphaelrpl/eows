@@ -62,7 +62,7 @@ eows::ogc::wcs::operations::describe_coverage::describe_coverage(const describe_
 
 eows::ogc::wcs::operations::describe_coverage::~describe_coverage()
 {
-
+  delete pimpl_;
 }
 
 void eows::ogc::wcs::operations::describe_coverage::execute()
