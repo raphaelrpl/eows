@@ -153,6 +153,14 @@ RUN chmod +x /docker-entrypoint.sh
 
 # Adding special sudo power to scidb user due EOWS 3rdparty libraries used apt-get install
 RUN echo "scidb ALL=(ALL) NOPASSWD: /usr/bin/apt-get" >> /etc/sudoers
+RUN echo "scidb ALL=(ALL) NOPASSWD: /usr/bin/make" >> /etc/sudoers
+
+RUN cmake --version
+RUN apt-get remove cmake* -y
+RUN apt-get install curl
+
+# Removing Broken header SciDB
+RUN sed -i '/**MurmurHash3.h/c\//MurmurHash3 has been removed' $SCIDB_INSTALL_PATH/include/util/Hashing.h
 
 USER $scidb_usr
 # Creating EOWS dev dir
@@ -162,14 +170,20 @@ RUN mkdir -p $EOWS_DEPENDENCIES_DIR $EOWS_CODEBASE $EOWS_BUILD_DIR $EOWS_INSTALL
 WORKDIR $EOWS_CODEBASE
 RUN git clone https://github.com/eows/eows.git .
 
-WORKDIR $EOWS_DEPENDENCIES_DIR
+WORKDIR $EOWS_DEPENDENCIES_DIR  
 RUN cp $EOWS_CODEBASE/bash/install-3rdparty-linux-ubuntu-14.04.sh .
 RUN wget http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz
+RUN curl -O https://raw.githubusercontent.com/raphaelrpl/eows/fix_scripts/bash/install-3rdparty-linux-ubuntu-14.04.sh
+RUN chmod +x install-3rdparty-linux-ubuntu-14.04.sh
 # Compile Dependendies
 RUN ./install-3rdparty-linux-ubuntu-14.04.sh $EOWS_DEPENDENCIES_DIR
 
-USER root
+# Testing PreCompilation
+WORKDIR $EOWS_BUILD_DIR
+RUN cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_PREFIX_PATH="$SCIDB_INSTALL_PATH;/opt/scidb/15.12/3rdparty/boost;$EOWS_DEPENDENCIES_DIR" $EOWS_CODEBASE/build/cmake
+RUN make -j 2
 
+WORKDIR /home/$scidb_usr
 ## Starting SciDB and compile EOWS dependencies
 ## ---
 ENTRYPOINT ["/docker-entrypoint.sh"]
