@@ -103,7 +103,7 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   child->value(capabilities.service.service_type_version.c_str());
   ows_identification->append_node(child);
 
-  for(auto profile: capabilities.service.profiles)
+  for(auto& profile: capabilities.service.profiles)
   {
     child = xml_doc.allocate_node(rapidxml::node_element, "ows:Profile");
     child->value(profile.c_str());
