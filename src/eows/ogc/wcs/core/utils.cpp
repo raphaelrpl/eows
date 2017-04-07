@@ -1,6 +1,7 @@
 #include "utils.hpp"
 #include "data_types.hpp"
 #include "../exception.hpp"
+#include "../../../core/utils.hpp"
 
 #include<algorithm>
 #include<sstream>
@@ -57,10 +58,10 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
     throw eows::parse_error("Key 'ServiceIdentification' must be a valid JSON object.");
 
   // Reading Elements
-  service.title = read_node_as_string(jservice, "Title");
-  service.abstract = read_node_as_string(jservice, "Abstract");
-  service.service_type = read_node_as_string(jservice, "ServiceType");
-  service.service_type_version = read_node_as_string(jservice, "ServiceTypeVersion");
+  service.title = eows::core::read_node_as_string(jservice, "Title");
+  service.abstract = eows::core::read_node_as_string(jservice, "Abstract");
+  service.service_type = eows::core::read_node_as_string(jservice, "ServiceType");
+  service.service_type_version = eows::core::read_node_as_string(jservice, "ServiceTypeVersion");
   // Reading KeyWords list
   rapidjson::Value::ConstMemberIterator jit = jservice.FindMember("Profiles");
   // TODO: auto format function in common
@@ -78,8 +79,8 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
     throw eows::parse_error("Key 'ServiceProvider' must be a valid JSON object.");
 
   // Reading Elements
-  provider.provider_name = read_node_as_string(jservice, "ProviderName");
-  provider.provider_site = read_node_as_string(jservice, "ProviderSite");
+  provider.provider_name = eows::core::read_node_as_string(jservice, "ProviderName");
+  provider.provider_site = eows::core::read_node_as_string(jservice, "ProviderSite");
 
   rapidjson::Value::ConstMemberIterator contact_it = jservice.FindMember("ServiceContact");
   if (contact_it == jservice.MemberEnd())
@@ -90,17 +91,8 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
 
 //  rapidjson::Value::ConstMemberIterator it = jservice.FindMember("ServiceContact");
 
-  provider.service_contact.individual_name = read_node_as_string(contact_it->value, "IndividualName");
-  provider.service_contact.position_name = read_node_as_string(contact_it->value, "PositionName");
-}
-
-const std::string eows::ogc::wcs::core::read_node_as_string(const rapidjson::Value& node, const std::string& memberName)
-{
-  rapidjson::Value::ConstMemberIterator jit = node.FindMember(memberName.c_str());
-  // TODO: auto format function in common
-  if((jit == node.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("Please, check the key " + memberName + " in JSON document.");
-  return jit->value.GetString();
+  provider.service_contact.individual_name = eows::core::read_node_as_string(contact_it->value, "IndividualName");
+  provider.service_contact.position_name = eows::core::read_node_as_string(contact_it->value, "PositionName");
 }
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::service_metadata_t& metadata)
@@ -128,31 +120,10 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
     rapidjson::Value::ConstMemberIterator jit = format.FindMember("CoverageSummary");
 
     eows::ogc::wcs::core::coverage_summary_t coverage_summary;
-    coverage_summary.coverage_id = read_node_as_string(jit->value, "id");
-    coverage_summary.coverage_subtype = read_node_as_string(jit->value, "subtype");
+    coverage_summary.coverage_id = eows::core::read_node_as_string(jit->value, "id");
+    coverage_summary.coverage_subtype = eows::core::read_node_as_string(jit->value, "subtype");
     content.summaries.push_back(coverage_summary);
   }
-}
-
-std::map<std::string, std::string> eows::ogc::wcs::core::lowerify(const std::map<std::string, std::string>& given)
-{
-  std::map<std::string, std::string> out;
-
-  for(auto& it: given)
-  {
-    out.insert(std::pair<std::string, std::string>(to_lower(it.first), it.second));
-  }
-
-  return out;
-}
-
-std::string eows::ogc::wcs::core::to_lower(const std::string& str)
-{
-  std::string out;
-  out.resize(str.size());
-  std::transform(str.begin(), str.end(), out.begin(), ::tolower);
-
-  return out;
 }
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::operation_metadata_t& operation_meta)
@@ -164,7 +135,7 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
   for(const rapidjson::Value& json_operation: jservice.GetArray())
   {
     eows::ogc::wcs::core::operation_t op;
-    op.name = read_node_as_string(json_operation, "name");
+    op.name = eows::core::read_node_as_string(json_operation, "name");
     /*
       TODO: Is there other type like Distributed Computing Platforms(DCPs)?
             Support another Operations that just HTTP.. i.e SOAP?
@@ -178,7 +149,7 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
       throw eows::parse_error("Key 'HTTP' must be a valid JSON object.");
 
     // TODO: Add support for POST
-    op.dcp.get = read_node_as_string(sub_it->value, "GET");
+    op.dcp.get = eows::core::read_node_as_string(sub_it->value, "GET");
 
     // Appending into loaded operations
     operation_meta.operations.push_back(op);
