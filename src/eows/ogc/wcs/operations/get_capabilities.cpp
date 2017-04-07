@@ -31,6 +31,9 @@
 #include "data_types.hpp"
 #include "../manager.hpp"
 #include "../core/utils.hpp"
+// EOWS GeoArray (coverage summaries)
+#include "../../../geoarray/data_types.hpp"
+#include "../../../geoarray/geoarray_manager.hpp"
 
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
@@ -174,16 +177,21 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   // Contents
   // ========
   child = xml_doc.allocate_node(rapidxml::node_element, "wcs:Contents");
-  for(const eows::ogc::wcs::core::coverage_summary_t& summary: capabilities.content.summaries)
+  std::vector<std::string> geoarrays = geoarray::geoarray_manager::instance().list_arrays();
+
+  for(const std::string& array_name: geoarrays)
   {
+    const geoarray::geoarray_t& array = geoarray::geoarray_manager::instance().get(array_name);
+
     sub_child = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSummary");
     {
       rapidxml::xml_node<>* coverage_node = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageId");
-      coverage_node->value(summary.coverage_id.c_str());
+      coverage_node->value(array.name.c_str());
       sub_child->append_node(coverage_node);
 
       coverage_node = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSubtype");
-      coverage_node->value(summary.coverage_subtype.c_str());
+      // TODO: add it into geoarray_t
+      coverage_node->value("GridCoverage");
       sub_child->append_node(coverage_node);
     }
     child->append_node(sub_child);

@@ -41,14 +41,6 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& cap
   if (jit == doc.MemberEnd())
     throw eows::parse_error("Key 'OperationsMetadata' were not found in JSON document");
   read(jit->value, capability.operation_metadata);
-
-  // Reading WCS Contents
-  jit = doc.FindMember("Contents");
-
-  if(jit == doc.MemberEnd())
-    throw eows::parse_error("Key 'Contents' was not found in JSON document.");
-
-  read(jit->value, capability.content);
 }
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::service_identification_t& service)
@@ -107,23 +99,6 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
 
   for(auto& format: jit->value.GetArray())
     metadata.formats_supported.push_back(format.GetString());
-}
-
-void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::content_t& content)
-{
-  // Validating ServiceProvider structure (must be an object)
-  if(!jservice.IsArray())
-    throw eows::parse_error("Key 'Contents' must be a valid JSON Array.");
-
-  for(auto& format: jservice.GetArray())
-  {
-    rapidjson::Value::ConstMemberIterator jit = format.FindMember("CoverageSummary");
-
-    eows::ogc::wcs::core::coverage_summary_t coverage_summary;
-    coverage_summary.coverage_id = eows::core::read_node_as_string(jit->value, "id");
-    coverage_summary.coverage_subtype = eows::core::read_node_as_string(jit->value, "subtype");
-    content.summaries.push_back(coverage_summary);
-  }
 }
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::operation_metadata_t& operation_meta)

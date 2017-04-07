@@ -46,11 +46,6 @@ namespace eows
         void read(const rapidjson::Value&, service_metadata_t&);
 
         /**
-         * \brief It reads WCS Contents from JSON document and fill values into object
-         */
-        void read(const rapidjson::Value&, content_t&);
-
-        /**
          * \brief It reads WCS Operations metadata from JSON document and fill values into object
          */
         void read(const rapidjson::Value &, operation_metadata_t&);

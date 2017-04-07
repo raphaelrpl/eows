@@ -173,8 +173,10 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
       }
       // Preparing RangeSet
       {
+        rapidxml::xml_node<>* range_type = xml_doc.allocate_node(rapidxml::node_element, "gmlcov:rangeType");
+        coverage->append_node(range_type);
         rapidxml::xml_node<>* data_record = xml_doc.allocate_node(rapidxml::node_element, "swe:DataRecord");
-        coverage->append_node(data_record);
+        range_type->append_node(data_record);
         for(const geoarray::attribute_t& attribute: array.attributes)
         {
           rapidxml::xml_node<>* field = xml_doc.allocate_node(rapidxml::node_element, "swe:field");
