@@ -18,7 +18,7 @@
  */
 
 /*!
-  \file eows/ogc/wcs/operations/get_capabilities.cpp
+  \file eows/ogc/wcs/operations/describe_coverage.cpp
 
   \brief Defines implementation of WCS GetCapabilities operation
 
