@@ -1,8 +1,11 @@
+// EOWS
 #include "utils.hpp"
 #include "data_types.hpp"
 #include "../exception.hpp"
 #include "../../../core/utils.hpp"
-
+// EOWS OWS module
+#include "../../ows/manager.hpp"
+// STL
 #include<algorithm>
 #include<sstream>
 
@@ -20,13 +23,8 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& cap
 
   read(jit->value, capability.service);
 
-  // Reading WCS Service Provider
-  jit = doc.FindMember("ServiceProvider");
-
-  if(jit == doc.MemberEnd())
-    throw eows::parse_error("Key 'ServiceProvider' was not found in JSON document.");
-
-  read(jit->value, capability.service_provider);
+  // Setting meta ows provider
+  capability.service_provider = ows::manager::instance().provider();
 
   // Reading WCS Service Metadata
   jit = doc.FindMember("ServiceMetadata");
@@ -62,29 +60,6 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
 
   for(auto& v: jit->value.GetArray())
     service.profiles.push_back(v.GetString());
-}
-
-void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::service_provider_t& provider)
-{
-  // Validating ServiceProvider structure (must be an object)
-  if(!jservice.IsObject())
-    throw eows::parse_error("Key 'ServiceProvider' must be a valid JSON object.");
-
-  // Reading Elements
-  provider.provider_name = eows::core::read_node_as_string(jservice, "ProviderName");
-  provider.provider_site = eows::core::read_node_as_string(jservice, "ProviderSite");
-
-  rapidjson::Value::ConstMemberIterator contact_it = jservice.FindMember("ServiceContact");
-  if (contact_it == jservice.MemberEnd())
-    throw eows::parse_error("Key 'ServiceContact' were not found in JSON document");
-
-  if (!contact_it->value.IsObject())
-    throw eows::parse_error("Key 'ServiceContact' is not a JSON object");
-
-//  rapidjson::Value::ConstMemberIterator it = jservice.FindMember("ServiceContact");
-
-  provider.service_contact.individual_name = eows::core::read_node_as_string(contact_it->value, "IndividualName");
-  provider.service_contact.position_name = eows::core::read_node_as_string(contact_it->value, "PositionName");
 }
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::service_metadata_t& metadata)

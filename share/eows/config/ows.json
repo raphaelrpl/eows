@@ -1,0 +1,21 @@
+{
+  "provider": {
+    "name": "National Institute for Spatial Research",
+    "site": "http://www.dpi.inpe.br",
+    "contact": {
+      "name": "Gilberto Queiroz",
+      "position": "Computer Scientist",
+      "info": {
+        "address_type": "postal",
+        "address": "Av. Astronautas, 1758",
+        "city": "São José dos Campos",
+        "state": "SP",
+        "code": "12227-010",
+        "country": "Brazil"
+      },
+      "contact_voice_telephone": "3208",
+      "contact_facsimile_telephone": "3209",
+      "contact_eletronic_mail_address": "gribeiro"
+    }
+  }
+}

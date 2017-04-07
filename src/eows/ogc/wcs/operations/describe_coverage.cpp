@@ -34,6 +34,7 @@
 #include "../core/logger.hpp"
 
 // EOWS GeoArray
+#include "../../../geoarray/data_types.hpp"
 #include "../../../geoarray/geoarray_manager.hpp"
 
 // RapidXML

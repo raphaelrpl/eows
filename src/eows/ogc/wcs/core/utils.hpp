@@ -31,11 +31,6 @@ namespace eows
         void read(const rapidjson::Value&, capabilities_t&);
 
         /**
-         * \brief It reads WCS Service Provider from JSON document and fill values into provider object
-         */
-        void read(const rapidjson::Value&, service_provider_t &);
-
-        /**
          * \brief It reads WCS Service Identification from JSON document and fill values into object
          */
         void read(const rapidjson::Value&, service_identification_t&);

@@ -31,6 +31,9 @@
 #include "data_types.hpp"
 #include "../manager.hpp"
 #include "../core/utils.hpp"
+// EOWS OGC ows module (provider)
+#include "../../ows/data_types.hpp"
+#include "../../ows/manager.hpp"
 // EOWS GeoArray (coverage summaries)
 #include "../../../geoarray/data_types.hpp"
 #include "../../../geoarray/geoarray_manager.hpp"
@@ -119,22 +122,22 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   // ==============
   rapidxml::xml_node<>* ows_provider = xml_doc.allocate_node(rapidxml::node_element, "ows:ServiceProvider");
   child = xml_doc.allocate_node(rapidxml::node_element, "ows:ProviderName");
-  child->value(capabilities.service_provider.provider_name.c_str());
+  child->value(capabilities.service_provider.name.c_str());
   ows_provider->append_node(child);
 
   child = xml_doc.allocate_node(rapidxml::node_element, "ows:ProviderSite");
-  child->value(capabilities.service_provider.provider_site.c_str());
+  child->value(capabilities.service_provider.site.c_str());
   ows_provider->append_node(child);
 
   child = xml_doc.allocate_node(rapidxml::node_element, "ows:ServiceContact");
-  const eows::ogc::wcs::core::service_contact_t& contact = capabilities.service_provider.service_contact;
+  const eows::ogc::ows::contact_t& contact = capabilities.service_provider.contact;
   // Processing Provider -> Contact -> Nodes[]
   rapidxml::xml_node<>* sub_child = xml_doc.allocate_node(rapidxml::node_element, "ows:IndividualName");
-  sub_child->value(contact.individual_name.c_str());
+  sub_child->value(contact.name.c_str());
   child->append_node(sub_child);
 
   sub_child = xml_doc.allocate_node(rapidxml::node_element, "ows:PositionName");
-  sub_child->value(contact.position_name.c_str());
+  sub_child->value(contact.position.c_str());
   child->append_node(sub_child);
   ows_provider->append_node(child);
   wcs_document->append_node(ows_provider);
