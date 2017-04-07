@@ -31,7 +31,7 @@
 #include "data_types.hpp"
 #include "../manager.hpp"
 #include "../core/utils.hpp"
-#include "../core/logger.hpp"
+#include "../../../core/logger.hpp"
 
 // EOWS GeoArray
 #include "../../../geoarray/data_types.hpp"

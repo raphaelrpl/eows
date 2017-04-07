@@ -5,9 +5,6 @@
 #include "../../../core/utils.hpp"
 // EOWS OWS module
 #include "../../ows/manager.hpp"
-// STL
-#include<algorithm>
-#include<sstream>
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& capability)
 {

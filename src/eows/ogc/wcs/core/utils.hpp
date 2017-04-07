@@ -3,8 +3,6 @@
 
 // STL
 #include <string>
-#include <map>
-#include <vector>
 
 // RapidJSON
 #include <rapidjson/document.h>
