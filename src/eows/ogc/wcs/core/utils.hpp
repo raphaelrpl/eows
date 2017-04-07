@@ -44,14 +44,6 @@ namespace eows
          * \brief It reads WCS Operations metadata from JSON document and fill values into object
          */
         void read(const rapidjson::Value &, operation_metadata_t&);
-
-        /**
-         * \brief It splits string using delimiter
-         * \param string - String to split
-         * \param delimiter - Delimiter to use during string parse
-         * \return Splited strings
-         */
-        std::vector<std::string> split(const std::string&, const char&);
       }
     }
   }
