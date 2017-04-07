@@ -1,7 +1,10 @@
 #include "data_types.hpp"
 #include "../core/data_types.hpp"
-#include "../core/utils.hpp"
+#include "../../../core/utils.hpp"
 #include "../manager.hpp"
+
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_string_t& query)
   : request(), version(), service()
@@ -21,7 +24,7 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
     throw eows::ogc::missing_parameter_error("Missing parameter 'service'", "service");
   }
 
-  if (wcs::core::to_lower(it->second) != "wcs")
+  if (eows::core::to_lower(it->second) != "wcs")
     throw eows::ogc::invalid_parameter_error("No service '" + service + "'", "InvalidParameterValue");
 
   service = it->second;
@@ -58,7 +61,10 @@ eows::ogc::wcs::operations::describe_coverage_request::describe_coverage_request
   {
     throw eows::ogc::missing_parameter_error("Missing parameter 'CoverageID'", "emptyCoverageIdList");
   }
-  coverages_id = wcs::core::split(it->second, ',');
+
+  std::vector<std::string> sliced_coverages;
+  boost::split(sliced_coverages, it->second, boost::is_any_of(","));
+  coverages_id = sliced_coverages;
 }
 
 eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eows::core::query_string_t& query)

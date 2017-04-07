@@ -28,7 +28,7 @@
 // EOWS
 #include "factory.hpp"
 #include "../core/operation.hpp"
-#include "../core/utils.hpp"
+#include "../../../core/utils.hpp"
 #include "../exception.hpp"
 // WCS Operation Data Types
 #include "data_types.hpp"
@@ -47,13 +47,13 @@ std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::bui
 
   std::unique_ptr<eows::ogc::wcs::core::operation> op;
 
-  if (eows::ogc::wcs::core::to_lower(request_it->second) == "getcapabilities")
+  if (eows::core::to_lower(request_it->second) == "getcapabilities")
   {
     get_capabilities_request capabilities_request(query);
     op.reset(new get_capabilities(capabilities_request));
     return std::move(op);
   }
-  else if (eows::ogc::wcs::core::to_lower(request_it->second) == "describecoverage")
+  else if (eows::core::to_lower(request_it->second) == "describecoverage")
   {
     describe_coverage_request request(query);
     op.reset(new describe_coverage(request));

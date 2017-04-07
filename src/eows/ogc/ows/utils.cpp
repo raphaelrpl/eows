@@ -27,14 +27,53 @@
 
 // EOWS
 #include "utils.hpp"
+#include "exception.hpp"
+#include "data_types.hpp"
+#include "../../core/defines.hpp"
 #include "../../core/logger.hpp"
+#include "../../core/utils.hpp"
 
-void
-eows::ogc::ows::initialize()
+
+
+void eows::ogc::ows::read(const rapidjson::Value& node, eows::ogc::ows::provider_t& provider)
 {
-  EOWS_LOG_INFO("Initializing OGC OWS...");
+  if (!node.IsObject())
+    throw eows::parse_error("Key 'provider' must be a valid JSON object");
 
+  provider.name = eows::core::read_node_as_string(node, "name");
+  provider.site = eows::core::read_node_as_string(node, "site");
 
-  EOWS_LOG_INFO("OGC OWS service initialized!");
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember("contact");
+  if (jit == node.MemberEnd())
+    throw eows::parse_error("Key 'contact' in 'provider' not found");
+
+  read(jit->value, provider.contact);
 }
 
+void eows::ogc::ows::read(const rapidjson::Value& node, eows::ogc::ows::contact_t& contact)
+{
+  if (!node.IsObject())
+    throw eows::parse_error("Key 'contact' must be a valid JSON object");
+
+  contact.name= eows::core::read_node_as_string(node, "name");
+  contact.position = eows::core::read_node_as_string(node, "position");
+
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember("info");
+  if (jit == node.MemberEnd())
+    throw eows::parse_error("Key 'info' in 'contact' not found");
+
+  read(jit->value, contact.info);
+}
+
+void eows::ogc::ows::read(const rapidjson::Value& node, eows::ogc::ows::contact_info_t& info)
+{
+  if (!node.IsObject())
+    throw eows::parse_error("Key 'info' must be a valid JSON object");
+
+  info.address= eows::core::read_node_as_string(node, "address");
+  info.address_type= eows::core::read_node_as_string(node, "address_type");
+  info.city= eows::core::read_node_as_string(node, "city");
+  info.code= eows::core::read_node_as_string(node, "code");
+  info.country= eows::core::read_node_as_string(node, "country");
+  info.state= eows::core::read_node_as_string(node, "state");
+}

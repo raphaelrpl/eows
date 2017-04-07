@@ -31,7 +31,7 @@
 #include "../../core/http_request.hpp"
 #include "../../core/logger.hpp"
 #include "../../core/service_operations_manager.hpp"
-#include "core/utils.hpp"
+#include "../../core/utils.hpp"
 #include "manager.hpp"
 // WCS Operations
 #include "operations/factory.hpp"
@@ -54,7 +54,7 @@ void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
   try
   {
     // Putting every request parameters keys to lowercase
-    eows::core::query_string_t qstr = eows::ogc::wcs::core::lowerify(req.query_string());
+    eows::core::query_string_t qstr = eows::core::lowerify(req.query_string());
 
     // Retrieve WCS Operation
     std::unique_ptr<eows::ogc::wcs::core::operation> op(operations::build_operation(qstr));
