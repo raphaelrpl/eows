@@ -5,9 +5,6 @@
 #include "../../../core/utils.hpp"
 // EOWS OWS module
 #include "../../ows/manager.hpp"
-// STL
-#include<algorithm>
-#include<sstream>
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& capability)
 {
@@ -104,14 +101,4 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
     // Appending into loaded operations
     operation_meta.operations.push_back(op);
   }
-}
-
-std::vector<std::string> eows::ogc::wcs::core::split(const std::string& str, const char& delimiter)
-{
-  std::vector<std::string> output;
-  std::istringstream stream(str);
-  std::string tmp;
-  while(std::getline(stream, tmp, delimiter))
-    output.push_back(tmp);
-  return output;
 }

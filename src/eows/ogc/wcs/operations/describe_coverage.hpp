@@ -18,7 +18,7 @@
  */
 
 /*!
-  \file eows/ogc/wcs/operations/get_capabilities.hpp
+  \file eows/ogc/wcs/operations/describe_coverage.hpp
 
   \brief Represents WCS GetCapabilities operation that retrieves XML representation
 

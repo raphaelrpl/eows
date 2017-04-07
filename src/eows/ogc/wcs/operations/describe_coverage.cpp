@@ -18,7 +18,7 @@
  */
 
 /*!
-  \file eows/ogc/wcs/operations/get_capabilities.cpp
+  \file eows/ogc/wcs/operations/describe_coverage.cpp
 
   \brief Defines implementation of WCS GetCapabilities operation
 
@@ -31,7 +31,7 @@
 #include "data_types.hpp"
 #include "../manager.hpp"
 #include "../core/utils.hpp"
-#include "../core/logger.hpp"
+#include "../../../core/logger.hpp"
 
 // EOWS GeoArray
 #include "../../../geoarray/data_types.hpp"
