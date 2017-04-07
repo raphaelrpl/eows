@@ -64,7 +64,7 @@ eows::ogc::wcs::operations::get_capabilities::get_capabilities(const get_capabil
 
 eows::ogc::wcs::operations::get_capabilities::~get_capabilities()
 {
-
+  delete pimpl_;
 }
 
 void eows::ogc::wcs::operations::get_capabilities::execute()
