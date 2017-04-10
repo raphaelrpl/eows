@@ -117,10 +117,17 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
           bound->append_node(envelope);
 
           envelope->append_attribute(xml_doc.allocate_attribute("srsName", "http://www.opengis.net/def/crs/EPSG/0/4326"));
-          envelope->append_attribute(xml_doc.allocate_attribute("axisLabels", "Lat Long"));
+          envelope->append_attribute(xml_doc.allocate_attribute("axisLabels", "x y"));
           envelope->append_attribute(xml_doc.allocate_attribute("srsDimension", "3"));
 
-
+          std::string* lower = new std::string(std::to_string(array.spatial_extent.xmin) + " " +
+                                               std::to_string(array.spatial_extent.ymin));
+          string_allocator.push_back(lower);
+          std::string* upper = new std::string(std::to_string(array.spatial_extent.xmax) + " " +
+                                               std::to_string(array.spatial_extent.ymax));
+          string_allocator.push_back(upper);
+          envelope->append_node(xml_doc.allocate_node(rapidxml::node_element, "gml:lowerCorner", lower->c_str()));
+          envelope->append_node(xml_doc.allocate_node(rapidxml::node_element, "gml:upperCorner", upper->c_str()));
         }
       }
       // Preparing CoverageID
