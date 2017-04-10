@@ -98,7 +98,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
         if (attr.datatype == geoarray::datatype_t::int16_dt)
           ss << cell_it->get_int16(attr.name) << " ";
         else
-          ss << cell_it->get_int8(attr.name) << " ";
+          ss << std::to_string(cell_it->get_int8(attr.name)) << " ";
       }
       ss << "\n";
       cell_it->next();
@@ -124,18 +124,19 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     xml_doc.append_node(wcs_document);
 
     // Preparing bounded by
-    eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array);
-
     // Preparing domainset
 
     // Preparing rangeset
+    rapidxml::xml_node<>* range_set = xml_doc.allocate_node(rapidxml::node_element, "gml:rangeSet");
+    wcs_document->append_node(range_set);
+    rapidxml::xml_node<>* data_block = xml_doc.allocate_node(rapidxml::node_element, "gml:DataBlock");
+    data_block->append_node(xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", ss.str().c_str()));
+    range_set->append_node(data_block);
 
+    rapidxml::print(std::back_inserter(pimpl_->output), xml_doc, 0);
+    std::cout << pimpl_->output << std::endl;
 
-
-    if (ss.good())
-      pimpl_->output = ss.str();
-    else
-      pimpl_->output = "notgood";
+    // Preparing rangetype
   }
   catch(const eows::scidb::connection_open_error& e)
   {
