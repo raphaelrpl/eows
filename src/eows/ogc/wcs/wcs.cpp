@@ -37,6 +37,7 @@
 #include "operations/factory.hpp"
 #include "operations/error_handler.hpp"
 // STL
+#include <sstream>
 #include <memory>
 
 //! It prepares a response output
@@ -62,8 +63,14 @@ void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
     // Executing Operation
     op->execute();
 
+//    std::ostringstream ss;
+//    for(int i = 0; i < 5000000; ++i)
+//      ss << i << " ";
+
     // Retrieving Result
     std::string output = op->to_string();
+    std::cout << output.size() << std::endl;
+    // std::string output = ss.str();
 
     res.set_status(eows::core::http_response::OK);
     res.add_header(eows::core::http_response::CONTENT_TYPE, op->content_type());

@@ -20,7 +20,7 @@
 /*!
   \file eows/ogc/wcs/operations/describe_coverage.cpp
 
-  \brief Defines implementation of WCS GetCapabilities operation
+  \brief Defines implementation of WCS DescribeCoverage operation
 
   \author Raphael Willian da Costa
  */

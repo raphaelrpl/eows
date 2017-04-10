@@ -63,9 +63,13 @@ class eows::scidb::cell_iterator::impl
 
 //    uint32_t get_uint32(const std::string& attr_name) const;
 
-//    int16_t get_int16(const std::size_t attr_pos) const;
+    int16_t get_int16(const std::size_t attr_pos) const;
 
-//    int16_t get_int16(const std::string& attr_name) const;
+    int16_t get_int16(const std::string& attr_name) const;
+
+    int8_t get_int8(const std::size_t attr_pos) const;
+
+    int8_t get_int8(const std::string& attr_name) const;
 
 //    uint16_t get_uint16(const std::size_t attr_pos) const;
 
@@ -175,17 +179,29 @@ eows::scidb::cell_iterator::get_position()
 //  return pimpl_->get_uint32(attr_name);
 //}
 
-//int16_t
-//eows::scidb::cell_iterator::get_int16(const std::size_t attr_pos) const
-//{
-//  return pimpl_->get_int16(attr_pos);
-//}
+int16_t
+eows::scidb::cell_iterator::get_int16(const std::size_t attr_pos) const
+{
+  return pimpl_->get_int16(attr_pos);
+}
 
-//int16_t
-//eows::scidb::cell_iterator::get_int16(const std::string& attr_name) const
-//{
-//  return pimpl_->get_int16(attr_name);
-//}
+int16_t
+eows::scidb::cell_iterator::get_int16(const std::string& attr_name) const
+{
+  return pimpl_->get_int16(attr_name);
+}
+
+int8_t
+eows::scidb::cell_iterator::get_int8(const std::size_t attr_pos) const
+{
+  return pimpl_->get_int8(attr_pos);
+}
+
+int8_t
+eows::scidb::cell_iterator::get_int8(const std::string& attr_name) const
+{
+  return pimpl_->get_int8(attr_name);
+}
 
 //uint16_t
 //eows::scidb::cell_iterator::get_uint16(const std::size_t attr_pos) const
@@ -375,19 +391,33 @@ eows::scidb::cell_iterator::impl::get_position()
 //  return get_uint32(attribute_pos(attr_name));
 //}
 
-//inline int16_t
-//eows::scidb::cell_iterator::impl::get_int16(const std::size_t pos) const
-//{
-//  const ::scidb::Value& v = chunks_iterators_[pos]->getItem();
+inline int16_t
+eows::scidb::cell_iterator::impl::get_int16(const std::size_t pos) const
+{
+  const ::scidb::Value& v = chunks_iterators_[pos]->getItem();
 
-//  return v.getInt16();
-//}
+  return v.getInt16();
+}
 
-//inline int16_t
-//eows::scidb::cell_iterator::impl::get_int16(const std::string& attr_name) const
-//{
-//  return get_int16(attribute_pos(attr_name));
-//}
+inline int16_t
+eows::scidb::cell_iterator::impl::get_int16(const std::string& attr_name) const
+{
+  return get_int16(attribute_pos(attr_name));
+}
+
+inline int8_t
+eows::scidb::cell_iterator::impl::get_int8(const std::size_t pos) const
+{
+  const ::scidb::Value& v = chunks_iterators_[pos]->getItem();
+
+  return v.getInt8();
+}
+
+inline int8_t
+eows::scidb::cell_iterator::impl::get_int8(const std::string& attr_name) const
+{
+  return get_int8(attribute_pos(attr_name));
+}
 
 //inline uint16_t
 //eows::scidb::cell_iterator::impl::get_uint16(const std::size_t pos) const

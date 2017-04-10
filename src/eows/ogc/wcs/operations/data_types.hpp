@@ -28,8 +28,13 @@
 #ifndef __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 #define __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 
-#include "../../../core/data_types.hpp"
+// EOWS Wcs
 #include "../exception.hpp"
+// EOWS Core
+#include "../../../core/data_types.hpp"
+// EOWS GeoArray (dimension_t)
+#include "../../../geoarray/data_types.hpp"
+
 // STL
 #include <string>
 #include <vector>
@@ -80,6 +85,7 @@ namespace eows
 
           std::string coverage_id;
           std::string format;
+          std::vector<eows::geoarray::dimension_t> subsets;
           // TODO: implement
         };
       }
