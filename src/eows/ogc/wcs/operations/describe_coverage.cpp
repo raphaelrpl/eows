@@ -87,14 +87,6 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
   wcs_document->append_attribute(xml_doc.allocate_attribute("xsi:schemaLocation"," http://www.opengis.net/wcs/2.0 http://schemas.opengis.net/wcs/2.0/wcsDescribeCoverage.xsd"));
   xml_doc.append_node(wcs_document);
 
-  /*
-   * TODO: Review it
-   * String manager. The XML nodes requires a pointer to strings in order to fill values, but with variable scopes,
-   * its delete automatically nonpointers. In this way, XML node retrieves inconsistent values. As we only generate
-   * XML output after array iteration, we must keep a array of pointers and delete everyone after XML print process
-   */
-  std::vector<std::string*> string_allocator;
-
   for(const std::string& array_name: pimpl_->request.coverages_id)
   {
     try
@@ -108,21 +100,7 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
       coverage->append_attribute(xml_doc.allocate_attribute("gml:id", array.name.c_str()));
 
       // Preparing Bounds
-      {
-        rapidxml::xml_node<>* bound = xml_doc.allocate_node(rapidxml::node_element, "gml:boundedBy");
-        coverage->append_node(bound);
-        {
-          rapidxml::xml_node<>* envelope = xml_doc.allocate_node(rapidxml::node_element, "gml:Envelope");
-          // Appending Envelope into bound
-          bound->append_node(envelope);
-
-          envelope->append_attribute(xml_doc.allocate_attribute("srsName", "http://www.opengis.net/def/crs/EPSG/0/4326"));
-          envelope->append_attribute(xml_doc.allocate_attribute("axisLabels", "Lat Long"));
-          envelope->append_attribute(xml_doc.allocate_attribute("srsDimension", "3"));
-
-
-        }
-      }
+      eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, coverage, array);
       // Preparing CoverageID
       {
         rapidxml::xml_node<>* coverage_id = xml_doc.allocate_node(rapidxml::node_element,
@@ -147,24 +125,21 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
               rapidxml::xml_node<>* grid_envelope = xml_doc.allocate_node(rapidxml::node_element, "gml:GridEnvelope");
               limits->append_node(grid_envelope);
 
-              rapidxml::xml_node<>* elm = xml_doc.allocate_node(rapidxml::node_element, "gml:low");
+              std::string low = (std::to_string(array.dimensions.x.min_idx) + " ") +
+                                (std::to_string(array.dimensions.y.min_idx) + " ") +
+                                 std::to_string(array.dimensions.t.min_idx);
+              rapidxml::xml_node<>* elm = xml_doc.allocate_node(rapidxml::node_element,
+                                                                "gml:low",
+                                                                xml_doc.allocate_string(low.c_str()));
 
-              // allocating tmp string and storing into string array to delete after XML print
-              std::string* low = new std::string(((std::to_string(array.dimensions.x.min_idx) + " ") +
-                                                  (std::to_string(array.dimensions.y.min_idx) + " ") +
-                                                  std::to_string(array.dimensions.t.min_idx)).c_str());
-              elm->value(low->c_str());
-
-
-              std::string* high = new std::string(std::to_string(array.dimensions.x.max_idx) + " " +
-                                                  std::to_string(array.dimensions.y.max_idx) + " " +
-                                                  std::to_string(array.dimensions.t.max_idx));
-
-              string_allocator.push_back(low);
-              string_allocator.push_back(high);
+              std::string high = (std::to_string(array.dimensions.x.max_idx) + " " +
+                                  std::to_string(array.dimensions.y.max_idx) + " " +
+                                  std::to_string(array.dimensions.t.max_idx));
 
               grid_envelope->append_node(elm);
-              elm = xml_doc.allocate_node(rapidxml::node_element, "gml:high", high->c_str());
+              elm = xml_doc.allocate_node(rapidxml::node_element,
+                                          "gml:high",
+                                          xml_doc.allocate_string(high.c_str()));
               grid_envelope->append_node(elm);
             }
 
@@ -173,41 +148,8 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
         }
       }
       // Preparing RangeSet
-      {
-        rapidxml::xml_node<>* range_type = xml_doc.allocate_node(rapidxml::node_element, "gmlcov:rangeType");
-        coverage->append_node(range_type);
-        rapidxml::xml_node<>* data_record = xml_doc.allocate_node(rapidxml::node_element, "swe:DataRecord");
-        range_type->append_node(data_record);
-        for(const geoarray::attribute_t& attribute: array.attributes)
-        {
-          rapidxml::xml_node<>* field = xml_doc.allocate_node(rapidxml::node_element, "swe:field");
-          data_record->append_node(field);
-          field->append_attribute(xml_doc.allocate_attribute("name", attribute.name.c_str()));
-          rapidxml::xml_node<>* quantity = xml_doc.allocate_node(rapidxml::node_element, "swe:Quantity");
-          field->append_node(quantity);
-          // Alloc swe description
-          quantity->append_node(xml_doc.allocate_node(rapidxml::node_element,
-                                                      "swe:Description",
-                                                      attribute.description.c_str()));
-          // Alloc swe uom
-          rapidxml::xml_node<>* uom = xml_doc.allocate_node(rapidxml::node_element, "swe:uom");
-          quantity->append_node(uom);
-          uom->append_attribute(xml_doc.allocate_attribute("code", attribute.name.c_str()));
+      eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, coverage, array);
 
-          rapidxml::xml_node<>* constraint = xml_doc.allocate_node(rapidxml::node_element, "swe:constraint");
-          quantity->append_node(constraint);
-          rapidxml::xml_node<>* allowed_value = xml_doc.allocate_node(rapidxml::node_element, "swe:AllowedValues");
-          constraint->append_node(allowed_value);
-
-          std::string* interval = new std::string(std::to_string(attribute.valid_range.min_val) + " " +
-                                                  std::to_string(attribute.valid_range.max_val));
-          allowed_value->append_node(xml_doc.allocate_node(rapidxml::node_element,
-                                                           "swe:interval",
-                                                           interval->c_str()));
-          // pushing interval to remove later
-          string_allocator.push_back(interval);
-        }
-      }
       // Preparing Service Parameters
       {
         rapidxml::xml_node<>* parameters = xml_doc.allocate_node(rapidxml::node_element, "wcs:ServiceParameters");
@@ -227,10 +169,6 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
   }
 
   rapidxml::print(std::back_inserter(pimpl_->xml_representation), xml_doc, 0);
-
-  // deleting allocated string
-  for(const std::string* str: string_allocator)
-    delete str;
 
   EOWS_LOG_DEBUG(pimpl_->xml_representation);
 }
