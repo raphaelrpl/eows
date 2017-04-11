@@ -113,7 +113,7 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
         rapidxml::xml_node<>* domain_set = xml_doc.allocate_node(rapidxml::node_element, "gml:domainSet");
         coverage->append_node(domain_set);
         {
-          rapidxml::xml_node<>* grid = xml_doc.allocate_node(rapidxml::node_element, "gml:RectifiedGrid");
+          rapidxml::xml_node<>* grid = xml_doc.allocate_node(rapidxml::node_element, "gml:Grid");
           grid->append_attribute(xml_doc.allocate_attribute("gml:id", array.name.c_str()));
           grid->append_attribute(xml_doc.allocate_attribute("dimension", "3"));
           domain_set->append_node(grid);

@@ -82,14 +82,14 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 
   std::string default_format = "application/gml+xml";
   // Setting default format
-  if (it == query.end())
+//  if (it == query.end())
     format = default_format;
-  else
-  {
-    if (it->second != default_format)
-      throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
+//  else
+//  {
+//    if (it->second != default_format)
+//      throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
 
-    format = it->second;
-  }
+//    format = it->second;
+//  }
   // Process Subsets
 }

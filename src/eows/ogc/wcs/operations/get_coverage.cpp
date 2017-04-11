@@ -83,24 +83,42 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     // Retrieve from SciDB
     eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
-    boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute("scan(\"" + array.name + "\")");
+
+    const geoarray::dimensions_t& dimensions = array.dimensions;
+
+    // Preparing SciDB query string
+    std::string query_str = "subarray(" + array.name + ", ";
+    // Appending Dimension Min
+    query_str += std::to_string(dimensions.x.min_idx) + ", " +
+                 std::to_string(dimensions.y.min_idx) + ", " +
+                 std::to_string(dimensions.t.min_idx) + ",";
+    // Appending Dimension Max
+    query_str += std::to_string(dimensions.x.max_idx) + ", " +
+                 std::to_string(dimensions.y.max_idx) + ", " +
+                 std::to_string(dimensions.t.max_idx) + ")";
+
+    boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute(query_str);
     boost::shared_ptr<eows::scidb::cell_iterator> cell_it(new eows::scidb::cell_iterator(query_result->array));
 
     std::ostringstream ss;
+    auto attributes_size = array.attributes.size();
 
     while(!cell_it->end())
     {
       auto coordinates = cell_it->get_position();
 
-      for(std::size_t attr_pos = 0; attr_pos < array.attributes.size(); ++attr_pos)
+      for(std::size_t attr_pos = 0; attr_pos < attributes_size; ++attr_pos)
       {
         const geoarray::attribute_t& attr = array.attributes[attr_pos];
         if (attr.datatype == geoarray::datatype_t::int16_dt)
-          ss << cell_it->get_int16(attr.name) << " ";
-        else
-          ss << std::to_string(cell_it->get_int8(attr.name)) << " ";
+          ss << cell_it->get_int16(attr.name);
+        else // It is important cast to string to avoid stream inconsistency
+          ss << std::to_string(cell_it->get_int8(attr.name));
+
+        if (attr_pos + 1 < attributes_size)
+          ss << " ";
       }
-      ss << "\n";
+      ss << ",";
       cell_it->next();
     }
 
@@ -118,25 +136,38 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:gml","http://www.opengis.net/gml/3.2"));
     wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns","http://www.opengis.net/gml/3.2"));
     wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance"));
+    wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:gmlcov", "http://www.opengis.net/gmlcov/1.0"));
+    wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:swe", "http://www.opengis.net/swe/2.0"));
     wcs_document->append_attribute(xml_doc.allocate_attribute("xsi:schemaLocation",
                                                               "http://www.opengis.net/swe/2.0 http://schemas.opengis.net/sweCommon/2.0/swe.xsd http://www.opengis.net/gmlcov/1.0 http://schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd"));
     wcs_document->append_attribute(xml_doc.allocate_attribute("gml:id", array.name.c_str()));
     xml_doc.append_node(wcs_document);
 
     // Preparing bounded by
+    eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array);
     // Preparing domainset
+    eows::ogc::wcs::core::make_coverage_domain_set(&xml_doc, wcs_document, array);
 
     // Preparing rangeset
     rapidxml::xml_node<>* range_set = xml_doc.allocate_node(rapidxml::node_element, "gml:rangeSet");
     wcs_document->append_node(range_set);
     rapidxml::xml_node<>* data_block = xml_doc.allocate_node(rapidxml::node_element, "gml:DataBlock");
-    data_block->append_node(xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", ss.str().c_str()));
+
+    const std::string scidb_data = ss.str();
+
+    rapidxml::xml_node<>* tuple_list = xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", scidb_data.c_str(), 0, scidb_data.size());
+    // Defining delimiter in order to client use to read properly row
+    tuple_list->append_attribute(xml_doc.allocate_attribute("ts", ","));
+    // Defining delimiter for coverage attribute
+    tuple_list->append_attribute(xml_doc.allocate_attribute("cs", " "));
+
+    data_block->append_node(tuple_list);
     range_set->append_node(data_block);
 
-    rapidxml::print(std::back_inserter(pimpl_->output), xml_doc, 0);
-    std::cout << pimpl_->output << std::endl;
-
     // Preparing rangetype
+    eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, array);
+
+    rapidxml::print(std::back_inserter(pimpl_->output), xml_doc, 0);
   }
   catch(const eows::scidb::connection_open_error& e)
   {
@@ -145,7 +176,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
   }
   catch(const std::exception& e)
   {
-    throw ogc::ogc_error("No such coverage '" + pimpl_->request.coverage_id + "'", "coverageID");
+    throw wcs::no_such_coverage_error("No such coverage '" + pimpl_->request.coverage_id + "'");
   }
 }
 

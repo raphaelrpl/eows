@@ -168,3 +168,45 @@ void eows::ogc::wcs::core::make_coverage_range_type(rapidxml::xml_document<>* do
                                                   doc->allocate_string(interval.c_str())));
   }
 }
+
+void eows::ogc::wcs::core::make_coverage_domain_set(rapidxml::xml_document<>* doc,
+                                                    rapidxml::xml_node<>* node,
+                                                    const eows::geoarray::geoarray_t& array)
+{
+  rapidxml::xml_node<>* domain_set = doc->allocate_node(rapidxml::node_element, "gml:domainSet");
+  node->append_node(domain_set);
+  {
+    rapidxml::xml_node<>* grid = doc->allocate_node(rapidxml::node_element, "gml:Grid");
+    grid->append_attribute(doc->allocate_attribute("gml:id", array.name.c_str()));
+    grid->append_attribute(doc->allocate_attribute("dimension", "3"));
+    domain_set->append_node(grid);
+    {
+      rapidxml::xml_node<>* limits = doc->allocate_node(rapidxml::node_element, "gml:limits");
+      grid->append_node(limits);
+
+      {
+        rapidxml::xml_node<>* grid_envelope = doc->allocate_node(rapidxml::node_element, "gml:GridEnvelope");
+        limits->append_node(grid_envelope);
+
+        std::string low = (std::to_string(array.dimensions.x.min_idx) + " ") +
+                          (std::to_string(array.dimensions.y.min_idx) + " ") +
+                           std::to_string(array.dimensions.t.min_idx);
+        rapidxml::xml_node<>* elm = doc->allocate_node(rapidxml::node_element,
+                                                          "gml:low",
+                                                          doc->allocate_string(low.c_str()));
+
+        std::string high = (std::to_string(array.dimensions.x.max_idx) + " " +
+                            std::to_string(array.dimensions.y.max_idx) + " " +
+                            std::to_string(array.dimensions.t.max_idx));
+
+        grid_envelope->append_node(elm);
+        elm = doc->allocate_node(rapidxml::node_element,
+                                 "gml:high",
+                                 doc->allocate_string(high.c_str()));
+        grid_envelope->append_node(elm);
+      }
+
+      limits->append_node(doc->allocate_node(rapidxml::node_element, "gml:axisLabels", "x y t"));
+    }
+  }
+}
