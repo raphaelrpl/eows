@@ -190,7 +190,7 @@ eows::wtss::describe_coverage_handler::do_get(const eows::core::http_request& re
     if(it == qstr.end())
       throw std::runtime_error("Error in operation 'describe_coverage' for WTSS: missing coverage name.");
 
-    const eows::geoarray::geoarray_t& geo_array = eows::geoarray::geoarray_manager::instance().get(it->second);
+    const eows::geoarray::geoarray_t& geo_array = eows::geoarray::geoarray_manager::instance().get(it->second[0]);
 
     rapidjson::StringBuffer buff;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
@@ -505,7 +505,7 @@ eows::wtss::decode_timeseries_request(const eows::core::query_string_t& qstr)
   if(it == it_end)
     throw std::invalid_argument("WTSS 'time_series' operation error: \"coverage\" parameter is missing.");
 
-  parameters.cv_name = it->second;
+  parameters.cv_name = it->second[0];
 
 // get queried attributes
   it = qstr.find("attributes");
@@ -516,7 +516,7 @@ eows::wtss::decode_timeseries_request(const eows::core::query_string_t& qstr)
     throw std::invalid_argument((err_msg % parameters.cv_name).str());
   }
 
-  boost::split(parameters.queried_attributes, it->second, boost::is_any_of(","));
+  boost::split(parameters.queried_attributes, it->second[0], boost::is_any_of(","));
 
 // extract longitude
   it = qstr.find("longitude");
@@ -524,7 +524,7 @@ eows::wtss::decode_timeseries_request(const eows::core::query_string_t& qstr)
   if(it == it_end || it->second.empty())
     throw std::invalid_argument("WTSS 'time_series' operation error: \"longitude\" parameter is missing.");
 
-  parameters.longitude = boost::lexical_cast<double>(it->second);
+  parameters.longitude = boost::lexical_cast<double>(it->second[0]);
 
 // extract latitude
   it = qstr.find("latitude");
@@ -532,16 +532,16 @@ eows::wtss::decode_timeseries_request(const eows::core::query_string_t& qstr)
   if(it == it_end || it->second.empty())
     throw std::invalid_argument("WTSS 'time_series' operation error: \"latitude\" parameter is missing.");
 
-  parameters.latitude = boost::lexical_cast<double>(it->second);
+  parameters.latitude = boost::lexical_cast<double>(it->second[0]);
 
 // extract start and end times if any
   it = qstr.find("start_date");
 
-  parameters.start_time_point = (it != it_end) ? it->second : std::string("");
+  parameters.start_time_point = (it != it_end) ? it->second[0] : std::string("");
 
   it = qstr.find("end_date");
 
-  parameters.end_time_point = (it != it_end) ? it->second : std::string("");
+  parameters.end_time_point = (it != it_end) ? it->second[0] : std::string("");
 
 // ok: finished extracting parameters
   return parameters;

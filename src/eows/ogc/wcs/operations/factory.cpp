@@ -41,25 +41,25 @@ std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::bui
 {
   eows::core::query_string_t::const_iterator request_it = query.find("request");
 
-  if (request_it == query.end()) {
+  if (request_it == query.end() || request_it->second.empty()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
   }
 
   std::unique_ptr<eows::ogc::wcs::core::operation> op;
 
-  if (eows::core::to_lower(request_it->second) == "getcapabilities")
+  if (eows::core::to_lower(request_it->second[0]) == "getcapabilities")
   {
     get_capabilities_request capabilities_request(query);
     op.reset(new get_capabilities(capabilities_request));
     return std::move(op);
   }
-  else if (eows::core::to_lower(request_it->second) == "describecoverage")
+  else if (eows::core::to_lower(request_it->second[0]) == "describecoverage")
   {
     describe_coverage_request request(query);
     op.reset(new describe_coverage(request));
     return std::move(op);
   }
-  else if (request_it->second == "GetCoverage")
+  else if (request_it->second[0] == "GetCoverage")
   {
     get_coverage_request request(query);
     op.reset(new get_coverage(request));

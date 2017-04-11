@@ -13,31 +13,31 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
 
   eows::core::query_string_t::const_iterator it = query.find("request");
 
-  if (it == query.end()) {
+  if (it == query.end() || it->second.empty()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
   }
-  request = it->second;
+  request = it->second[0];
 
   it = query.find("service");
 
-  if (it == query.end()) {
+  if (it == query.end() || it->second.empty()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'service'", "service");
   }
 
-  if (eows::core::to_lower(it->second) != "wcs")
-    throw eows::ogc::invalid_parameter_error("No service '" + service + "'", "InvalidParameterValue");
+  if (eows::core::to_lower(it->second[0]) != "wcs")
+    throw eows::ogc::invalid_parameter_error("No service '" + it->second[0] + "'", "InvalidParameterValue");
 
-  service = it->second;
+  service = it->second[0];
 
   it = query.find("version");
 
-  if (it != query.end())
+  if (it != query.end() && !it->second.empty())
   {
-    if (it->second != capabilities.service.service_type_version)
-      throw eows::ogc::not_supported_error("WCS version '"+it->second+
+    if (it->second[0] != capabilities.service.service_type_version)
+      throw eows::ogc::not_supported_error("WCS version '"+it->second[0]+
                                            "' is not supported. Try '"+
                                            capabilities.service.service_type_version+"'", "VersionNegotiationFailed");
-    version = it->second;
+    version = it->second[0];
   }
 }
 
@@ -63,7 +63,7 @@ eows::ogc::wcs::operations::describe_coverage_request::describe_coverage_request
   }
 
   std::vector<std::string> sliced_coverages;
-  boost::split(sliced_coverages, it->second, boost::is_any_of(","));
+  boost::split(sliced_coverages, it->second[0], boost::is_any_of(","));
   coverages_id = sliced_coverages;
 }
 
@@ -72,11 +72,11 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 {
   eows::core::query_string_t::const_iterator it = query.find("coverageid");
 
-  if (it == query.end())
+  if (it == query.end() || it->second.empty())
   {
     throw eows::ogc::missing_parameter_error("Missing parameter 'CoverageID'", "emptyCoverageIdList");
   }
-  coverage_id = it->second;
+  coverage_id = it->second[0];
 
   it = query.find("format");
 

@@ -251,13 +251,13 @@ const std::string eows::core::read_node_as_string(const rapidjson::Value& node, 
 }
 
 
-std::map<std::string, std::string> eows::core::lowerify(const std::map<std::string, std::string>& given)
+std::map<std::string, std::vector<std::string>> eows::core::lowerify(const std::map<std::string, std::vector<std::string>>& given)
 {
-  std::map<std::string, std::string> out;
+  std::map<std::string, std::vector<std::string>> out;
 
   for(auto& it: given)
   {
-    out.insert(std::pair<std::string, std::string>(to_lower(it.first), it.second));
+    out.insert(std::pair<std::string, std::vector<std::string>>(to_lower(it.first), it.second));
   }
 
   return out;
