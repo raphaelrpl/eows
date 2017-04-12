@@ -79,15 +79,15 @@ void eows::ogc::wms::handler::do_get(const eows::core::http_request& req,
     if(it == qstr.end())
       throw std::runtime_error("Missing \"REQUEST\" parameter in WMS query.");
 
-    if(it->second == "GetCapabilities")
+    if(it->second[0] == "GetCapabilities")
     {
 
     }
-    else if(it->second == "GetMap")
+    else if(it->second[0] == "GetMap")
     {
 
     }
-    else if(it->second == "GetFeatureInfo")
+    else if(it->second[0] == "GetFeatureInfo")
     {
 
     }
@@ -95,7 +95,7 @@ void eows::ogc::wms::handler::do_get(const eows::core::http_request& req,
     {
       boost::format err_msg("Wrong parameter in WMS \"REQUEST\": %1%.");
 
-      throw std::runtime_error((err_msg % it->second).str());
+      throw std::runtime_error((err_msg % it->second[0]).str());
     }
 
     //res.set_status(eows::core::http_response::OK);

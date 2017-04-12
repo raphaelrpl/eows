@@ -45,6 +45,14 @@ namespace eows
         {
         }
       };
+
+      struct invalid_axis_error : public virtual ogc_error
+      {
+        invalid_axis_error(const std::string& s)
+          : ogc_error(s, "InvalidAxisLabel")
+        {
+        }
+      };
     } // end namespace wcs
   }   // end namespace ogc
 }     // end namespace eows

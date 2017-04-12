@@ -16,6 +16,7 @@ namespace eows
   namespace geoarray
   {
     struct geoarray_t;
+    struct dimension_t;
   }
 
   namespace ogc

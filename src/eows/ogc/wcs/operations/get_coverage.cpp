@@ -33,6 +33,7 @@
 // EOWS GeoArray
 #include "../../../geoarray/data_types.hpp"
 #include "../../../geoarray/geoarray_manager.hpp"
+#include "../../../geoarray/utils.hpp"
 
 // EOWS SciDB
 #include "../../../scidb/exception.hpp"
@@ -44,13 +45,16 @@
 #include <rapidxml/rapidxml.hpp>
 #include <rapidxml/rapidxml_print.hpp>
 
+//STL bind
+#include <functional>
+
 // SciDB
 #include <SciDBAPI.h>
 
 // Boost
 #include <boost/shared_ptr.hpp>
 
-
+// struct Impl implementation
 struct eows::ogc::wcs::operations::get_coverage::impl
 {
   impl(const eows::ogc::wcs::operations::get_coverage_request& req)
@@ -59,9 +63,53 @@ struct eows::ogc::wcs::operations::get_coverage::impl
 
   }
 
+  void validate_subset(const eows::geoarray::geoarray_t&);
+
+  /*!
+   * \brief It checks given subset limits
+   * \throws eows::ogc::wcs::invalid_axis_error When client given limits does not match array limits
+   */
+  bool is_valid_subset(const eows::geoarray::dimension_t&, const eows::geoarray::dimension_t&);
+
   const eows::ogc::wcs::operations::get_coverage_request request;
   std::string output;
 };
+
+bool eows::ogc::wcs::operations::get_coverage::impl::is_valid_subset(const eows::geoarray::dimension_t & subset,
+                                                                     const eows::geoarray::dimension_t & array_dimension)
+{
+  // If found, check limits
+  if (subset.name == array_dimension.name)
+  {
+    if (subset.min_idx >= array_dimension.min_idx &&
+        subset.max_idx <= array_dimension.max_idx)
+      return true;
+
+    throw eows::ogc::wcs::invalid_axis_error("Invalid axis limits \"" + subset.name + "\" \"" +
+                                             std::to_string(subset.min_idx) + "\" and \"" +
+                                             std::to_string(subset.max_idx) + "\".");
+  }
+
+  return false;
+}
+
+void eows::ogc::wcs::operations::get_coverage::impl::validate_subset(const eows::geoarray::geoarray_t& array)
+{
+  if (!request.subsets.empty())
+  {
+    for(const geoarray::dimension_t& subset: request.subsets)
+    {
+      if (is_valid_subset(subset, array.dimensions.x) ||
+          is_valid_subset(subset, array.dimensions.y) ||
+          is_valid_subset(subset, array.dimensions.t))
+        continue;
+
+      throw eows::ogc::wcs::invalid_axis_error("No axis '" + subset.name + "' found");
+    }
+  }
+}
+
+// GetCoverage Implementations
 
 eows::ogc::wcs::operations::get_coverage::get_coverage(const eows::ogc::wcs::operations::get_coverage_request& req)
   : pimpl_(new impl(req))
@@ -81,6 +129,9 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Retrieve GeoArray information
     const geoarray::geoarray_t& array = geoarray::geoarray_manager::instance().get(pimpl_->request.coverage_id);
 
+    // validate axis given
+    pimpl_->validate_subset(array);
+
     // Retrieve from SciDB
     eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
 
@@ -88,14 +139,55 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     // Preparing SciDB query string
     std::string query_str = "subarray(" + array.name + ", ";
-    // Appending Dimension Min
-    query_str += std::to_string(dimensions.x.min_idx) + ", " +
-                 std::to_string(dimensions.y.min_idx) + ", " +
-                 std::to_string(dimensions.t.min_idx) + ",";
-    // Appending Dimension Max
-    query_str += std::to_string(dimensions.x.max_idx) + ", " +
-                 std::to_string(dimensions.y.max_idx) + ", " +
-                 std::to_string(dimensions.t.max_idx) + ")";
+
+    std::string min_values;
+    std::string max_values;
+
+    // Finding X
+    auto dit = geoarray::find_by_name(pimpl_->request.subsets, dimensions.x.name);
+    if (dit != pimpl_->request.subsets.end())
+    {
+      min_values += std::to_string(dit->min_idx);
+      max_values += std::to_string(dit->max_idx);
+    }
+    else
+    {
+      // Setting defaults
+      min_values += std::to_string(dimensions.x.min_idx);
+      max_values += std::to_string(dimensions.x.max_idx);
+    }
+    min_values += ", ";
+    max_values += ", ";
+    // Finding Y
+    dit = geoarray::find_by_name(pimpl_->request.subsets, dimensions.y.name);
+    if (dit != pimpl_->request.subsets.end())
+    {
+      min_values += std::to_string(dit->min_idx);
+      max_values += std::to_string(dit->max_idx);
+    }
+    else
+    {
+      // Setting defaults
+      min_values += std::to_string(dimensions.y.min_idx);
+      max_values += std::to_string(dimensions.y.max_idx);
+    }
+    min_values += ", ";
+    max_values += ", ";
+    // Finding T
+    dit = geoarray::find_by_name(pimpl_->request.subsets, dimensions.t.name);
+    if (dit != pimpl_->request.subsets.end())
+    {
+      min_values += std::to_string(dit->min_idx);
+      max_values += std::to_string(dit->max_idx);
+    }
+    else
+    {
+      // Setting defaults
+      min_values += std::to_string(dimensions.t.min_idx);
+      max_values += std::to_string(dimensions.t.max_idx);
+    }
+
+    query_str +=  min_values + ", " + max_values + ")";
 
     boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute(query_str);
     boost::shared_ptr<eows::scidb::cell_iterator> cell_it(new eows::scidb::cell_iterator(query_result->array));
@@ -168,6 +260,10 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, array);
 
     rapidxml::print(std::back_inserter(pimpl_->output), xml_doc, 0);
+  }
+  catch(const eows::ogc::ogc_error&)
+  {
+    throw;
   }
   catch(const eows::scidb::connection_open_error& e)
   {

@@ -450,3 +450,15 @@ void eows::geoarray::initialize()
 
   EOWS_LOG_INFO("GeoArrays runtime module initialized!");
 }
+
+std::vector<eows::geoarray::dimension_t>::const_iterator eows::geoarray::find_by_name(const std::vector<eows::geoarray::dimension_t>& dimensions,
+                                                                                     const std::string& name)
+{
+  std::vector<eows::geoarray::dimension_t>::const_iterator it;
+  for(it = dimensions.begin(); it != dimensions.end(); ++it)
+  {
+    if (it->name == name)
+      return it;
+  }
+  return it;
+}
