@@ -63,13 +63,30 @@ struct eows::ogc::wcs::operations::get_coverage::impl
 
   }
 
-  void validate_subset(const eows::geoarray::geoarray_t&);
+  /*!
+   * \brief It performs a Geo Array dimensions validate from each one of subsets given by user
+   * \param array - Geoarray with meta axis information
+   * \throws eows::ogc::wcs::invalid_axis_error - When axis value is invalid
+   */
+  void validate_subset(const eows::geoarray::geoarray_t& array);
 
   /*!
    * \brief It checks given subset limits
+   * \param subset Subset sent by client
+   * \param array_dimension - Geo array dimension of axis
    * \throws eows::ogc::wcs::invalid_axis_error When client given limits does not match array limits
    */
-  bool is_valid_subset(const eows::geoarray::dimension_t&, const eows::geoarray::dimension_t&);
+  bool is_valid_subset(const eows::geoarray::dimension_t& subset, const eows::geoarray::dimension_t& array_dimension);
+
+  /*!
+   * \brief It tries to find a geoarray dimension with client subsets. If found, use client subset limits. Otherwise, set default
+   * to Geo array
+   *
+   * \param dimension
+   * \param min_value
+   * \param max_value
+   */
+  void format_dimension_limits(const eows::geoarray::dimension_t& dimension, std::string& min_value, std::string& max_value);
 
   const eows::ogc::wcs::operations::get_coverage_request request;
   std::string output;
@@ -109,6 +126,22 @@ void eows::ogc::wcs::operations::get_coverage::impl::validate_subset(const eows:
   }
 }
 
+void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(const eows::geoarray::dimension_t& dimension, std::string& min_value, std::string& max_value)
+{
+  auto dit = geoarray::find_by_name(request.subsets, dimension.name);
+  if (dit != request.subsets.end())
+  {
+    min_value += std::to_string(dit->min_idx);
+    max_value += std::to_string(dit->max_idx);
+  }
+  else
+  {
+    // Setting defaults
+    min_value += std::to_string(dimension.min_idx);
+    max_value += std::to_string(dimension.max_idx);
+  }
+}
+
 // GetCoverage Implementations
 
 eows::ogc::wcs::operations::get_coverage::get_coverage(const eows::ogc::wcs::operations::get_coverage_request& req)
@@ -140,58 +173,28 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Preparing SciDB query string
     std::string query_str = "subarray(" + array.name + ", ";
 
+    // Defining helpers for Query generation
     std::string min_values;
     std::string max_values;
 
     // Finding X
-    auto dit = geoarray::find_by_name(pimpl_->request.subsets, dimensions.x.name);
-    if (dit != pimpl_->request.subsets.end())
-    {
-      min_values += std::to_string(dit->min_idx);
-      max_values += std::to_string(dit->max_idx);
-    }
-    else
-    {
-      // Setting defaults
-      min_values += std::to_string(dimensions.x.min_idx);
-      max_values += std::to_string(dimensions.x.max_idx);
-    }
+    pimpl_->format_dimension_limits(dimensions.x, min_values, max_values);
     min_values += ", ";
     max_values += ", ";
     // Finding Y
-    dit = geoarray::find_by_name(pimpl_->request.subsets, dimensions.y.name);
-    if (dit != pimpl_->request.subsets.end())
-    {
-      min_values += std::to_string(dit->min_idx);
-      max_values += std::to_string(dit->max_idx);
-    }
-    else
-    {
-      // Setting defaults
-      min_values += std::to_string(dimensions.y.min_idx);
-      max_values += std::to_string(dimensions.y.max_idx);
-    }
+    pimpl_->format_dimension_limits(dimensions.y, min_values, max_values);
     min_values += ", ";
     max_values += ", ";
     // Finding T
-    dit = geoarray::find_by_name(pimpl_->request.subsets, dimensions.t.name);
-    if (dit != pimpl_->request.subsets.end())
-    {
-      min_values += std::to_string(dit->min_idx);
-      max_values += std::to_string(dit->max_idx);
-    }
-    else
-    {
-      // Setting defaults
-      min_values += std::to_string(dimensions.t.min_idx);
-      max_values += std::to_string(dimensions.t.max_idx);
-    }
+    pimpl_->format_dimension_limits(dimensions.t, min_values, max_values);
 
+    // Generating SciDB AFL statement
     query_str +=  min_values + ", " + max_values + ")";
 
     boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute(query_str);
     boost::shared_ptr<eows::scidb::cell_iterator> cell_it(new eows::scidb::cell_iterator(query_result->array));
 
+    // Defining output stream where SciDB will be stored (GML format)
     std::ostringstream ss;
     auto attributes_size = array.attributes.size();
 
