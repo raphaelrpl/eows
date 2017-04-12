@@ -82,6 +82,7 @@ if [ "$cmake_expr_test" != "3.7.2" ]; then
   ./configure --qt-gui
   make
   sudo make install
+  cd ..
 fi
 
 #
