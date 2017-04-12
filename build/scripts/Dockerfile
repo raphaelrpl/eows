@@ -155,14 +155,26 @@ RUN chmod +x /docker-entrypoint.sh
 RUN echo "scidb ALL=(ALL) NOPASSWD: /usr/bin/apt-get" >> /etc/sudoers
 RUN echo "scidb ALL=(ALL) NOPASSWD: /usr/bin/make" >> /etc/sudoers
 
+# Remove CMake 2.8X
 RUN cmake --version
 RUN apt-get remove cmake* -y
 RUN apt-get install curl
 
+# Install CMake 3.7.2
+ARG CMAKE_SRC_DIR=$dev_dir/cmake
+WORKDIR $CMAKE_SRC_DIR
+
+RUN curl -O https://cmake.org/files/v3.7/cmake-3.7.2.tar.gz
+RUN tar -zxf cmake-3.7.2.tar.gz
+WORKDIR $CMAKE_SRC_DIR/cmake-3.7.2
+RUN ./configure
+RUN make && make install
+
+#
 # Removing Broken header SciDB
+#
 RUN sed -i '/**MurmurHash3.h/c\//MurmurHash3 has been removed' $SCIDB_INSTALL_PATH/include/util/Hashing.h
 
-USER $scidb_usr
 # Creating EOWS dev dir
 RUN mkdir -p $EOWS_DEPENDENCIES_DIR $EOWS_CODEBASE $EOWS_BUILD_DIR $EOWS_INSTALL_DIR
 
@@ -172,8 +184,7 @@ RUN git clone https://github.com/eows/eows.git .
 
 WORKDIR $EOWS_DEPENDENCIES_DIR  
 RUN cp $EOWS_CODEBASE/bash/install-3rdparty-linux-ubuntu-14.04.sh .
-RUN wget http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz
-RUN curl -O https://raw.githubusercontent.com/raphaelrpl/eows/fix_scripts/bash/install-3rdparty-linux-ubuntu-14.04.sh
+RUN curl -O http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz
 RUN chmod +x install-3rdparty-linux-ubuntu-14.04.sh
 # Compile Dependendies
 RUN ./install-3rdparty-linux-ubuntu-14.04.sh $EOWS_DEPENDENCIES_DIR
