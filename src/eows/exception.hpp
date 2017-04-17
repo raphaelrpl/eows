@@ -44,6 +44,12 @@ namespace eows
     explicit parse_error(const char* s) : std::runtime_error(s) {}
   };
 
+  struct eows_error : public std::runtime_error
+  {
+    explicit eows_error(const std::string& s) : std::runtime_error(s) {}
+    explicit eows_error(const char* s) : std::runtime_error(s) {}
+  };
+
 }   // end namespace eows
 
 #endif // __EOWS_EXCEPTION_HPP__

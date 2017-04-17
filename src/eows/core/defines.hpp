@@ -36,4 +36,6 @@
 
 #define  EOWS_WMS_FILE "share/eows/config/wms.json"
 
+#define  EOWS_WCS_FILE "share/eows/config/wcs.json"
+
 #endif // __EOWS_CORE_LOGGER_HPP__

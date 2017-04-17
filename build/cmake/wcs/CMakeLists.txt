@@ -1,5 +1,5 @@
-file(GLOB EOWS_SRC_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.cpp)
-file(GLOB EOWS_HDR_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.hpp)
+file(GLOB_RECURSE EOWS_SRC_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.cpp)
+file(GLOB_RECURSE EOWS_HDR_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.hpp)
 
 source_group("Source Files"  FILES ${EOWS_SRC_FILES})
 source_group("Header Files"  FILES ${EOWS_HDR_FILES})
