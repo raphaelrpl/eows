@@ -33,6 +33,7 @@ ARG host_ip=127.0.0.1
 ARG net_mask=$host_ip/8
 ARG scidb_usr=scidb
 ARG dev_dir=/home/$scidb_usr/mydevel
+ARG SCIDB_PASS=scidb
 ARG EOWS_PATH=$dev_dir/eows
 ARG EOWS_DEPENDENCIES_DIR=$EOWS_PATH/3rdparty
 ARG EOWS_CODEBASE=$EOWS_PATH/codebase
@@ -41,6 +42,9 @@ ARG EOWS_INSTALL_DIR=$EOWS_PATH/install
 
 RUN groupadd $scidb_usr
 RUN useradd $scidb_usr -s /bin/bash -m -g $scidb_usr
+# Defining SciDB credential to connect
+RUN echo $scidb_usr:$SCIDB_PASS | chpasswd
+
 RUN mkdir /home/$scidb_usr/mydevel
 RUN chown $scidb_usr:$scidb_usr $dev_dir
 
