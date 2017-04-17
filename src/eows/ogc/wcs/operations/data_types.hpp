@@ -25,8 +25,8 @@
   \author Raphael Willian da Costa
  */
 
-#ifndef __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
-#define __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
+#ifndef __EOWCS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
+#define __EOWCS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 
 // EOWS Wcs
 #include "../exception.hpp"
@@ -48,8 +48,8 @@ namespace eows
       namespace operations
       {
         /**
-         * @brief It represents a base request structure for WCS access
-         * @throws
+         * \brief It represents a base request structure for WCS access
+         * \throws
          */
         struct base_request
         {
@@ -62,14 +62,14 @@ namespace eows
           std::string service;
         };
         /**
-         * @brief Represents a GetCapabilities request structure
+         * \brief Represents a GetCapabilities request structure
          */
         struct get_capabilities_request : public base_request
         {
           get_capabilities_request(const eows::core::query_string_t& query);
         };
         /**
-         * @brief Represents DescriveCoverage Request structure
+         * \brief Represents DescriveCoverage Request structure
          */
         struct describe_coverage_request : public base_request
         {
@@ -77,7 +77,7 @@ namespace eows
           std::vector<std::string> coverages_id;
         };
         /**
-         * @brief Represents GetCoverage request structure
+         * \brief Represents GetCoverage request structure
          */
         struct get_coverage_request : public base_request
         {
@@ -85,6 +85,7 @@ namespace eows
 
           std::string coverage_id;
           std::string format;
+          std::size_t output_crs;
           std::vector<eows::geoarray::dimension_t> subsets;
           // TODO: implement
         };
@@ -93,4 +94,4 @@ namespace eows
   }
 }
 
-#endif // __EOF_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
+#endif // __EOWCS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__

@@ -41,12 +41,12 @@
 #include "../../../scidb/connection_pool.hpp"
 #include "../../../scidb/cell_iterator.hpp"
 
+// EOWS Proj4
+//#include "../../../proj4/srs.hpp"
+
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
 #include <rapidxml/rapidxml_print.hpp>
-
-//STL bind
-#include <functional>
 
 // SciDB
 #include <SciDBAPI.h>
@@ -82,13 +82,26 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    * \brief It tries to find a geoarray dimension with client subsets. If found, use client subset limits. Otherwise, set default
    * to Geo array
    *
-   * \param dimension
-   * \param min_value
-   * \param max_value
+   * \param dimension - Target dimension to find
+   * \param min_value - Min value to append
+   * \param max_value - Max value to append
    */
   void format_dimension_limits(const eows::geoarray::dimension_t& dimension, std::string& min_value, std::string& max_value);
 
+  /*!
+   * \brief It reprojects a dimension in lat long mode to Grid scale mode in order to retrieve correct array values
+   * \todo Implement it
+   * \param dimension - Target dimension to fill
+   * \param minx - Min value
+   * \param maxx - Max value
+   */
+  void reproject(eows::geoarray::dimension_t& dimension, const double& minx, const double& maxx);
+
+  //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
+  //!< Represents a cast of array/client subset in lat/long mode to Grid scale mode based in SRID
+  std::vector<eows::geoarray::dimension_t> grid_subset;
+  //!< Represents WCS GetCoverage output in GML format. TODO: Handle it as binary stream in order to enable image formats
   std::string output;
 };
 
@@ -126,7 +139,9 @@ void eows::ogc::wcs::operations::get_coverage::impl::validate_subset(const eows:
   }
 }
 
-void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(const eows::geoarray::dimension_t& dimension, std::string& min_value, std::string& max_value)
+void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(const eows::geoarray::dimension_t& dimension,
+                                                                             std::string& min_value,
+                                                                             std::string& max_value)
 {
   auto dit = geoarray::find_by_name(request.subsets, dimension.name);
   if (dit != request.subsets.end())
@@ -140,6 +155,11 @@ void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(con
     min_value += std::to_string(dimension.min_idx);
     max_value += std::to_string(dimension.max_idx);
   }
+}
+
+void eows::ogc::wcs::operations::get_coverage::impl::reproject(eows::geoarray::dimension_t& dimension, const double& minx, const double& maxx)
+{
+  throw eows::ogc::not_implemented_error("Reproject subset in lat/log to Grid is not implemented yet", "");
 }
 
 // GetCoverage Implementations
@@ -162,7 +182,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Retrieve GeoArray information
     const geoarray::geoarray_t& array = geoarray::geoarray_manager::instance().get(pimpl_->request.coverage_id);
 
-    // validate axis given
+    // validate axis given even if client no sent
     pimpl_->validate_subset(array);
 
     // Retrieve from SciDB

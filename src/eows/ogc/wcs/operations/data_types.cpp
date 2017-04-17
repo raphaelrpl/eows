@@ -129,17 +129,19 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
       }
 
       // Seeking for duplicated keys
-//      auto found= std::find_if(subsets.begin(), subsets.end(), std::bind(&eows::geoarray::dimension_t::compare, &dimension, std::placeholders::_1));
+      auto found = std::find_if(subsets.begin(), subsets.end(), [&dimension](const geoarray::dimension_t& elm) {
+        return elm.name == dimension.name;
+      });
 
-//      if (found != subsets.end())
-//        throw eows::ogc::wcs::invalid_axis_error("Duplicated axis " + dimension.name);
+      if (found != subsets.end())
+        throw eows::ogc::wcs::invalid_axis_error("Duplicated axis " + dimension.name);
 
       // Retrieve axis min
       ss >> dimension.min_idx;
 
       ss >> c;
       if (c != ',')
-        throw eows::ogc::wcs::invalid_axis_error("Invalid axis");
+        throw eows::ogc::wcs::invalid_axis_error("Invalid axis ");
 
       validate_subset(ss);
 

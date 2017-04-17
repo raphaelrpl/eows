@@ -71,7 +71,9 @@ namespace eows
 
           void write(const char* value, const std::size_t size)
           {
-            res_.write(value);
+            // Creating a bytearray with correct size
+            std::string bytes(value, size);
+            res_.write(bytes);
           }
 
       private:
