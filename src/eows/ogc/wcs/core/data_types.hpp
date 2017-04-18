@@ -67,17 +67,15 @@ namespace eows
           content_t content;
         };
 
+        /*!
+         * \brief Represents a WCS subset given by client
+         */
         struct subset_t
         {
-          std::string name;
-          std::size_t srid;
-          double min;
-          double max;
-
-          bool compare(const eows::ogc::wcs::core::subset_t& s)
-          {
-            return s.name == name;
-          }
+          std::string name; //!< Axis name
+          std::size_t srid; //!< Projection SRID (TODO: Implement it)
+          double min; //!< Axis minimum value
+          double max; //!< Axis maximum value
         };
       }
     }

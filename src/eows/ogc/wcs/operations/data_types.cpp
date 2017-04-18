@@ -103,6 +103,15 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 
 //    format = it->second;
 //  }
+  // Input CRS
+  it = query.find("inputcrs");
+  if (it != query.end())
+  {
+    std::stringstream stream;
+    stream << it->second[0];
+    stream >> input_crs;
+  }
+
   // Process Subsets
   it = query.find("subset");
 

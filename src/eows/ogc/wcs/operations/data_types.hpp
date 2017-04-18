@@ -84,7 +84,7 @@ namespace eows
 
           std::string coverage_id; //!< Coverage Identifier
           std::string format; //!< Response format output
-          std::size_t input_crs {4326}; //!< InputCRS of subsetting
+          std::size_t input_crs; //!< InputCRS of subsetting
           std::size_t output_crs {4326}; //!< OutputCRS of operation
           std::vector<eows::ogc::wcs::core::subset_t> subsets; //!< Client subsets to retrieve coverage portion
         };
