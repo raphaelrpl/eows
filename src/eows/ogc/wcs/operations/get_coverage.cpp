@@ -94,7 +94,6 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   impl(const eows::ogc::wcs::operations::get_coverage_request& req)
     : request(req), output()
   {
-
   }
 
   /*!
@@ -113,13 +112,24 @@ struct eows::ogc::wcs::operations::get_coverage::impl
 
   /*!
    * \brief It reprojects a dimension in lat long mode to Grid scale mode in order to retrieve correct array values
-   * \todo Implement it
+   *
    * \param array - Geo array with dimensions
    * \param srid - SRID to convert
    * \param x - Value of X to reproject
    * \param y - Value of Y to reproject
    */
-  void reproject(eows::geoarray::geoarray_t& array, const std::size_t& srid, double& x, double& y);
+  void reproject(const eows::geoarray::geoarray_t& array, const std::size_t& srid, double& x, double& y);
+
+  /*!
+   * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
+   * if latitude/longitude reprojected intersects with geoarray. Throws exception when it does not intersects.
+   *
+   * \param array - Geo array with meta information
+   * \param latitude - Latitude value
+   * \param longitude - Longitude value
+   * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
+   */
+  void validate(const eows::geoarray::geoarray_t& array, double& latitude, double& longitude);
 
   //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
@@ -149,7 +159,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(con
   }
 }
 
-void eows::ogc::wcs::operations::get_coverage::impl::reproject(eows::geoarray::geoarray_t& array,
+void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoarray::geoarray_t& array,
                                                                const std::size_t& srid,
                                                                double& x,
                                                                double& y)
@@ -157,29 +167,51 @@ void eows::ogc::wcs::operations::get_coverage::impl::reproject(eows::geoarray::g
   eows::proj4::spatial_reference* src_srs = nullptr;
   eows::proj4::spatial_reference* dst_srs = nullptr;
 
+  // First of all, we must reproject client subsets to an compatible array
+  eows::proj4::spatial_ref_map::const_iterator it = t_srs_idx.find(request.input_crs);
+
+  // If it already indexed
+  if(it != t_srs_idx.end())
+    src_srs = it->second.get();
+  else
+  {
+    // Retrieving GeoArray SRS (dst)
+    const eows::proj4::srs_description_t& srs_desc = eows::proj4::srs_manager::instance().get(request.input_crs);
+    std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(srs_desc.proj4_txt));
+
+    src_srs = srs.get();
+    t_srs_idx.insert(std::make_pair(request.input_crs, std::move(srs)));
+  }
+
+  eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(array.i_meta.srid);
+
+  if(it_srid_target != t_srs_idx.end())
+    dst_srs = it_srid_target->second.get();
+  else
+  {
+    const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(array.i_meta.srid);
+
+    std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(dst_desc.proj4_txt));
+
+    dst_srs = srs.get();
+
+    t_srs_idx.insert(std::make_pair(array.i_meta.srid, std::move(srs)));
+  }
+
+  eows::proj4::transform(*src_srs, *dst_srs, x, y);
+}
+
+void eows::ogc::wcs::operations::get_coverage::impl::validate(const eows::geoarray::geoarray_t& array,
+                                                              double& latitude,
+                                                              double& longitude)
+{
   // Performs re-projection of values if the SRID are different
   if (request.input_crs != array.srid)
-  {
-    // First of all, we must reproject client subsets to an compatible array
-    eows::proj4::spatial_ref_map::const_iterator it = t_srs_idx.find(request.input_crs);
+    reproject(array, request.input_crs, latitude, longitude);
 
-    // If it already indexed
-    if(it != t_srs_idx.end())
-    {
-      src_srs = it->second.get();
-    }
-    else
-    {
-      // Retrieving GeoArray SRS (dst)
-      const eows::proj4::srs_description_t& srs_desc = eows::proj4::srs_manager::instance().get(request.input_crs);
-      std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(srs_desc.proj4_txt));
-
-      src_srs = srs.get();
-      t_srs_idx.insert(std::make_pair(request.input_crs, std::move(srs)));
-    }
-
-    eows::proj4::transform(*src_srs, *dst_srs, x, y);
-  }
+  // Validate Limits
+  if (!array.spatial_extent.intersects(latitude, longitude))
+    throw eows::ogc::wcs::invalid_axis_error("Values does not intersects");
 }
 
 // GetCoverage Implementations
@@ -214,13 +246,12 @@ void eows::ogc::wcs::operations::get_coverage::execute()
       // Now, we offer coverage 3 dimensions. In this case, we formed harded-code with this value to process GetCoverage. TODO: change it
       for(const eows::ogc::wcs::core::subset_t& client_subset: pimpl_->request.subsets)
       {
-        const double latitude = client_subset.min;
-        const double longitude = client_subset.max;
+        double latitude = client_subset.min;
+        double longitude = client_subset.max;
         // Col_id
         if(client_subset.name == array.dimensions.x.name)
         {
-          if (!array.spatial_extent.intersects(latitude, longitude))
-            throw eows::ogc::wcs::invalid_axis_error("Values does not intersects");
+          pimpl_->validate(array, latitude, longitude);
 
           eows::geoarray::dimension_t d;
           d.name = client_subset.name;
@@ -231,8 +262,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
         // Row ID
         else if(client_subset.name == array.dimensions.y.name)
         {
-          if (!array.spatial_extent.intersects(latitude, longitude))
-            throw eows::ogc::wcs::invalid_axis_error("Values does not intersects");
+          pimpl_->validate(array, latitude, longitude);
 
           eows::geoarray::dimension_t d;
           d.name = client_subset.name;
@@ -372,18 +402,25 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     rapidxml::print(std::back_inserter(pimpl_->output), xml_doc, 0);
   }
+  // known module error
   catch(const eows::ogc::ogc_error&)
   {
     throw;
   }
+  // thirdparty errors
   catch(const eows::scidb::connection_open_error& e)
   {
     // Todo: Throw UnappliedError
     throw eows::ogc::ogc_error(e.what(), "");
   }
-  catch(const std::exception& e)
+  // STL errors
+  catch(const std::invalid_argument& e) //thrown by geoarray::manager.get() when array not found
   {
     throw wcs::no_such_coverage_error("No such coverage '" + pimpl_->request.coverage_id + "'");
+  }
+  catch(const std::exception& e)
+  {
+    throw;
   }
 }
 
