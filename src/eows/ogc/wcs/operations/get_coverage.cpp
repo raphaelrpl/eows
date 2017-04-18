@@ -60,6 +60,9 @@
 
 thread_local eows::proj4::spatial_ref_map t_srs_idx;
 
+/*!
+ * \brief The SciDB scoped query helper to auto complete query
+ */
 struct scoped_query
 {
   boost::shared_ptr< ::scidb::QueryResult > qresult;
@@ -192,15 +195,6 @@ eows::ogc::wcs::operations::get_coverage::~get_coverage()
   delete pimpl_;
 }
 
-std::vector<eows::ogc::wcs::core::subset_t>::const_iterator get(const std::vector<eows::ogc::wcs::core::subset_t>& arr,
-                                                                const std::string& name)
-{
-  for(auto it = arr.begin(); it != arr.end(); ++it)
-    if (it->name == name)
-      return it;
-  return arr.end();
-}
-
 void eows::ogc::wcs::operations::get_coverage::execute()
 {
   try
@@ -211,11 +205,13 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Array containing client limits sent in WCS request that will be used to build SciDB AFL query
     std::vector<eows::geoarray::dimension_t> dimensions_to_query;
 
+    // Wrapping Geo Array as Grid type
     eows::geoarray::grid grid_array(&array);
 
+    // If WCS client gives subset limits, use them
     if (pimpl_->request.subsets.size() > 0)
     {
-      // Now, we offer coverage 3 dimensions. In this case, we former harded code with this value to process GetCoverage. TODO: change it
+      // Now, we offer coverage 3 dimensions. In this case, we formed harded-code with this value to process GetCoverage. TODO: change it
       for(const eows::ogc::wcs::core::subset_t& client_subset: pimpl_->request.subsets)
       {
         const double latitude = client_subset.min;
@@ -259,11 +255,8 @@ void eows::ogc::wcs::operations::get_coverage::execute()
         }
         else
           throw eows::ogc::wcs::invalid_axis_error("No axis found. " + client_subset.name);
-
-        // auto dimension = pimpl_->retrieve_grid_dimension(reprojected_subset);
-        // dimensions_to_query.push_back(dimension)
       } // end for
-    }
+    } // end if subsets.size()
 
     // Open SciDB connection
     eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
@@ -289,10 +282,12 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Generating SciDB AFL statement
     query_str +=  min_values + ", " + max_values + ")";
 
+    // Performing AFL query execution
     boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute(query_str);
-
+    // Wrapping SciDB result with Scoped query to auto complete query exec
     scoped_query sc(query_result, &conn);
 
+    // TODO: Improve err message when no data found or query error
     if((query_result == nullptr) || (query_result->array == nullptr))
       throw eows::scidb::query_execution_error("Error in SciDB query result");
 
@@ -302,6 +297,15 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     std::ostringstream ss;
     auto attributes_size = array.attributes.size();
 
+    const std::string row_deliter(",");
+    const std::string attr_delimiter(" ");
+
+    /*
+      It will generate SciDB data output in GML syntax.
+      Note: You may change delimiters as you need, but remember to update GML output.
+
+      data0_attr1 data0_attr2 data0_attrN,dataN_attr1 dataN_attr2 dataN_attrN,...
+    */
     while(!cell_it->end())
     {
       auto coordinates = cell_it->get_position();
@@ -315,9 +319,9 @@ void eows::ogc::wcs::operations::get_coverage::execute()
           ss << std::to_string(cell_it->get_int8(attr.name));
 
         if (attr_pos + 1 < attributes_size)
-          ss << " ";
+          ss << attr_delimiter;
       }
-      ss << ",";
+      ss << row_deliter;
       cell_it->next();
     }
 
@@ -356,9 +360,9 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     rapidxml::xml_node<>* tuple_list = xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", scidb_data.c_str(), 0, scidb_data.size());
     // Defining delimiter in order to client use to read properly row
-    tuple_list->append_attribute(xml_doc.allocate_attribute("ts", ","));
+    tuple_list->append_attribute(xml_doc.allocate_attribute("ts", row_deliter.c_str()));
     // Defining delimiter for coverage attribute
-    tuple_list->append_attribute(xml_doc.allocate_attribute("cs", " "));
+    tuple_list->append_attribute(xml_doc.allocate_attribute("cs", attr_delimiter.c_str()));
 
     data_block->append_node(tuple_list);
     range_set->append_node(data_block);
