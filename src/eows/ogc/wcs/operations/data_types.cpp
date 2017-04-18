@@ -112,7 +112,7 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 
     for(const std::string& subset_str: it->second)
     {
-      geoarray::dimension_t dimension;
+      eows::ogc::wcs::core::subset_t dimension;
 
       // TODO: Should use regex? (?<axis>[xyt]+)\((?<min>\d+),(?<max>\d+)\)
       ss << subset_str;
@@ -129,7 +129,7 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
       }
 
       // Seeking for duplicated keys
-      auto found = std::find_if(subsets.begin(), subsets.end(), [&dimension](const geoarray::dimension_t& elm) {
+      auto found = std::find_if(subsets.begin(), subsets.end(), [&dimension](const eows::ogc::wcs::core::subset_t& elm) {
         return elm.name == dimension.name;
       });
 
@@ -137,7 +137,7 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
         throw eows::ogc::wcs::invalid_axis_error("Duplicated axis " + dimension.name);
 
       // Retrieve axis min
-      ss >> dimension.min_idx;
+      ss >> dimension.min;
 
       ss >> c;
       if (c != ',')
@@ -146,7 +146,7 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
       validate_subset(ss);
 
       // Retrieve axis max
-      ss >> dimension.max_idx;
+      ss >> dimension.max;
 
       subsets.push_back(dimension);
 

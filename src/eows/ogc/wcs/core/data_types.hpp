@@ -66,6 +66,19 @@ namespace eows
           service_metadata_t service_metadata;
           content_t content;
         };
+
+        struct subset_t
+        {
+          std::string name;
+          std::size_t srid;
+          double min;
+          double max;
+
+          bool compare(const eows::ogc::wcs::core::subset_t& s)
+          {
+            return s.name == name;
+          }
+        };
       }
     }
   }
