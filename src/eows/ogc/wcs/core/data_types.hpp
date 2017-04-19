@@ -77,6 +77,12 @@ namespace eows
           double min; //!< Axis minimum value
           double max; //!< Axis maximum value
         };
+
+        struct range_subset_t
+        {
+          std::string raw;
+          std::vector<std::string> attributes;
+        };
       }
     }
   }

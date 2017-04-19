@@ -165,5 +165,13 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
       ss.str("");
       ss.clear();
     }
+  } // end if it(subset) != end()
+
+  it = query.find("rangesubset");
+
+  if (it != query.end())
+  {
+    boost::split(range_subset.attributes, it->second[0], boost::is_any_of(","));
+    range_subset.raw = it->second[0];
   }
 }

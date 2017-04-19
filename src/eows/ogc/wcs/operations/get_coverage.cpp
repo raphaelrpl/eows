@@ -308,11 +308,8 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Array containing client limits sent in WCS request that will be used to build SciDB AFL query
     std::vector<eows::geoarray::dimension_t> dimensions_to_query = pimpl_->retrieve_subsets(grid_array, used_extent);
 
-    // Open SciDB connection
-    eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
-
     // Preparing SciDB query string
-    std::string query_str = "subarray(" + array.name + ", ";
+    std::string query_str = "between(" + array.name + ", ";
 
     // Defining helpers for AFL Query generation
     std::string min_values;
@@ -332,6 +329,44 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Generating SciDB AFL statement
     query_str +=  min_values + ", " + max_values + ")";
 
+    // attributes_afl
+    std::string attributes_afl;
+    // Checking WCS RangeSubsetting
+    if (!pimpl_->request.range_subset.attributes.empty())
+    {
+      // For each given attribute
+      for(std::size_t i = 0; i < pimpl_->request.range_subset.attributes.size(); ++i)
+      {
+        const std::string& given_attr = pimpl_->request.range_subset.attributes[i];
+
+        auto found = std::find_if(array.attributes.begin(),
+                                   array.attributes.end(),
+                                   [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
+                                     return given_attr == array_attr.name;
+                                   });
+
+        if (found != array.attributes.end())
+          continue;
+
+        throw eows::ogc::wcs::no_such_field_error("No such field " + given_attr);
+      }
+      attributes_afl += pimpl_->request.range_subset.raw;
+    }
+    else
+    {
+      // Defaults
+      for(std::size_t i = 0; i < array.attributes.size(); ++i)
+        attributes_afl += array.attributes[i].name + ",";
+
+      // remove last char (",") from attributes_afl
+      attributes_afl.pop_back();
+    }
+
+    query_str = "project(" + query_str + ", " + attributes_afl + ")";
+
+    // Open SciDB connection
+    eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
+
     // Performing AFL query execution
     boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute(query_str);
     // Wrapping SciDB result with Scoped query to auto complete query exec
@@ -345,7 +380,12 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     // Defining output stream where SciDB will be stored (GML format)
     std::ostringstream ss;
-    auto attributes_size = array.attributes.size();
+
+    const ::scidb::ArrayDesc& array_desc = query_result->array->getArrayDesc();
+    const ::scidb::Attributes& array_attributes = array_desc.getAttributes(true);
+
+
+    auto attributes_size = array_attributes.size();
 
     // Delimiter used in GML generation
     const std::string row_deliter(",");
@@ -363,11 +403,14 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
       for(std::size_t attr_pos = 0; attr_pos < attributes_size; ++attr_pos)
       {
-        const geoarray::attribute_t& attr = array.attributes[attr_pos];
-        if (attr.datatype == geoarray::datatype_t::int16_dt)
-          ss << cell_it->get_int16(attr.name);
-        else // It is important cast to string to avoid stream inconsistency
-          ss << std::to_string(cell_it->get_int8(attr.name));
+        const ::scidb::AttributeDesc& attr_scidb = array_attributes[attr_pos];
+
+        const ::scidb::TypeId& type_id = attr_scidb.getType();
+
+        if (type_id == ::scidb::TID_INT16)
+          ss << cell_it->get_int16(attr_scidb.getName());
+        else if (type_id == ::scidb::TID_UINT8)
+          ss << std::to_string(cell_it->get_int8(attr_scidb.getName()));
 
         if (attr_pos + 1 < attributes_size)
           ss << attr_delimiter;
