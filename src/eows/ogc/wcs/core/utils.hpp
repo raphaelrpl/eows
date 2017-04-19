@@ -17,6 +17,7 @@ namespace eows
   {
     struct geoarray_t;
     struct dimension_t;
+    struct spatial_extent_t;
   }
 
   namespace ogc
@@ -58,7 +59,7 @@ namespace eows
          * \param node - XML element to append
          * \param array - Geo array metadata to generate gml::boundedBy element
          */
-        void make_coverage_bounded_by(rapidxml::xml_document<>*, rapidxml::xml_node<>*, const geoarray::geoarray_t&);
+        void make_coverage_bounded_by(rapidxml::xml_document<>*, rapidxml::xml_node<>*, const geoarray::spatial_extent_t&);
 
         /*!
          * \brief It generates WCS Coverage range type with SWE elements.

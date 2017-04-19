@@ -105,7 +105,9 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
   }
 }
 
-void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* node, const eows::geoarray::geoarray_t& array)
+void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* doc,
+                                                    rapidxml::xml_node<>* node,
+                                                    const eows::geoarray::spatial_extent_t& extent)
 {
   rapidxml::xml_node<>* bound = doc->allocate_node(rapidxml::node_element, "gml:boundedBy");
   node->append_node(bound);
@@ -118,10 +120,10 @@ void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* do
     envelope->append_attribute(doc->allocate_attribute("axisLabels", "Lat Long"));
     envelope->append_attribute(doc->allocate_attribute("srsDimension", "3"));
 
-    const std::string lower = std::to_string(array.spatial_extent.xmin) + " " +
-                              std::to_string(array.spatial_extent.ymin);
-    const std::string upper = std::to_string(array.spatial_extent.xmax) + " " +
-                              std::to_string(array.spatial_extent.ymax);
+    const std::string lower = std::to_string(extent.xmin) + " " +
+                              std::to_string(extent.ymin);
+    const std::string upper = std::to_string(extent.xmax) + " " +
+                              std::to_string(extent.ymax);
 
     envelope->append_node(doc->allocate_node(rapidxml::node_element, "gml:lowerCorner",
                                                 doc->allocate_string(lower.c_str())));

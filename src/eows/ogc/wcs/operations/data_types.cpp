@@ -111,6 +111,8 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
     stream << it->second[0];
     stream >> input_crs;
   }
+  else
+    input_crs = 4326;
 
   // Process Subsets
   it = query.find("subset");

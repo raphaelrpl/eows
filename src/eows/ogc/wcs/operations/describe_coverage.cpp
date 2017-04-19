@@ -100,7 +100,7 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
       coverage->append_attribute(xml_doc.allocate_attribute("gml:id", array.name.c_str()));
 
       // Preparing Bounds
-      eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, coverage, array);
+      eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, coverage, array.spatial_extent);
       // Preparing CoverageID
       {
         rapidxml::xml_node<>* coverage_id = xml_doc.allocate_node(rapidxml::node_element,
