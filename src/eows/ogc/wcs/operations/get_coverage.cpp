@@ -233,7 +233,7 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
       // Col_id
       if(client_subset.name == grid_array.geo_array->dimensions.x.name)
       {
-        validate(*grid_array.geo_array, latitude, longitude);
+        validate(*(grid_array.geo_array), latitude, longitude);
 
         extent.xmin = latitude;
         extent.xmax = longitude;
@@ -247,7 +247,7 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
       // Row ID
       else if(client_subset.name == grid_array.geo_array->dimensions.y.name)
       {
-        validate(*grid_array.geo_array, latitude, longitude);
+        validate(*(grid_array.geo_array), latitude, longitude);
 
         extent.ymin = latitude;
         extent.ymax = longitude;
@@ -340,10 +340,10 @@ void eows::ogc::wcs::operations::get_coverage::execute()
         const std::string& given_attr = pimpl_->request.range_subset.attributes[i];
 
         auto found = std::find_if(array.attributes.begin(),
-                                   array.attributes.end(),
-                                   [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
-                                     return given_attr == array_attr.name;
-                                   });
+                                  array.attributes.end(),
+                                  [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
+                                    return given_attr == array_attr.name;
+                                  });
 
         if (found != array.attributes.end())
           continue;
@@ -383,7 +383,6 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     const ::scidb::ArrayDesc& array_desc = query_result->array->getArrayDesc();
     const ::scidb::Attributes& array_attributes = array_desc.getAttributes(true);
-
 
     auto attributes_size = array_attributes.size();
 
@@ -441,7 +440,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     xml_doc.append_node(wcs_document);
 
     // Preparing bounded by
-    eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, used_extent);
+    eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array, used_extent);
     // Preparing domainset
     eows::ogc::wcs::core::make_coverage_domain_set(&xml_doc, wcs_document, array);
 
