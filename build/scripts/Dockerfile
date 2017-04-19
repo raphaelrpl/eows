@@ -201,4 +201,7 @@ RUN make -j 2
 WORKDIR /home/$scidb_usr
 ## Starting SciDB and compile EOWS dependencies
 ## ---
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# ENTRYPOINT ["/docker-entrypoint.sh"]
+# FIX: Jenkins Docker plugins does not start container properly when pass a entrypoint like /docker-entrypoint.sh. We must investigate it.
+# In order to get through it, we expose only uptime execution
+CMD uptime
