@@ -59,33 +59,6 @@ cd eows-3rdparty-0.3.0-linux-ubuntu-14.04
 valid $? "Error: could not enter 'eows-3rdparty-0.3.0-linux-ubuntu-14.04' dir"
 
 #
-# Check for cmake 3.7.2
-#
-if [ ! -f ./cmake-3.7.2.tar.gz ]; then
-  wget -O cmake-3.7.2.tar.gz https://cmake.org/files/v3.7/cmake-3.7.2.tar.gz
-  valid $? "Error: Could not download cmake 3.7.2"
-fi
-
-#
-# Qt5 (Required for CMake GUI)
-#
-sudo apt-get -y install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev libqt5designer5
-
-#
-# Installing CMake
-#
-cmake_expr_test=`cmake --version | awk 'NR==1{print $3}'` # Retrieving values only first line and third column
-if [ "$cmake_expr_test" != "3.7.2" ]; then
-  tar zxf cmake-3.7.2.tar.gz
-  valid $? "Could not extract CMake 3.7.2 tar.gz"
-  cd cmake-3.7.2
-  ./configure --qt-gui
-  make
-  sudo make install
-  cd ..
-fi
-
-#
 # Check installation dir
 #
 if [ "$EOWS_LIBS_DIR" == "" ]; then
@@ -97,6 +70,17 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EOWS_LIBS_DIR/lib"
 echo "installing 3rd-party libraries to '$EOWS_LIBS_DIR' ..."
 sleep 1s
 
+
+#
+# Check CMake version. EOWS requires 3.x
+#
+cmake_ver_test=`cmake --version | awk 'NR==1{print substr($3,0,2)}'`
+cmake_curr_ver=`cmake --version | awk 'NR==1{print $3}'`
+if [ $cmake_ver_test -le 2 ]; then
+  valid 1 "Error: EOWS requires CMake >= 3.x version but $cmake_curr_ver found. Please install CMake 3.x."
+else
+  echo "CMake installation ok. Version $cmake_curr_ver > 2.X"
+fi
 
 #
 # OpenSSL
