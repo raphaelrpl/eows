@@ -18,69 +18,69 @@
  */
 
 /*!
-  \file eows/ogc/wcs/manager.cpp
+  \file eows/ogc/ows/manager.cpp
 
-  \brief This class defines the implementation of WCS meta information access
+  \brief This class defines the implementation of OWS meta information access
 
   \author Raphael Willian da Costa
  */
 
 // EOWS
 #include "manager.hpp"
+#include "utils.hpp"
+#include "data_types.hpp"
+#include "exception.hpp"
 #include "../../core/app_settings.hpp"
 #include "../../core/utils.hpp"
 #include "../../core/defines.hpp"
-#include "core/utils.hpp"
-#include "core/data_types.hpp"
-#include "exception.hpp"
 #include "../../core/logger.hpp"
 
 // Boost
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
-struct eows::ogc::wcs::manager::impl
+struct eows::ogc::ows::manager::impl
 {
-  eows::ogc::wcs::core::capabilities_t capabilities;
+  eows::ogc::ows::provider_t provider;
 };
 
-eows::ogc::wcs::manager::manager()
+eows::ogc::ows::manager::manager()
   : pimpl_(new impl)
 {
 }
 
-eows::ogc::wcs::manager::~manager()
+eows::ogc::ows::manager::~manager()
 {
   delete pimpl_;
 }
 
-eows::ogc::wcs::manager& eows::ogc::wcs::manager::instance()
+eows::ogc::ows::manager& eows::ogc::ows::manager::instance()
 {
   static manager singleton;
   return singleton;
 }
 
-const eows::ogc::wcs::core::capabilities_t& eows::ogc::wcs::manager::capabilities() const
+const eows::ogc::ows::provider_t& eows::ogc::ows::manager::provider() const
 {
-  return pimpl_->capabilities;
+  return pimpl_->provider;
 }
 
-void eows::ogc::wcs::manager::initialize()
+void eows::ogc::ows::manager::initialize()
 {
   boost::filesystem::path cfg_file(eows::core::app_settings::instance().get_base_dir());
 
-  cfg_file /= EOWS_WCS_FILE;
+  cfg_file /= EOWS_OWS_FILE;
 
   EOWS_LOG_INFO("Reading file '" + cfg_file.string() + "'...");
 
   rapidjson::Document doc = eows::core::open_json_file(cfg_file.string());
 
-  if(!doc.HasMember("WCSCapabilities"))
-    throw eows::parse_error("Please, check key 'WCSCapabilities' in file '" EOWS_WCS_FILE "'.");
+  if(!doc.HasMember("provider"))
+    throw eows::parse_error("Please, check key 'provider' in file '" EOWS_OWS_FILE "'.");
 
-  const rapidjson::Value& jcapabilities = doc["WCSCapabilities"];
+  const rapidjson::Value& provider_json = doc["provider"];
 
-  core::read(jcapabilities, pimpl_->capabilities);
+  read(provider_json, pimpl_->provider);
 
   EOWS_LOG_INFO("Finished reading file '" + cfg_file.string() + "'!");
 }

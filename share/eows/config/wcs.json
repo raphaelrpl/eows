@@ -8,25 +8,6 @@
       "ServiceTypeVersion": "2.0.1",
       "Profiles": []
     },
-    "ServiceProvider": {
-      "ProviderName": "National Institute for Spatial Research",
-      "ProviderSite": "http://www.dpi.inpe.br",
-      "ServiceContact": {
-        "IndividualName": "Gilberto Queiroz",
-        "PositionName": "Computer Scientist",
-        "ContactInfo": {
-          "AddressType": "postal",
-          "Address": "Av. Astronautas, 1758",
-          "City": "São José dos Campos",
-          "StateOrProvince": "SP",
-          "PostCode": "12227-010",
-          "Country": "Brazil"
-        },
-        "ContactVoiceTelephone": "3208",
-        "ContactFacsimileTelephone": "3209",
-        "ContactEletronicMailAddress": "gribeiro"
-      }
-    },
     "OperationsMetadata": [
       {
         "name": "GetCapabilities",
@@ -55,14 +36,6 @@
     ],
     "ServiceMetadata": {
       "formatSupported": ["application/gml+xml"]
-    },
-    "Contents": [
-      {
-        "CoverageSummary": {
-          "id": "mod09q1",
-          "subtype": "GridCoverage"
-        }
-      }
-    ]
+    }
   }
 }

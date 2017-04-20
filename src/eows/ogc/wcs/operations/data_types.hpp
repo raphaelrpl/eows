@@ -32,6 +32,7 @@
 #include "../exception.hpp"
 // STL
 #include <string>
+#include <vector>
 
 namespace eows
 {
@@ -47,31 +48,9 @@ namespace eows
          */
         struct base_request
         {
-          base_request(const eows::core::query_string_t& query)
-            : request(), version(), service()
-          {
-            eows::core::query_string_t::const_iterator it = query.find("request");
+          base_request(const eows::core::query_string_t& query);
 
-            if (it == query.end()) {
-              throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
-            }
-            request = it->second;
-
-            it = query.find("service");
-
-            if (it == query.end()) {
-              throw eows::ogc::missing_parameter_error("Missing parameter 'service'", "service");
-            }
-            service = it->second;
-
-            it = query.find("version");
-
-            if (it != query.end()) {
-              version = it->second;
-            }
-          }
-
-          virtual ~base_request() {}
+          virtual ~base_request();
 
           std::string request;
           std::string version;
@@ -82,23 +61,23 @@ namespace eows
          */
         struct get_capabilities_request : public base_request
         {
-          get_capabilities_request(const eows::core::query_string_t& query)
-            : base_request(query)
-          {
-          }
+          get_capabilities_request(const eows::core::query_string_t& query);
         };
         /**
          * @brief Represents DescriveCoverage Request structure
          */
         struct describe_coverage_request : public base_request
         {
-          std::string coverageId;
+          describe_coverage_request(const eows::core::query_string_t& query);
+          std::vector<std::string> coverages_id;
         };
         /**
          * @brief Represents GetCoverage request structure
          */
         struct get_coverage_request : public base_request
         {
+          get_coverage_request(const eows::core::query_string_t& query);
+
           std::string coverageId;
           // TODO: implement
         };

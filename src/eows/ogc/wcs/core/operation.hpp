@@ -70,7 +70,7 @@ namespace eows
              * @todo Review it. For operation like GetCoverage that processes raster information, the output is not a std string
              * @returns string representation of operation
              */
-            virtual const std::string to_string() const = 0;
+            virtual const std::string& to_string() const = 0;
         };
       }
     }

@@ -18,15 +18,15 @@
  */
 
 /*!
-  \file eows/ogc/wcs/operations/get_capabilities.hpp
+  \file eows/ogc/wcs/operations/describe_coverage.hpp
 
   \brief Represents WCS GetCapabilities operation that retrieves XML representation
 
   \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_OGC_WCS_OPERATIONS_GET_CAPABILITIES_HPP__
-#define __EOWS_OGC_WCS_OPERATIONS_GET_CAPABILITIES_HPP__
+#ifndef __EOWS_OGC_WCS_OPERATIONS_DESCRIBE_COVERAGE_HPP__
+#define __EOWS_OGC_WCS_OPERATIONS_DESCRIBE_COVERAGE_HPP__
 
 // EOWS
 #include "../core/operation.hpp"
@@ -39,17 +39,17 @@ namespace eows
     {
       namespace operations
       {
-        struct get_capabilities_request;
+        struct describe_coverage_request;
 
         /**
          * @brief Represents WCS GetCapabilities implementation
          * It converts cached capability json document as gml+xml style
          */
-        class get_capabilities : public eows::ogc::wcs::core::operation
+        class describe_coverage : public eows::ogc::wcs::core::operation
         {
           public:
-            get_capabilities(const get_capabilities_request&);
-            ~get_capabilities();
+            describe_coverage(const describe_coverage_request&);
+            ~describe_coverage();
 
             /**
              * @brief Prepares XML encoder in order to generate WCS GetCapabilities
@@ -76,4 +76,4 @@ namespace eows
   }
 }
 
-#endif // __EOWS_OGC_WCS_OPERATIONS_GET_CAPABILITIES_HPP__
+#endif // __EOWS_OGC_WCS_OPERATIONS_DESCRIBE_COVERAGE_HPP__

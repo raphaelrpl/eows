@@ -241,3 +241,33 @@ eows::core::open_json_file(const std::string& path)
   return doc;
 }
 
+const std::string eows::core::read_node_as_string(const rapidjson::Value& node, const std::string& member_name)
+{
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
+  // TODO: auto format function in common
+  if((jit == node.MemberEnd()) || (!jit->value.IsString()))
+    throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
+  return jit->value.GetString();
+}
+
+
+std::map<std::string, std::string> eows::core::lowerify(const std::map<std::string, std::string>& given)
+{
+  std::map<std::string, std::string> out;
+
+  for(auto& it: given)
+  {
+    out.insert(std::pair<std::string, std::string>(to_lower(it.first), it.second));
+  }
+
+  return out;
+}
+
+std::string eows::core::to_lower(const std::string& str)
+{
+  std::string out;
+  out.resize(str.size());
+  std::transform(str.begin(), str.end(), out.begin(), ::tolower);
+
+  return out;
+}

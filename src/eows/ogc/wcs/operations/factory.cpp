@@ -28,12 +28,13 @@
 // EOWS
 #include "factory.hpp"
 #include "../core/operation.hpp"
-#include "../core/utils.hpp"
+#include "../../../core/utils.hpp"
 #include "../exception.hpp"
 // WCS Operation Data Types
 #include "data_types.hpp"
 // WCS Operation to build
 #include "get_capabilities.hpp"
+#include "describe_coverage.hpp"
 
 std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::build_operation(const eows::core::query_string_t& query)
 {
@@ -45,15 +46,17 @@ std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::bui
 
   std::unique_ptr<eows::ogc::wcs::core::operation> op;
 
-  if (eows::ogc::wcs::core::to_lower(request_it->second) == "getcapabilities")
+  if (eows::core::to_lower(request_it->second) == "getcapabilities")
   {
     get_capabilities_request capabilities_request(query);
     op.reset(new get_capabilities(capabilities_request));
     return std::move(op);
   }
-  else if (eows::ogc::wcs::core::to_lower(request_it->second) == "describecoverage")
+  else if (eows::core::to_lower(request_it->second) == "describecoverage")
   {
-    throw eows::ogc::not_implemented_error("Describe Coverage is not implemented yet", "request");
+    describe_coverage_request request(query);
+    op.reset(new describe_coverage(request));
+    return std::move(op);
   }
   else if (request_it->second == "GetCoverage")
   {

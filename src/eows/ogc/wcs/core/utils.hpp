@@ -2,14 +2,22 @@
 #define __EOWS_OGC_WCS_CORE_UTILS_HPP__
 
 // STL
+#include <vector>
 #include <string>
-#include <map>
 
 // RapidJSON
 #include <rapidjson/document.h>
 
+// RapidXML
+#include <rapidxml/rapidxml.hpp>
+
 namespace eows
 {
+  namespace geoarray
+  {
+    struct geoarray_t;
+  }
+
   namespace ogc
   {
     namespace wcs
@@ -25,53 +33,41 @@ namespace eows
         struct operation_metadata_t;
 
         /**
-         * @brief It tries to read rapidjson node value as string.
-         * @throws eows::parse_error When could not read or process as string like
-         * @return String value of node
-         */
-        const std::string read_node_as_string(const rapidjson::Value&, const std::string&);
-
-        /**
-         * @brief It reads WCS Capabilities from JSON document and fill values into capabilities object
+         * \brief It reads WCS Capabilities from JSON document and fill values into capabilities object
          */
         void read(const rapidjson::Value&, capabilities_t&);
 
         /**
-         * @brief It reads WCS Service Provider from JSON document and fill values into provider object
-         */
-        void read(const rapidjson::Value&, service_provider_t &);
-
-        /**
-         * @brief It reads WCS Service Identification from JSON document and fill values into object
+         * \brief It reads WCS Service Identification from JSON document and fill values into object
          */
         void read(const rapidjson::Value&, service_identification_t&);
 
         /**
-         * @brief It reads WCS Service Metadata from JSON document and fill values into object
+         * \brief It reads WCS Service Metadata from JSON document and fill values into object
          */
         void read(const rapidjson::Value&, service_metadata_t&);
 
         /**
-         * @brief It reads WCS Contents from JSON document and fill values into object
-         */
-        void read(const rapidjson::Value&, content_t&);
-
-        /**
-         * @brief It reads WCS Operations metadata from JSON document and fill values into object
+         * \brief It reads WCS Operations metadata from JSON document and fill values into object
          */
         void read(const rapidjson::Value &, operation_metadata_t&);
 
-        /**
-         * @brief It transforms a string into lowercase
-         * @return String lowercase
+        /*!
+         * \brief It generates WCS Coverage bounded by element.
+         * \param node - XML element to append
+         * \param array - Geo array metadata to generate gml::boundedBy element
          */
-        std::string to_lower(const std::string&);
+        void make_coverage_bounded_by(rapidxml::xml_document<>*, rapidxml::xml_node<>*, const geoarray::geoarray_t&);
 
-        /**
-         * @brief It applies lower case on given map keys and return a new map with these values
-         * @return Copy map with keys in lowercase
+        /*!
+         * \brief It generates WCS Coverage range type with SWE elements.
+         * \param doc - XML root document to generate children nodes/attributes
+         * \param node - XML element to append
+         * \param array - Geo array metadata to generate gml::boundedBy element
          */
-        std::map<std::string, std::string> lowerify(const std::map<std::string, std::string>&);
+        void make_coverage_range_type(rapidxml::xml_document<>*,
+                                      rapidxml::xml_node<>*,
+                                      const geoarray::geoarray_t&);
       }
     }
   }

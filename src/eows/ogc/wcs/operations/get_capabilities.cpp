@@ -31,6 +31,12 @@
 #include "data_types.hpp"
 #include "../manager.hpp"
 #include "../core/utils.hpp"
+// EOWS OGC ows module (provider)
+#include "../../ows/data_types.hpp"
+#include "../../ows/manager.hpp"
+// EOWS GeoArray (coverage summaries)
+#include "../../../geoarray/data_types.hpp"
+#include "../../../geoarray/geoarray_manager.hpp"
 
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
@@ -64,20 +70,6 @@ eows::ogc::wcs::operations::get_capabilities::~get_capabilities()
 void eows::ogc::wcs::operations::get_capabilities::execute()
 {
   const eows::ogc::wcs::core::capabilities_t capabilities = manager::instance().capabilities();
-
-  // Checking WCS version supported with client specified
-  if (!pimpl_->request.version.empty()) {
-    if (capabilities.service.service_type_version != pimpl_->request.version)
-    {
-      throw invalid_parameter_error("WCS Version '" + pimpl_->request.version +
-                                "' is not supported. Use '" + capabilities.service.service_type_version + "'",
-                                "version");
-    }
-  }
-  // Checking WCS service parameter
-  if (eows::ogc::wcs::core::to_lower(pimpl_->request.service) != "wcs")
-    throw invalid_parameter_error("Invalid service parameter '" + pimpl_->request.service + "'",
-                                  "service");
 
   rapidxml::xml_document<> xml_doc;
 
@@ -117,7 +109,7 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   child->value(capabilities.service.service_type_version.c_str());
   ows_identification->append_node(child);
 
-  for(auto profile: capabilities.service.profiles)
+  for(auto& profile: capabilities.service.profiles)
   {
     child = xml_doc.allocate_node(rapidxml::node_element, "ows:Profile");
     child->value(profile.c_str());
@@ -130,22 +122,22 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   // ==============
   rapidxml::xml_node<>* ows_provider = xml_doc.allocate_node(rapidxml::node_element, "ows:ServiceProvider");
   child = xml_doc.allocate_node(rapidxml::node_element, "ows:ProviderName");
-  child->value(capabilities.service_provider.provider_name.c_str());
+  child->value(capabilities.service_provider.name.c_str());
   ows_provider->append_node(child);
 
   child = xml_doc.allocate_node(rapidxml::node_element, "ows:ProviderSite");
-  child->value(capabilities.service_provider.provider_site.c_str());
+  child->value(capabilities.service_provider.site.c_str());
   ows_provider->append_node(child);
 
   child = xml_doc.allocate_node(rapidxml::node_element, "ows:ServiceContact");
-  const eows::ogc::wcs::core::service_contact_t& contact = capabilities.service_provider.service_contact;
+  const eows::ogc::ows::contact_t& contact = capabilities.service_provider.contact;
   // Processing Provider -> Contact -> Nodes[]
   rapidxml::xml_node<>* sub_child = xml_doc.allocate_node(rapidxml::node_element, "ows:IndividualName");
-  sub_child->value(contact.individual_name.c_str());
+  sub_child->value(contact.name.c_str());
   child->append_node(sub_child);
 
   sub_child = xml_doc.allocate_node(rapidxml::node_element, "ows:PositionName");
-  sub_child->value(contact.position_name.c_str());
+  sub_child->value(contact.position.c_str());
   child->append_node(sub_child);
   ows_provider->append_node(child);
   wcs_document->append_node(ows_provider);
@@ -188,16 +180,21 @@ void eows::ogc::wcs::operations::get_capabilities::execute()
   // Contents
   // ========
   child = xml_doc.allocate_node(rapidxml::node_element, "wcs:Contents");
-  for(const eows::ogc::wcs::core::coverage_summary_t& summary: capabilities.content.summaries)
+  std::vector<std::string> geoarrays = geoarray::geoarray_manager::instance().list_arrays();
+
+  for(const std::string& array_name: geoarrays)
   {
+    const geoarray::geoarray_t& array = geoarray::geoarray_manager::instance().get(array_name);
+
     sub_child = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSummary");
     {
       rapidxml::xml_node<>* coverage_node = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageId");
-      coverage_node->value(summary.coverage_id.c_str());
+      coverage_node->value(array.name.c_str());
       sub_child->append_node(coverage_node);
 
       coverage_node = xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSubtype");
-      coverage_node->value(summary.coverage_subtype.c_str());
+      // TODO: add it into geoarray_t
+      coverage_node->value("GridCoverage");
       sub_child->append_node(coverage_node);
     }
     child->append_node(sub_child);
@@ -212,7 +209,7 @@ const char*eows::ogc::wcs::operations::get_capabilities::content_type() const
   return pimpl_->format.c_str();
 }
 
-const std::string eows::ogc::wcs::operations::get_capabilities::to_string() const
+const std::string& eows::ogc::wcs::operations::get_capabilities::to_string() const
 {
   return pimpl_->xml_representation;
 }

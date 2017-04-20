@@ -31,23 +31,31 @@
 #include "../../core/http_request.hpp"
 #include "../../core/logger.hpp"
 #include "../../core/service_operations_manager.hpp"
-#include "core/utils.hpp"
+#include "../../core/utils.hpp"
 #include "manager.hpp"
 // WCS Operations
-#include "operations/get_capabilities.hpp"
 #include "operations/factory.hpp"
 #include "operations/error_handler.hpp"
 // STL
 #include <memory>
 
+//! It prepares a response output
+void make_response_error(eows::core::http_response& response, const std::string& error_msg, const std::string& content_type)
+{
+  response.set_status(eows::core::http_response::bad_request);
+  response.add_header(eows::core::http_response::CONTENT_TYPE, content_type);
+  response.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+  response.write(error_msg.c_str(), error_msg.size());
+}
+
 void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
                                      eows::core::http_response& res)
 {
-  // Putting every request parameters keys to lowercase
-  eows::core::query_string_t qstr = eows::ogc::wcs::core::lowerify(req.query_string());
-
   try
   {
+    // Putting every request parameters keys to lowercase
+    eows::core::query_string_t qstr = eows::core::lowerify(req.query_string());
+
     // Retrieve WCS Operation
     std::unique_ptr<eows::ogc::wcs::core::operation> op(operations::build_operation(qstr));
 
@@ -65,26 +73,15 @@ void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
   catch(const eows::ogc::ogc_error& e)
   {
     // Use WCS error handler
-    std::string output = operations::handle_error(e);
-
-    res.set_status(eows::core::http_response::bad_request);
-    res.add_header(eows::core::http_response::CONTENT_TYPE, "application/xml");
-    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-    res.write(output.c_str(), output.size());
+    make_response_error(res, operations::handle_error(e), "application/xml");
   }
   catch(const std::exception& e)
   {
-    std::string output = e.what();
-
-    res.set_status(eows::core::http_response::bad_request);
-    res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
-    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-    res.write(output.c_str(), output.size());
+    make_response_error(res, e.what(), "text/plain; charset=utf-8");
   }
 }
 
-void
-eows::ogc::wcs::initialize()
+void eows::ogc::wcs::initialize()
 {
   EOWS_LOG_INFO("Initializing OGC WCS...");
 

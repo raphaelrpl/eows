@@ -28,15 +28,21 @@
 #ifndef __EOWS_OGC_OWS_UTILS_HPP__
 #define __EOWS_OGC_OWS_UTILS_HPP__
 
+#include <rapidjson/document.h>
+
 namespace eows
 {
   namespace ogc
   {
     namespace ows
     {
-    
-      //! Initialize OWS support.
-      void initialize();
+      struct contact_t;
+      struct contact_info_t;
+      struct provider_t;
+
+      void read(const rapidjson::Value&, provider_t&);
+      void read(const rapidjson::Value&, contact_t&);
+      void read(const rapidjson::Value&, contact_info_t&);
 
     } // end namespace ows
   }   // end namespace ogc
