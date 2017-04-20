@@ -497,7 +497,7 @@ namespace eows
 
       int64_t row(const double& y) const
       {
-        double drow = (y - geo_array->i_meta.spatial_extent.ymin) / geo_array->i_meta.spatial_resolution.y;
+        double drow = (geo_array->i_meta.spatial_extent.ymax - y) / geo_array->i_meta.spatial_resolution.y;
 
         return static_cast<int64_t>(drow) + geo_array->dimensions.y.min_idx;
       }
