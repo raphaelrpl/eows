@@ -22,7 +22,7 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
   if (it == query.end() || it->second.empty()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
   }
-  request = it->second[0];
+  request = it->second;
 
   it = query.find("service");
 
@@ -30,20 +30,20 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
     throw eows::ogc::missing_parameter_error("Missing parameter 'service'", "service");
   }
 
-  if (eows::core::to_lower(it->second[0]) != "wcs")
-    throw eows::ogc::invalid_parameter_error("No service '" + it->second[0] + "'", "InvalidParameterValue");
+  if (eows::core::to_lower(it->second) != "wcs")
+    throw eows::ogc::invalid_parameter_error("No service '" + it->second + "'", "InvalidParameterValue");
 
-  service = it->second[0];
+  service = it->second;
 
   it = query.find("version");
 
-  if (it != query.end() && !it->second.empty())
+  if (it != query.end())
   {
-    if (it->second[0] != capabilities.service.service_type_version)
-      throw eows::ogc::not_supported_error("WCS version '"+it->second[0]+
+    if (it->second != capabilities.service.service_type_version)
+      throw eows::ogc::not_supported_error("WCS version '"+it->second+
                                            "' is not supported. Try '"+
                                            capabilities.service.service_type_version+"'", "VersionNegotiationFailed");
-    version = it->second[0];
+    version = it->second;
   }
 }
 
@@ -69,7 +69,7 @@ eows::ogc::wcs::operations::describe_coverage_request::describe_coverage_request
   }
 
   std::vector<std::string> sliced_coverages;
-  boost::split(sliced_coverages, it->second[0], boost::is_any_of(","));
+  boost::split(sliced_coverages, it->second, boost::is_any_of(","));
   coverages_id = sliced_coverages;
 }
 
@@ -84,11 +84,11 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 {
   eows::core::query_string_t::const_iterator it = query.find("coverageid");
 
-  if (it == query.end() || it->second.empty())
+  if (it == query.end())
   {
     throw eows::ogc::missing_parameter_error("Missing parameter 'CoverageID'", "emptyCoverageIdList");
   }
-  coverage_id = it->second[0];
+  coverage_id = it->second;
 
   it = query.find("format");
 
@@ -104,14 +104,18 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 //    format = it->second;
 //  }
   // Process Subsets
-  it = query.find("subset");
+  eows::core::query_string_t::const_iterator begin_it  = query.lower_bound("subset");
 
-  if (it != query.end())
+  if (begin_it != query.end())
   {
+    eows::core::query_string_t::const_iterator end_it = query.upper_bound("subset");
+
     std::stringstream ss;
 
-    for(const std::string& subset_str: it->second)
+    while(begin_it != end_it)
     {
+      const std::string subset_str = begin_it->second;
+
       geoarray::dimension_t dimension;
 
       // TODO: Should use regex? (?<axis>[xyt]+)\((?<min>\d+),(?<max>\d+)\)
@@ -153,6 +157,9 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
       // Cleaning stream
       ss.str("");
       ss.clear();
+
+      // Incrementing iterator
+      ++begin_it;
     }
   }
 }

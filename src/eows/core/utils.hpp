@@ -71,7 +71,7 @@ namespace eows
      * \brief It applies lower case on given map keys and return a new map with these values
      * \return Copy map with keys in lowercase
      */
-    std::map<std::string, std::vector<std::string> > lowerify(const std::map<std::string, std::vector<std::string>>&);
+    std::multimap<std::string, std::string> lowerify(const std::multimap<std::string, std::string>&);
     
     //! Split string into path and query-string
     std::pair<std::string, std::string>

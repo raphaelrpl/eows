@@ -76,7 +76,7 @@ eows::http::crow::expand(const std::string& query_str)
 
 //    if (result[k].empty())
 //    {
-      result[k].push_back(v);
+    result.insert(std::pair<std::string, std::string>(k, v));
 //    }
 
 //    result[decoded_k] = decoded_v;

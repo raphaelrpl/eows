@@ -47,19 +47,19 @@ std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::bui
 
   std::unique_ptr<eows::ogc::wcs::core::operation> op;
 
-  if (eows::core::to_lower(request_it->second[0]) == "getcapabilities")
+  if (eows::core::to_lower(request_it->second) == "getcapabilities")
   {
     get_capabilities_request capabilities_request(query);
     op.reset(new get_capabilities(capabilities_request));
     return std::move(op);
   }
-  else if (eows::core::to_lower(request_it->second[0]) == "describecoverage")
+  else if (eows::core::to_lower(request_it->second) == "describecoverage")
   {
     describe_coverage_request request(query);
     op.reset(new describe_coverage(request));
     return std::move(op);
   }
-  else if (request_it->second[0] == "GetCoverage")
+  else if (request_it->second == "GetCoverage")
   {
     get_coverage_request request(query);
     op.reset(new get_coverage(request));

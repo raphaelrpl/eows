@@ -39,7 +39,7 @@ namespace eows
   {
 
     //! Query string.
-    typedef std::map<std::string, std::vector<std::string>> query_string_t;
+    typedef std::multimap<std::string, std::string> query_string_t;
 
     /*!
       \enum content_type
