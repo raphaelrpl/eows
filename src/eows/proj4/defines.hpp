@@ -18,16 +18,16 @@
  */
 
 /*!
-  \file eows/core/defines.hpp
+  \file eows/proj4/defines.hpp
 
-  \brief Defines for EOWS.
+  \brief Defines for Proj4 module.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_CORE_DEFINES_HPP__
-#define __EOWS_CORE_DEFINES_HPP__
+#ifndef __EOWS_PROJ4_DEFINES_HPP__
+#define __EOWS_PROJ4_DEFINES_HPP__
 
-#define  EOWS_CONFIG_FILE "share/eows/config/eows.json"
+#define  EOWS_SRS_FILE "share/eows/config/srs.json"
 
-#endif // __EOWS_CORE_DEFINES_HPP__
+#endif // __EOWS_PROJ4_DEFINES_HPP__

@@ -27,8 +27,8 @@
 
 // EOWS
 #include "utils.hpp"
+#include "defines.hpp"
 #include "../core/app_settings.hpp"
-#include "../core/defines.hpp"
 #include "../core/logger.hpp"
 #include "../core/utils.hpp"
 #include "exception.hpp"

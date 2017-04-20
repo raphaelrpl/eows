@@ -18,16 +18,16 @@
  */
 
 /*!
-  \file eows/core/defines.hpp
+  \file eows/ogc/ows/defines.hpp
 
-  \brief Defines for EOWS.
+  \brief Defines for OGC OWS module.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_CORE_DEFINES_HPP__
-#define __EOWS_CORE_DEFINES_HPP__
+#ifndef __EOWS_OGC_OWS_DEFINES_HPP__
+#define __EOWS_OGC_OWS_DEFINES_HPP__
 
-#define  EOWS_CONFIG_FILE "share/eows/config/eows.json"
+#define  EOWS_OWS_FILE "share/eows/config/ows.json"
 
-#endif // __EOWS_CORE_DEFINES_HPP__
+#endif // __EOWS_OGC_OWS_DEFINES_HPP__

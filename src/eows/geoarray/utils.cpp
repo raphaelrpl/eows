@@ -27,8 +27,8 @@
 
 // EOWS
 #include "utils.hpp"
+#include "defines.hpp"
 #include "../core/app_settings.hpp"
-#include "../core/defines.hpp"
 #include "../core/logger.hpp"
 #include "../core/utils.hpp"
 #include "exception.hpp"
@@ -420,7 +420,7 @@ static void load_geoarrays()
   const rapidjson::Value& jarrays = doc["arrays"];
   
   if(!jarrays.IsArray())
-    throw eows::parse_error("Key 'arrays' in file '" EOWS_CONFIG_FILE "' must be a valid JSON array of objects.");
+    throw eows::parse_error("Key 'arrays' in file '" EOWS_GEOARRAYS_FILE "' must be a valid JSON array of objects.");
 
   for(rapidjson::SizeType i = 0; i < jarrays.Size(); ++i)
   {

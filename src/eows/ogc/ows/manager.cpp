@@ -30,9 +30,10 @@
 #include "utils.hpp"
 #include "data_types.hpp"
 #include "exception.hpp"
+#include "defines.hpp"
+// EOWS Core
 #include "../../core/app_settings.hpp"
 #include "../../core/utils.hpp"
-#include "../../core/defines.hpp"
 #include "../../core/logger.hpp"
 
 // Boost
