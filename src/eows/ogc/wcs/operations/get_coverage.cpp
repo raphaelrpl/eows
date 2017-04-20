@@ -398,8 +398,6 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     */
     while(!cell_it->end())
     {
-      auto coordinates = cell_it->get_position();
-
       for(std::size_t attr_pos = 0; attr_pos < attributes_size; ++attr_pos)
       {
         const ::scidb::AttributeDesc& attr_scidb = array_attributes[attr_pos];

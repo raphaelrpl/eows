@@ -192,8 +192,6 @@ void eows::ogc::wcs::core::make_coverage_domain_set(rapidxml::xml_document<>* do
         rapidxml::xml_node<>* grid_envelope = doc->allocate_node(rapidxml::node_element, "gml:GridEnvelope");
         limits->append_node(grid_envelope);
 
-
-
         std::string low = (std::to_string(array.dimensions.x.min_idx) + " ") +
                           (std::to_string(array.dimensions.y.min_idx) + " ") +
                            std::to_string(array.dimensions.t.min_idx);

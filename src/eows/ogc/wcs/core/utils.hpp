@@ -70,6 +70,8 @@ namespace eows
 
         /*!
          * \brief It generates WCS Coverage range type with SWE elements.
+         * \todo Populate XML elements from attributes directly instead array, due in GetCoverage operation must retrive only affected
+         * fields.
          * \param doc - XML root document to generate children nodes/attributes
          * \param node - XML element to append
          * \param array - Geo array metadata to generate gml::boundedBy element
