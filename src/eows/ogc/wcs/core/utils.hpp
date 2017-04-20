@@ -68,6 +68,16 @@ namespace eows
         void make_coverage_range_type(rapidxml::xml_document<>*,
                                       rapidxml::xml_node<>*,
                                       const geoarray::geoarray_t&);
+
+        /*!
+         * \brief It generates WCS Coverage domain set
+         * \param doc - XML root document to generate children nodes/attributes
+         * \param node - XML parent element
+         * \param array - Geo array with metadata information to generate domain element
+         */
+        void make_coverage_domain_set(rapidxml::xml_document<>*,
+                                      rapidxml::xml_node<>*,
+                                      const geoarray::geoarray_t&);
       }
     }
   }

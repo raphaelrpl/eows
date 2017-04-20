@@ -20,7 +20,7 @@
 /*!
   \file eows/ogc/wcs/operations/describe_coverage.hpp
 
-  \brief Represents WCS GetCapabilities operation that retrieves XML representation
+  \brief Represents WCS DescribeCoverage operation that retrieves XML representation
 
   \author Raphael Willian da Costa
  */

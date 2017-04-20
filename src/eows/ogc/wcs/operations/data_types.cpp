@@ -31,7 +31,8 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
 
   it = query.find("version");
 
-  if (it != query.end()) {
+  if (it != query.end())
+  {
     if (it->second != capabilities.service.service_type_version)
       throw eows::ogc::not_supported_error("WCS version '"+it->second+
                                            "' is not supported. Try '"+
@@ -56,7 +57,8 @@ eows::ogc::wcs::operations::describe_coverage_request::describe_coverage_request
 {
   eows::core::query_string_t::const_iterator it = query.find("coverageid");
 
-  if (it == query.end()) {
+  if (it == query.end())
+  {
     throw eows::ogc::missing_parameter_error("Missing parameter 'CoverageID'", "emptyCoverageIdList");
   }
 
@@ -68,5 +70,26 @@ eows::ogc::wcs::operations::describe_coverage_request::describe_coverage_request
 eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eows::core::query_string_t& query)
   : base_request(query)
 {
+  eows::core::query_string_t::const_iterator it = query.find("coverageid");
 
+  if (it == query.end())
+  {
+    throw eows::ogc::missing_parameter_error("Missing parameter 'CoverageID'", "emptyCoverageIdList");
+  }
+  coverage_id = it->second;
+
+  it = query.find("format");
+
+  std::string default_format = "application/gml+xml";
+  // Setting default format
+//  if (it == query.end())
+    format = default_format;
+//  else
+//  {
+//    if (it->second != default_format)
+//      throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
+
+//    format = it->second;
+//  }
+  // Process Subsets
 }
