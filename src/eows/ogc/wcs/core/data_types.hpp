@@ -66,6 +66,23 @@ namespace eows
           service_metadata_t service_metadata;
           content_t content;
         };
+
+        /*!
+         * \brief Represents a WCS subset given by client
+         */
+        struct subset_t
+        {
+          std::string name; //!< Axis name
+          std::size_t srid; //!< Projection SRID (TODO: Implement it)
+          double min; //!< Axis minimum value
+          double max; //!< Axis maximum value
+        };
+
+        struct range_subset_t
+        {
+          std::string raw;
+          std::vector<std::string> attributes;
+        };
       }
     }
   }

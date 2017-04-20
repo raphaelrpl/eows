@@ -30,6 +30,9 @@
 #include "data_types.hpp"
 #include "../core/utils.hpp"
 
+// EOWS Logger
+#include "../../../core/logger.hpp"
+
 // EOWS GeoArray
 #include "../../../geoarray/data_types.hpp"
 #include "../../../geoarray/geoarray_manager.hpp"
@@ -42,7 +45,7 @@
 #include "../../../scidb/cell_iterator.hpp"
 
 // EOWS Proj4
-//#include "../../../proj4/srs.hpp"
+#include "../../../proj4/srs.hpp"
 
 // RapidXML
 #include <rapidxml/rapidxml.hpp>
@@ -54,48 +57,81 @@
 // Boost
 #include <boost/shared_ptr.hpp>
 
+
+thread_local eows::proj4::spatial_ref_map t_srs_idx;
+
+/*!
+ * \brief The SciDB scoped query helper to auto complete query
+ */
+struct scoped_query
+{
+  boost::shared_ptr< ::scidb::QueryResult > qresult;
+  eows::scidb::connection* conn;
+
+  scoped_query(boost::shared_ptr< ::scidb::QueryResult > qr, eows::scidb::connection* c)
+    : qresult(std::move(qr)), conn(c)
+  {
+  }
+
+  ~scoped_query()
+  {
+    try
+    {
+      if(qresult != nullptr)
+        conn->completed(qresult->queryID);
+    }
+    catch(...)
+    {
+      EOWS_LOG_ERROR("scoped_query destructor is throwing exception!");
+    }
+  }
+};
+
+
 // struct Impl implementation
 struct eows::ogc::wcs::operations::get_coverage::impl
 {
   impl(const eows::ogc::wcs::operations::get_coverage_request& req)
     : request(req), output()
   {
-
   }
-
-  /*!
-   * \brief It performs a Geo Array dimensions validate from each one of subsets given by user
-   * \param array - Geoarray with meta axis information
-   * \throws eows::ogc::wcs::invalid_axis_error - When axis value is invalid
-   */
-  void validate_subset(const eows::geoarray::geoarray_t& array);
-
-  /*!
-   * \brief It checks given subset limits
-   * \param subset Subset sent by client
-   * \param array_dimension - Geo array dimension of axis
-   * \throws eows::ogc::wcs::invalid_axis_error When client given limits does not match array limits
-   */
-  bool is_valid_subset(const eows::geoarray::dimension_t& subset, const eows::geoarray::dimension_t& array_dimension);
 
   /*!
    * \brief It tries to find a geoarray dimension with client subsets. If found, use client subset limits. Otherwise, set default
    * to Geo array
    *
-   * \param dimension - Target dimension to find
+   * \param dimensions - Dimensions Array to search. It must be client limits in WCS request or array default
+   * \param target - Target dimension to find
    * \param min_value - Min value to append
    * \param max_value - Max value to append
    */
-  void format_dimension_limits(const eows::geoarray::dimension_t& dimension, std::string& min_value, std::string& max_value);
+  void format_dimension_limits(const std::vector<eows::geoarray::dimension_t> dimensions,
+                               const eows::geoarray::dimension_t& target,
+                               std::string& min_value,
+                               std::string& max_value);
 
   /*!
    * \brief It reprojects a dimension in lat long mode to Grid scale mode in order to retrieve correct array values
-   * \todo Implement it
-   * \param dimension - Target dimension to fill
-   * \param minx - Min value
-   * \param maxx - Max value
+   *
+   * \param array - Geo array with dimensions
+   * \param srid - SRID to convert
+   * \param x - Value of X to reproject
+   * \param y - Value of Y to reproject
    */
-  void reproject(eows::geoarray::dimension_t& dimension, const double& minx, const double& maxx);
+  void reproject(const eows::geoarray::geoarray_t& array, const std::size_t& srid, double& x, double& y);
+
+  /*!
+   * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
+   * if latitude/longitude reprojected intersects with geoarray. Throws exception when it does not intersects.
+   *
+   * \param array - Geo array with meta information
+   * \param latitude - Latitude value
+   * \param longitude - Longitude value
+   * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
+   */
+  void validate(const eows::geoarray::geoarray_t& array, double& latitude, double& longitude);
+
+  std::vector<eows::geoarray::dimension_t> retrieve_subsets(const eows::geoarray::grid& grid_array, geoarray::spatial_extent_t extent);
 
   //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
@@ -105,46 +141,14 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   std::string output;
 };
 
-bool eows::ogc::wcs::operations::get_coverage::impl::is_valid_subset(const eows::geoarray::dimension_t & subset,
-                                                                     const eows::geoarray::dimension_t & array_dimension)
-{
-  // If found, check limits
-  if (subset.name == array_dimension.name)
-  {
-    if (subset.min_idx >= array_dimension.min_idx &&
-        subset.max_idx <= array_dimension.max_idx)
-      return true;
-
-    throw eows::ogc::wcs::invalid_axis_error("Invalid axis limits \"" + subset.name + "\" \"" +
-                                             std::to_string(subset.min_idx) + "\" and \"" +
-                                             std::to_string(subset.max_idx) + "\".");
-  }
-
-  return false;
-}
-
-void eows::ogc::wcs::operations::get_coverage::impl::validate_subset(const eows::geoarray::geoarray_t& array)
-{
-  if (!request.subsets.empty())
-  {
-    for(const geoarray::dimension_t& subset: request.subsets)
-    {
-      if (is_valid_subset(subset, array.dimensions.x) ||
-          is_valid_subset(subset, array.dimensions.y) ||
-          is_valid_subset(subset, array.dimensions.t))
-        continue;
-
-      throw eows::ogc::wcs::invalid_axis_error("No axis '" + subset.name + "' found");
-    }
-  }
-}
-
-void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(const eows::geoarray::dimension_t& dimension,
+void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(const std::vector<eows::geoarray::dimension_t> dimensions,
+                                                                             const eows::geoarray::dimension_t& target,
                                                                              std::string& min_value,
                                                                              std::string& max_value)
 {
-  auto dit = geoarray::find_by_name(request.subsets, dimension.name);
-  if (dit != request.subsets.end())
+  // Finding respective array dimension from client limits based in target (geoarray) dimension
+  auto dit = geoarray::find_by_name(dimensions, target.name);
+  if (dit != dimensions.end())
   {
     min_value += std::to_string(dit->min_idx);
     max_value += std::to_string(dit->max_idx);
@@ -152,14 +156,127 @@ void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(con
   else
   {
     // Setting defaults
-    min_value += std::to_string(dimension.min_idx);
-    max_value += std::to_string(dimension.max_idx);
+    min_value += std::to_string(target.min_idx);
+    max_value += std::to_string(target.max_idx);
   }
 }
 
-void eows::ogc::wcs::operations::get_coverage::impl::reproject(eows::geoarray::dimension_t& dimension, const double& minx, const double& maxx)
+void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoarray::geoarray_t& array,
+                                                               const std::size_t& srid,
+                                                               double& x,
+                                                               double& y)
 {
-  throw eows::ogc::not_implemented_error("Reproject subset in lat/log to Grid is not implemented yet", "");
+  eows::proj4::spatial_reference* src_srs = nullptr;
+  eows::proj4::spatial_reference* dst_srs = nullptr;
+
+  // First of all, we must reproject client subsets to an compatible array
+  eows::proj4::spatial_ref_map::const_iterator it = t_srs_idx.find(request.input_crs);
+
+  // If it already indexed
+  if(it != t_srs_idx.end())
+    src_srs = it->second.get();
+  else
+  {
+    // Retrieving GeoArray SRS (dst)
+    const eows::proj4::srs_description_t& srs_desc = eows::proj4::srs_manager::instance().get(request.input_crs);
+    std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(srs_desc.proj4_txt));
+
+    src_srs = srs.get();
+    t_srs_idx.insert(std::make_pair(request.input_crs, std::move(srs)));
+  }
+
+  eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(array.i_meta.srid);
+
+  if(it_srid_target != t_srs_idx.end())
+    dst_srs = it_srid_target->second.get();
+  else
+  {
+    const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(array.i_meta.srid);
+
+    std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(dst_desc.proj4_txt));
+
+    dst_srs = srs.get();
+
+    t_srs_idx.insert(std::make_pair(array.i_meta.srid, std::move(srs)));
+  }
+
+  eows::proj4::transform(*src_srs, *dst_srs, x, y);
+}
+
+void eows::ogc::wcs::operations::get_coverage::impl::validate(const eows::geoarray::geoarray_t& array,
+                                                              double& latitude,
+                                                              double& longitude)
+{
+  // Performs re-projection of values if the SRID are different
+  if (request.input_crs != array.srid)
+    reproject(array, request.input_crs, latitude, longitude);
+
+  // Validate Limits
+  if (!array.spatial_extent.intersects(latitude, longitude))
+    throw eows::ogc::wcs::invalid_axis_error("Values does not intersects");
+}
+
+std::vector<eows::geoarray::dimension_t>
+eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geoarray::grid& grid_array,
+                                                                 eows::geoarray::spatial_extent_t extent)
+{
+  std::vector<eows::geoarray::dimension_t> output;
+
+  // If WCS client gives subset limits, use them
+  if (request.subsets.size() > 0)
+  {
+    // Now, we offer coverage 3 dimensions. In this case, we formed harded-code with this value to process GetCoverage. TODO: change it
+    for(const eows::ogc::wcs::core::subset_t& client_subset: request.subsets)
+    {
+      double latitude = client_subset.min;
+      double longitude = client_subset.max;
+      // Col_id
+      if(client_subset.name == grid_array.geo_array->dimensions.x.name)
+      {
+        validate(*(grid_array.geo_array), latitude, longitude);
+
+        extent.xmin = latitude;
+        extent.xmax = longitude;
+
+        eows::geoarray::dimension_t d;
+        d.name = client_subset.name;
+        d.min_idx = grid_array.col(latitude);
+        d.max_idx = grid_array.col(longitude);
+        output.push_back(d);
+      }
+      // Row ID
+      else if(client_subset.name == grid_array.geo_array->dimensions.y.name)
+      {
+        validate(*(grid_array.geo_array), latitude, longitude);
+
+        extent.ymin = latitude;
+        extent.ymax = longitude;
+
+        eows::geoarray::dimension_t d;
+        d.name = client_subset.name;
+        d.min_idx = grid_array.row(latitude);
+        d.max_idx = grid_array.row(longitude);
+        output.push_back(d);
+      }
+      // Time ID
+      else if(client_subset.name == grid_array.geo_array->dimensions.t.name)
+      {
+        if (client_subset.min < grid_array.geo_array->dimensions.t.min_idx ||
+            client_subset.max > grid_array.geo_array->dimensions.t.max_idx)
+          throw eows::ogc::wcs::invalid_axis_error("Time axis does not intersects. " + client_subset.name);
+
+        eows::geoarray::dimension_t time_dimension;
+        time_dimension.name = client_subset.name;
+        time_dimension.min_idx = client_subset.min;
+        time_dimension.max_idx = client_subset.max;
+        output.push_back(time_dimension);
+      }
+      else
+        throw eows::ogc::wcs::invalid_axis_error("No axis found. " + client_subset.name);
+    } // end for
+  } // end if subsets.size()
+
+  return output;
 }
 
 // GetCoverage Implementations
@@ -182,58 +299,120 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Retrieve GeoArray information
     const geoarray::geoarray_t& array = geoarray::geoarray_manager::instance().get(pimpl_->request.coverage_id);
 
-    // validate axis given even if client no sent
-    pimpl_->validate_subset(array);
+    // Wrapping Geo Array as Grid type
+    eows::geoarray::grid grid_array(&array);
 
-    // Retrieve from SciDB
-    eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
+    // Retrieving spatial extent (Default array)
+    geoarray::spatial_extent_t used_extent = array.spatial_extent;
 
-    const geoarray::dimensions_t& dimensions = array.dimensions;
+    // Array containing client limits sent in WCS request that will be used to build SciDB AFL query
+    std::vector<eows::geoarray::dimension_t> dimensions_to_query = pimpl_->retrieve_subsets(grid_array, used_extent);
 
     // Preparing SciDB query string
-    std::string query_str = "subarray(" + array.name + ", ";
+    std::string query_str = "between(" + array.name + ", ";
 
-    // Defining helpers for Query generation
+    // Defining helpers for AFL Query generation
     std::string min_values;
     std::string max_values;
 
     // Finding X
-    pimpl_->format_dimension_limits(dimensions.x, min_values, max_values);
+    pimpl_->format_dimension_limits(dimensions_to_query, array.dimensions.x, min_values, max_values);
     min_values += ", ";
     max_values += ", ";
     // Finding Y
-    pimpl_->format_dimension_limits(dimensions.y, min_values, max_values);
+    pimpl_->format_dimension_limits(dimensions_to_query, array.dimensions.y, min_values, max_values);
     min_values += ", ";
     max_values += ", ";
     // Finding T
-    pimpl_->format_dimension_limits(dimensions.t, min_values, max_values);
+    pimpl_->format_dimension_limits(dimensions_to_query, array.dimensions.t, min_values, max_values);
 
     // Generating SciDB AFL statement
     query_str +=  min_values + ", " + max_values + ")";
 
+    // attributes_afl
+    std::string attributes_afl;
+    // Checking WCS RangeSubsetting
+    if (!pimpl_->request.range_subset.attributes.empty())
+    {
+      // For each given attribute
+      for(std::size_t i = 0; i < pimpl_->request.range_subset.attributes.size(); ++i)
+      {
+        const std::string& given_attr = pimpl_->request.range_subset.attributes[i];
+
+        auto found = std::find_if(array.attributes.begin(),
+                                  array.attributes.end(),
+                                  [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
+                                    return given_attr == array_attr.name;
+                                  });
+
+        if (found != array.attributes.end())
+          continue;
+
+        throw eows::ogc::wcs::no_such_field_error("No such field " + given_attr);
+      }
+      attributes_afl += pimpl_->request.range_subset.raw;
+    }
+    else
+    {
+      // Defaults
+      for(std::size_t i = 0; i < array.attributes.size(); ++i)
+        attributes_afl += array.attributes[i].name + ",";
+
+      // remove last char (",") from attributes_afl
+      attributes_afl.pop_back();
+    }
+
+    query_str = "project(" + query_str + ", " + attributes_afl + ")";
+
+    // Open SciDB connection
+    eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
+
+    // Performing AFL query execution
     boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute(query_str);
+    // Wrapping SciDB result with Scoped query to auto complete query exec
+    scoped_query sc(query_result, &conn);
+
+    // TODO: Improve err message when no data found or query error
+    if((query_result == nullptr) || (query_result->array == nullptr))
+      throw eows::scidb::query_execution_error("Error in SciDB query result");
+
     boost::shared_ptr<eows::scidb::cell_iterator> cell_it(new eows::scidb::cell_iterator(query_result->array));
 
     // Defining output stream where SciDB will be stored (GML format)
     std::ostringstream ss;
-    auto attributes_size = array.attributes.size();
 
+    const ::scidb::ArrayDesc& array_desc = query_result->array->getArrayDesc();
+    const ::scidb::Attributes& array_attributes = array_desc.getAttributes(true);
+
+    auto attributes_size = array_attributes.size();
+
+    // Delimiter used in GML generation
+    const std::string row_deliter(",");
+    const std::string attr_delimiter(" ");
+
+    /*
+      It will generate SciDB data output in GML syntax.
+      Note: You may change delimiters as you need, but remember to update GML output.
+
+      data0_attr1 data0_attr2 data0_attrN,dataN_attr1 dataN_attr2 dataN_attrN,...
+    */
     while(!cell_it->end())
     {
-      auto coordinates = cell_it->get_position();
-
       for(std::size_t attr_pos = 0; attr_pos < attributes_size; ++attr_pos)
       {
-        const geoarray::attribute_t& attr = array.attributes[attr_pos];
-        if (attr.datatype == geoarray::datatype_t::int16_dt)
-          ss << cell_it->get_int16(attr.name);
-        else // It is important cast to string to avoid stream inconsistency
-          ss << std::to_string(cell_it->get_int8(attr.name));
+        const ::scidb::AttributeDesc& attr_scidb = array_attributes[attr_pos];
+
+        const ::scidb::TypeId& type_id = attr_scidb.getType();
+
+        if (type_id == ::scidb::TID_INT16)
+          ss << cell_it->get_int16(attr_scidb.getName());
+        else if (type_id == ::scidb::TID_UINT8)
+          ss << std::to_string(cell_it->get_int8(attr_scidb.getName()));
 
         if (attr_pos + 1 < attributes_size)
-          ss << " ";
+          ss << attr_delimiter;
       }
-      ss << ",";
+      ss << row_deliter;
       cell_it->next();
     }
 
@@ -259,7 +438,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     xml_doc.append_node(wcs_document);
 
     // Preparing bounded by
-    eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array);
+    eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array, used_extent);
     // Preparing domainset
     eows::ogc::wcs::core::make_coverage_domain_set(&xml_doc, wcs_document, array);
 
@@ -272,9 +451,9 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     rapidxml::xml_node<>* tuple_list = xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", scidb_data.c_str(), 0, scidb_data.size());
     // Defining delimiter in order to client use to read properly row
-    tuple_list->append_attribute(xml_doc.allocate_attribute("ts", ","));
+    tuple_list->append_attribute(xml_doc.allocate_attribute("ts", row_deliter.c_str()));
     // Defining delimiter for coverage attribute
-    tuple_list->append_attribute(xml_doc.allocate_attribute("cs", " "));
+    tuple_list->append_attribute(xml_doc.allocate_attribute("cs", attr_delimiter.c_str()));
 
     data_block->append_node(tuple_list);
     range_set->append_node(data_block);
@@ -284,18 +463,25 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     rapidxml::print(std::back_inserter(pimpl_->output), xml_doc, 0);
   }
+  // known module error
   catch(const eows::ogc::ogc_error&)
   {
     throw;
   }
+  // thirdparty errors
   catch(const eows::scidb::connection_open_error& e)
   {
     // Todo: Throw UnappliedError
     throw eows::ogc::ogc_error(e.what(), "");
   }
-  catch(const std::exception& e)
+  // STL errors
+  catch(const std::invalid_argument& e) //thrown by geoarray::manager.get() when array not found
   {
     throw wcs::no_such_coverage_error("No such coverage '" + pimpl_->request.coverage_id + "'");
+  }
+  catch(const std::exception& e)
+  {
+    throw;
   }
 }
 

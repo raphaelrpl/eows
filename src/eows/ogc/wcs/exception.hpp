@@ -53,6 +53,14 @@ namespace eows
         {
         }
       };
+
+      struct no_such_field_error : public virtual ogc_error
+      {
+        no_such_field_error(const std::string& s)
+          : ogc_error(s, "NoSuchField")
+        {
+        }
+      };
     } // end namespace wcs
   }   // end namespace ogc
 }     // end namespace eows

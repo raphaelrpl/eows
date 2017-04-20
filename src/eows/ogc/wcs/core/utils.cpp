@@ -105,7 +105,10 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
   }
 }
 
-void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* node, const eows::geoarray::geoarray_t& array)
+void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* doc,
+                                                    rapidxml::xml_node<>* node,
+                                                    const eows::geoarray::geoarray_t& array,
+                                                    const eows::geoarray::spatial_extent_t& extent)
 {
   rapidxml::xml_node<>* bound = doc->allocate_node(rapidxml::node_element, "gml:boundedBy");
   node->append_node(bound);
@@ -114,14 +117,15 @@ void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* do
     // Appending Envelope into bound
     bound->append_node(envelope);
 
+    std::string axis_labels = array.dimensions.x.name + " " + array.dimensions.y.name;
     envelope->append_attribute(doc->allocate_attribute("srsName", "http://www.opengis.net/def/crs/EPSG/0/4326"));
-    envelope->append_attribute(doc->allocate_attribute("axisLabels", "Lat Long"));
+    envelope->append_attribute(doc->allocate_attribute("axisLabels", doc->allocate_string(axis_labels.c_str())));
     envelope->append_attribute(doc->allocate_attribute("srsDimension", "3"));
 
-    const std::string lower = std::to_string(array.spatial_extent.xmin) + " " +
-                              std::to_string(array.spatial_extent.ymin);
-    const std::string upper = std::to_string(array.spatial_extent.xmax) + " " +
-                              std::to_string(array.spatial_extent.ymax);
+    const std::string lower = std::to_string(extent.xmin) + " " +
+                              std::to_string(extent.ymin);
+    const std::string upper = std::to_string(extent.xmax) + " " +
+                              std::to_string(extent.ymax);
 
     envelope->append_node(doc->allocate_node(rapidxml::node_element, "gml:lowerCorner",
                                                 doc->allocate_string(lower.c_str())));
@@ -192,8 +196,8 @@ void eows::ogc::wcs::core::make_coverage_domain_set(rapidxml::xml_document<>* do
                           (std::to_string(array.dimensions.y.min_idx) + " ") +
                            std::to_string(array.dimensions.t.min_idx);
         rapidxml::xml_node<>* elm = doc->allocate_node(rapidxml::node_element,
-                                                          "gml:low",
-                                                          doc->allocate_string(low.c_str()));
+                                                       "gml:low",
+                                                       doc->allocate_string(low.c_str()));
 
         std::string high = (std::to_string(array.dimensions.x.max_idx) + " " +
                             std::to_string(array.dimensions.y.max_idx) + " " +
@@ -206,7 +210,10 @@ void eows::ogc::wcs::core::make_coverage_domain_set(rapidxml::xml_document<>* do
         grid_envelope->append_node(elm);
       }
 
-      limits->append_node(doc->allocate_node(rapidxml::node_element, "gml:axisLabels", "x y t"));
+      std::string array_limits_str = array.dimensions.x.name + " ";
+      array_limits_str += array.dimensions.y.name + " ";
+      array_limits_str += array.dimensions.t.name;
+      limits->append_node(doc->allocate_node(rapidxml::node_element, "gml:axisLabels", doc->allocate_string(array_limits_str.c_str())));
     }
   }
 }

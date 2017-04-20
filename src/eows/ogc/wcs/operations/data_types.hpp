@@ -30,10 +30,9 @@
 
 // EOWS Wcs
 #include "../exception.hpp"
+#include "../core/data_types.hpp"
 // EOWS Core
 #include "../../../core/data_types.hpp"
-// EOWS GeoArray (dimension_t)
-#include "../../../geoarray/data_types.hpp"
 
 // STL
 #include <string>
@@ -57,9 +56,9 @@ namespace eows
 
           virtual ~base_request();
 
-          std::string request;
-          std::string version;
-          std::string service;
+          std::string request; //!< WCS rqeuest operation
+          std::string version; //!< WCS version
+          std::string service; //!< WCS service name (Fixed to "WCS")
         };
         /**
          * \brief Represents a GetCapabilities request structure
@@ -74,7 +73,7 @@ namespace eows
         struct describe_coverage_request : public base_request
         {
           describe_coverage_request(const eows::core::query_string_t& query);
-          std::vector<std::string> coverages_id;
+          std::vector<std::string> coverages_id; //!< Coverage Identifier List to describe
         };
         /**
          * \brief Represents GetCoverage request structure
@@ -83,11 +82,12 @@ namespace eows
         {
           get_coverage_request(const eows::core::query_string_t& query);
 
-          std::string coverage_id;
-          std::string format;
-          std::size_t output_crs;
-          std::vector<eows::geoarray::dimension_t> subsets;
-          // TODO: implement
+          std::string coverage_id; //!< Coverage Identifier
+          std::string format; //!< Response format output
+          std::size_t input_crs; //!< InputCRS of subsetting
+          std::size_t output_crs {4326}; //!< OutputCRS of operation
+          std::vector<eows::ogc::wcs::core::subset_t> subsets; //!< Client subsets to retrieve coverage portion
+          eows::ogc::wcs::core::range_subset_t range_subset; //!< Coverage attributes to perform slice
         };
       }
     }

@@ -17,6 +17,7 @@ namespace eows
   {
     struct geoarray_t;
     struct dimension_t;
+    struct spatial_extent_t;
   }
 
   namespace ogc
@@ -35,8 +36,10 @@ namespace eows
 
         /**
          * \brief It reads WCS Capabilities from JSON document and fill values into capabilities object
+         * \param doc - JSON document
+         * \param capability - WCS Capabilities object to fill
          */
-        void read(const rapidjson::Value&, capabilities_t&);
+        void read(const rapidjson::Value& doc, capabilities_t& capability);
 
         /**
          * \brief It reads WCS Service Identification from JSON document and fill values into object
@@ -55,20 +58,27 @@ namespace eows
 
         /*!
          * \brief It generates WCS Coverage bounded by element.
+         * \param doc - XML root document
          * \param node - XML element to append
          * \param array - Geo array metadata to generate gml::boundedBy element
+         * \param extent - Extent values used in request to expand in GML
          */
-        void make_coverage_bounded_by(rapidxml::xml_document<>*, rapidxml::xml_node<>*, const geoarray::geoarray_t&);
+        void make_coverage_bounded_by(rapidxml::xml_document<>*,
+                                      rapidxml::xml_node<>*,
+                                      const geoarray::geoarray_t& array,
+                                      const geoarray::spatial_extent_t&);
 
         /*!
          * \brief It generates WCS Coverage range type with SWE elements.
+         * \todo Populate XML elements from attributes directly instead array, due in GetCoverage operation must retrive only affected
+         * fields.
          * \param doc - XML root document to generate children nodes/attributes
          * \param node - XML element to append
          * \param array - Geo array metadata to generate gml::boundedBy element
          */
-        void make_coverage_range_type(rapidxml::xml_document<>*,
-                                      rapidxml::xml_node<>*,
-                                      const geoarray::geoarray_t&);
+        void make_coverage_range_type(rapidxml::xml_document<>* doc,
+                                      rapidxml::xml_node<>* node,
+                                      const geoarray::geoarray_t& array);
 
         /*!
          * \brief It generates WCS Coverage domain set
@@ -76,9 +86,9 @@ namespace eows
          * \param node - XML parent element
          * \param array - Geo array with metadata information to generate domain element
          */
-        void make_coverage_domain_set(rapidxml::xml_document<>*,
-                                      rapidxml::xml_node<>*,
-                                      const geoarray::geoarray_t&);
+        void make_coverage_domain_set(rapidxml::xml_document<>* doc,
+                                      rapidxml::xml_node<>* node,
+                                      const geoarray::geoarray_t& array);
       }
     }
   }
