@@ -25,8 +25,8 @@
   \author Raphael Willian da Costa
  */
 
-#ifndef __EOWCS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
-#define __EOWCS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
+#ifndef __EOWS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
+#define __EOWS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
 
 // EOWS Wcs
 #include "../exception.hpp"
@@ -94,4 +94,4 @@ namespace eows
   }
 }
 
-#endif // __EOWCS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
+#endif // __EOWS_OGC_WCS_OPERATIONS_CORE_DATA_TYPES__
