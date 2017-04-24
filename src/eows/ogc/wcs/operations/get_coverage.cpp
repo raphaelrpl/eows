@@ -43,6 +43,7 @@
 #include "../../../scidb/connection.hpp"
 #include "../../../scidb/connection_pool.hpp"
 #include "../../../scidb/cell_iterator.hpp"
+#include "../../../scidb/scoped_query.hpp"
 
 // EOWS Proj4
 #include "../../../proj4/srs.hpp"
@@ -59,34 +60,6 @@
 
 
 thread_local eows::proj4::spatial_ref_map t_srs_idx;
-
-/*!
- * \brief The SciDB scoped query helper to auto complete query
- */
-struct scoped_query
-{
-  boost::shared_ptr< ::scidb::QueryResult > qresult;
-  eows::scidb::connection* conn;
-
-  scoped_query(boost::shared_ptr< ::scidb::QueryResult > qr, eows::scidb::connection* c)
-    : qresult(std::move(qr)), conn(c)
-  {
-  }
-
-  ~scoped_query()
-  {
-    try
-    {
-      if(qresult != nullptr)
-        conn->completed(qresult->queryID);
-    }
-    catch(...)
-    {
-      EOWS_LOG_ERROR("scoped_query destructor is throwing exception!");
-    }
-  }
-};
-
 
 // struct Impl implementation
 struct eows::ogc::wcs::operations::get_coverage::impl
@@ -370,7 +343,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Performing AFL query execution
     boost::shared_ptr<::scidb::QueryResult> query_result = conn.execute(query_str);
     // Wrapping SciDB result with Scoped query to auto complete query exec
-    scoped_query sc(query_result, &conn);
+    eows::scidb::scoped_query sc(query_result, &conn);
 
     // TODO: Improve err message when no data found or query error
     if((query_result == nullptr) || (query_result->array == nullptr))

@@ -38,7 +38,7 @@
 #include "../scidb/connection.hpp"
 #include "../scidb/connection_pool.hpp"
 #include "../scidb/cell_iterator.hpp"
-#include "../scidb/utils.hpp"
+#include "../scidb/scoped_query.hpp"
 
 // Boost
 #include <boost/algorithm/string/classification.hpp>
@@ -59,30 +59,6 @@ thread_local eows::proj4::spatial_ref_map t_srs_idx;
 
 static void
 return_exception(const char* msg, eows::core::http_response& res);
-
-struct scoped_query
-{
-  boost::shared_ptr< ::scidb::QueryResult > qresult;
-  eows::scidb::connection* conn;
-
-  scoped_query(boost::shared_ptr< ::scidb::QueryResult > qr, eows::scidb::connection* c)
-    : qresult(std::move(qr)), conn(c)
-  {
-  }
-
-  ~scoped_query()
-  {
-    try
-    {
-      if(qresult != nullptr)
-        conn->completed(qresult->queryID);
-    }
-    catch(...)
-    {
-      EOWS_LOG_ERROR("scoped_query destructor is throwing exception!");
-    }
-  }
-};
 
 namespace eows
 {
@@ -136,12 +112,10 @@ namespace eows
     /*!
       \brief Fill the timeseries with cell values.
 
-      \param values   A pre-allocated vector with at least nvalues.
-      \param nvalues  Number of expected values in the timeseries.
-      \param it       An array iterator.
-      \param id       The datatype of the cell.
-      \param time_idx The time coordinate index. It will be used to map cell-values to the time-series vector.
-      \param offset   An offset considered in the time_idx mapping.
+      \param values    A pre-allocated vector with at least nvalues.
+      \param cell_it   EOWS cell iterator for SciDB query result
+      \param id        The datatype of the cell.
+      \param attr_name An attribute name of array
 
       \exception eows::outof_bounds_error If the number of values found is less than or greater than the number o expected time-series values.
     */
@@ -720,7 +694,7 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
 
     boost::shared_ptr< ::scidb::QueryResult > qresult = conn.execute(str_afl);
 
-    scoped_query sc(qresult, &conn);
+    eows::scidb::scoped_query sc(qresult, &conn);
 
     if((qresult == nullptr) || (qresult->array == nullptr))
     {

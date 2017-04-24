@@ -23,6 +23,7 @@
   \brief Specific exception types for OGC Runtime module.
 
   \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
 #ifndef __EOWS_OGC_EXCEPTION_HPP__
@@ -37,7 +38,7 @@ namespace eows
   namespace ogc
   {
     /**
-     * @brief Generic error for OGC service
+     * \brief Generic error for OGC service
      */
     struct ogc_error : public eows_error
     {
@@ -56,7 +57,7 @@ namespace eows
     };
 
     /**
-     * @brief Used when user misses required parameter(s) on OGC service.
+     * \brief Used when user misses required parameter(s) on OGC service.
      */
     struct missing_parameter_error : public virtual ogc_error
     {
@@ -65,7 +66,7 @@ namespace eows
     };
 
     /**
-     * @brief Used when user gives parameter, but it seems inconsistent or invalid
+     * \brief Used when user gives parameter, but it seems inconsistent or invalid
      */
     struct invalid_parameter_error : public virtual ogc_error
     {
@@ -74,7 +75,7 @@ namespace eows
     };
 
     /**
-     * @brief Used when a function or operation is not implemented on OGC service yet.
+     * \brief Used when a function or operation is not implemented on OGC service yet.
      */
     struct not_implemented_error : public virtual ogc_error
     {
@@ -83,7 +84,7 @@ namespace eows
     };
 
     /**
-     * @brief Used when a function or operation is not currently supported
+     * \brief Used when a function or operation is not currently supported
      */
     struct not_supported_error : public virtual ogc_error
     {
