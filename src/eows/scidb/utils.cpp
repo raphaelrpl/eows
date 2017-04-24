@@ -127,3 +127,20 @@ void eows::scidb::initialize()
   EOWS_LOG_INFO("SciDB runtime module initialized!");
 }
 
+
+std::string eows::scidb::between(const std::string& array_name, const std::vector<int>& min_values, const std::vector<int>& max_values)
+{
+  std::string output("between(" + array_name);
+
+  for(auto& min: min_values)
+    output += "," + std::to_string(min);
+
+  output += ",";
+
+  for(auto& max: max_values)
+    output += "," + std::to_string(max);
+
+  output += ")";
+
+  return output;
+}

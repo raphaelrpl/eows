@@ -28,6 +28,10 @@
 #ifndef __EOWS_SCIDB_UTILS_HPP__
 #define __EOWS_SCIDB_UTILS_HPP__
 
+// STL
+#include <string>
+#include <vector>
+
 namespace eows
 {
   namespace scidb
@@ -37,6 +41,15 @@ namespace eows
       \exception std::exception ...
      */
     void initialize();
+
+    /*!
+     * \brief It generates a between query from SciDB
+     * \param array_name - Array name
+     * \param min_values - An array with min values from each axis.
+     * \param max_values - An array with max values from each axis.
+     * \return SciDB Between query
+     */
+    std::string between(const std::string& array_name, const std::vector<int>& min_values, const std::vector<int>& max_values);
 
   }  // end namespace scidb
 }    // end namespace eows

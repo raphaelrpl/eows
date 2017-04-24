@@ -37,6 +37,8 @@
 #include "../proj4/srs.hpp"
 #include "../scidb/connection.hpp"
 #include "../scidb/connection_pool.hpp"
+#include "../scidb/cell_iterator.hpp"
+#include "../scidb/utils.hpp"
 
 // Boost
 #include <boost/algorithm/string/classification.hpp>
@@ -144,11 +146,9 @@ namespace eows
       \exception eows::outof_bounds_error If the number of values found is less than or greater than the number o expected time-series values.
     */
     void fill_time_series(std::vector<double>& values,
-                          std::size_t nvalues,
-                          ::scidb::ConstArrayIterator* it,
+                          boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                           const ::scidb::TypeId& id,
-                          ::scidb::Coordinate time_idx,
-                          int64_t offset);
+                          const std::string& attr_name);
 
   }  // end namespace wtss
 }    // end namespace eows
@@ -505,7 +505,7 @@ eows::wtss::decode_timeseries_request(const eows::core::query_string_t& qstr)
   if(it == it_end)
     throw std::invalid_argument("WTSS 'time_series' operation error: \"coverage\" parameter is missing.");
 
-  parameters.cv_name = it->second[0];
+  parameters.cv_name = it->second;
 
 // get queried attributes
   it = qstr.find("attributes");
@@ -712,7 +712,7 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
     const auto& attr_name = parameters.queried_attributes[i];
     const std::size_t& attr_pos = vparameters.attribute_positions[i];
 
-// the query string
+// the query string    
     std::string str_afl = "project( between(" + parameters.cv_name + ", "
                         + std::to_string(cell.col) + "," + std::to_string(cell.row) + "," + std::to_string(vparameters.time_interval.first) + ","
                         + std::to_string(cell.col) + "," + std::to_string(cell.row) + "," + std::to_string(vparameters.time_interval.second) + "), "
@@ -737,15 +737,18 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
       continue; // no query result returned after querying database.
     }
 
+    boost::shared_ptr<eows::scidb::cell_iterator> cell_it(new eows::scidb::cell_iterator(qresult->array));
+
     std::vector<double> values(ntime_pts, vparameters.geo_array->attributes[attr_pos].missing_value);
 
     const ::scidb::ArrayDesc& array_desc = qresult->array->getArrayDesc();
     const ::scidb::Attributes& array_attributes = array_desc.getAttributes(true);
     const ::scidb::AttributeDesc& attr = array_attributes.front();
-    std::shared_ptr< ::scidb::ConstArrayIterator > array_it = qresult->array->getConstIterator(attr.getId());
+
+    auto attr_type = attr.getType();
 
 // TODO: remover o valor constante 2 abaixo pela coluna temporal!
-    fill_time_series(values, ntime_pts, array_it.get(), attr.getType(), 2, -(vparameters.time_interval.first));
+    fill_time_series(values, cell_it, attr.getType(), attr_name);
 
     writer.StartObject();
 
@@ -761,130 +764,32 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
   writer.EndArray();
 }
 
-#define EOWS_FILL_VECTOR(values, nvalues, array_it, time_idx, offset, get_name) \
-  std::size_t npts = 0; \
-  \
-  while(!array_it->end()) \
-  { \
-  \
-    const ::scidb::ConstChunk& chunk = array_it->getChunk(); \
-  \
-    std::shared_ptr< ::scidb::ConstChunkIterator > chunk_it = chunk.getConstIterator(); \
-  \
-    while(!chunk_it->end()) \
-    { \
-      ++npts; \
-  \
-      if(npts > nvalues) \
-        throw std::out_of_range("Invalid timeseries range: found too many values."); \
-  \
-      const ::scidb::Value& v = chunk_it->getItem(); \
-  \
-      const ::scidb::Coordinates& coords = chunk_it->getPosition(); \
-  \
-      ::scidb::Coordinate cell_idx = coords[time_idx] + offset; \
-  \
-      values[cell_idx] = v.get_name(); \
-  \
-      ++(*chunk_it); \
-    } \
-  \
-    ++(*array_it); \
- \
-  } \
-  if(npts != nvalues) \
-      throw std::out_of_range("Invalid timeseries range: missing some values.");
-
-inline static void
-eows_scidb_fill_int8(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getInt8)
-}
-
-inline static void
-eows_scidb_fill_uint8(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getUint8)
-}
-
-inline static void
-eows_scidb_fill_int16(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getInt16)
-}
-
-inline static void
-eows_scidb_fill_uint16(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getUint16)
-}
-
-inline static void
-eows_scidb_fill_int32(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getInt32)
-}
-
-inline static void
-eows_scidb_fill_uint32(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getUint32)
-}
-
-inline static void
-eows_scidb_fill_int64(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getInt64)
-}
-
-inline static void
-eows_scidb_fill_uint64(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getUint64)
-}
-
-inline static void
-eows_scidb_fill_float(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getFloat)
-}
-
-inline static void
-eows_scidb_fill_double(std::vector<double>& values, std::size_t nvalues, ::scidb::ConstArrayIterator* it, ::scidb::Coordinate time_idx, int64_t offset)
-{
-  EOWS_FILL_VECTOR(values, nvalues, it, time_idx, offset, getDouble)
-}
-
 void
 eows::wtss::fill_time_series(std::vector<double>& values,
-                            std::size_t nvalues,
-                            ::scidb::ConstArrayIterator* it,
-                            const ::scidb::TypeId& id,
-                            ::scidb::Coordinate time_idx,
-                            int64_t offset)
+                             boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
+                             const ::scidb::TypeId& id,
+                             const std::string& attr_name)
 {
-  assert(values.size() == nvalues);
+  assert(cell_it);
 
-  if(id == ::scidb::TID_INT8)
-    eows_scidb_fill_int8(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_UINT8)
-    eows_scidb_fill_uint8(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_INT16)
-    eows_scidb_fill_int16(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_UINT16)
-    eows_scidb_fill_uint16(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_INT32)
-    eows_scidb_fill_int32(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_UINT32)
-    eows_scidb_fill_uint32(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_INT64)
-      eows_scidb_fill_int64(values, nvalues, it, time_idx, offset);
-    else if(id == ::scidb::TID_UINT64)
-      eows_scidb_fill_uint64(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_FLOAT)
-    eows_scidb_fill_float(values, nvalues, it, time_idx, offset);
-  else if(id == ::scidb::TID_DOUBLE)
-    eows_scidb_fill_double(values, nvalues, it, time_idx, offset);
-  else
-    throw std::runtime_error("Could not fill values vector with iterator items: data type not supported.");
+  // TODO: Should pass a functor to read data to avoid conditional checks for type?
+  while(!cell_it->end())
+  {
+    if (id == ::scidb::TID_INT8)
+      values.push_back(cell_it->get_int8(attr_name));
+    else if(id == ::scidb::TID_UINT8)
+      values.push_back(cell_it->get_uint8(attr_name));
+    else if(id == ::scidb::TID_INT16)
+      values.push_back(cell_it->get_int16(attr_name));
+    else if(id == ::scidb::TID_UINT16)
+      values.push_back(cell_it->get_uint16(attr_name));
+    else if(id == ::scidb::TID_INT32)
+      values.push_back(cell_it->get_int32(attr_name));
+    else if(id == ::scidb::TID_INT32)
+      values.push_back(cell_it->get_int32(attr_name));
+    else
+      throw std::runtime_error("Could not fill values vector with iterator items: data type not supported.");
+
+    cell_it->next();
+  }
 }
