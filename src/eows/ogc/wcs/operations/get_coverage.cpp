@@ -104,7 +104,14 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    */
   void validate(const eows::geoarray::geoarray_t& array, double& latitude, double& longitude);
 
-  std::vector<eows::geoarray::dimension_t> retrieve_subsets(const eows::geoarray::grid& grid_array, geoarray::spatial_extent_t extent);
+  /*!
+   * \brief It retrieves all subsets given by client. Once listed, it performs a subset validation for each one to provide a
+   * correct projection values and limits.
+   * \param grid_array - geo array metadata
+   * \param extent - Extent based in client subset
+   * \return Array of subsets converted to grid dimensions
+   */
+  std::vector<eows::geoarray::dimension_t> retrieve_subsets(const eows::geoarray::grid& grid_array, geoarray::spatial_extent_t& extent);
 
   //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
@@ -191,7 +198,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::validate(const eows::geoarr
 
 std::vector<eows::geoarray::dimension_t>
 eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geoarray::grid& grid_array,
-                                                                 eows::geoarray::spatial_extent_t extent)
+                                                                 eows::geoarray::spatial_extent_t& extent)
 {
   std::vector<eows::geoarray::dimension_t> output;
 

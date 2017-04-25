@@ -69,6 +69,7 @@ eows::ogc::wcs::operations::describe_coverage_request::describe_coverage_request
   }
 
   std::vector<std::string> sliced_coverages;
+
   boost::split(sliced_coverages, it->second, boost::is_any_of(","));
   coverages_id = sliced_coverages;
 }
