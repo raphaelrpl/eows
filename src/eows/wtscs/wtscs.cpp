@@ -93,12 +93,12 @@ void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
 
     // TODO: Generate the  UUID identifier to create the AFL syntax.
 
-//    boost::uuids::uuid u;
-//    int d = u.size();
-//    std::stringstream s;
-//    s << u;
-//    std::string mys = s.str();
-//    int a = 2;
+    boost::uuids::uuid u;
+    int d = u.size();
+    std::stringstream s;
+    s << u;
+    std::string mys = s.str();
+    int a = 2;
     // It Sends the AFL request.
     // The answer is a URL wrapping the request UUID identifier.
     // Ex. http://localhost:7654/wtscs/status?UUID=123456687
