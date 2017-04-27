@@ -44,43 +44,6 @@ namespace eows
   namespace wtscs
   {
 
-    /*! \brief Generic input parameters structure.
-     *
-     *
-     */
-    struct base_input_parameters
-    {
-      virtual ~base_input_parameters() = default;
-    };
-
-    /*! \brief Input parameters structure for TWDTW algorithm.
-     *
-     *
-     */
-    struct twdtw_input_parameters : base_input_parameters
-    {
-      std::string cv_name;
-      std::vector<std::string> attributes;
-      eows::geoarray::spatial_extent_t roi;
-      std::string start_date;
-      std::string end_date;
-      std::string by;
-      double overlap;
-      double alpha;
-      double beta;
-      std::string output_array_name;
-    };
-
-    /*! \brief Binomial structure algorithm-input parameters.
-     *
-     *
-     */
-    struct classify_request_parameters
-    {
-      std::string algorithm;
-      std::unique_ptr<base_input_parameters> input_parameters;
-    };
-
     /*! \brief Check the Status of your Request.
      *
      *  You can use the status operator to display the current status of your request.
@@ -131,8 +94,8 @@ namespace eows
      */
     void initialize();
 
-  }   // end namespace wtscs
-}     // end namespace eows
+  } // end namespace wtscs
+} // end namespace eows
 
-#endif  // __EOWS_OGC_WMS_WMS_HPP__
+#endif // __EOWS_OGC_WMS_WMS_HPP__
 

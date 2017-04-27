@@ -19,19 +19,25 @@
 
 // EOWS
 #include "wtscs.hpp"
+#include "parserequest.hpp"
 #include "../core/http_response.hpp"
 #include "../core/http_request.hpp"
 #include "../core/logger.hpp"
 #include "../core/service_operations_manager.hpp"
 #include "../core/utils.hpp"
 #include "../geoarray/data_types.hpp"
+#include "../geoarray/geoarray_manager.hpp"
 //#include "../exception.hpp"
 
 //// C++ Standard Library
 //#include <memory>
+#include <sstream>
 
 // Boost
 #include <boost/format.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 // RapidJSON
 #include <rapidjson/rapidjson.h>
@@ -42,7 +48,7 @@ static void return_exception(const char* msg, eows::core::http_response& res);
 
 void eows::wtscs::status_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
-//  TODO: See how to implement the status_handler methods!.
+  // TODO: See how to implement the status_handler methods!.
 
   std::string return_msg("\"status_handler\"");
 
@@ -50,101 +56,70 @@ void eows::wtscs::status_handler::do_get(const eows::core::http_request& req, eo
 
   res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
   res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-
   res.write(return_msg.c_str(), return_msg.size());
 }
 
 void eows::wtscs::list_algorithms_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
-    std::vector<std::string> algorithms{ "twdtw", "bfast", "bfast-monitor" };
+  std::vector<std::string> algorithms{ "twdtw", "bfast", "bfast-monitor" };
 
-    rapidjson::StringBuffer buff;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
+  rapidjson::StringBuffer buff;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
 
-    writer.StartObject();
+  writer.StartObject();
 
-    writer.Key("algorithms", static_cast<rapidjson::SizeType>(sizeof("algorithms") -1));
-    eows::core::write_string_array(algorithms.begin(), algorithms.end(), writer);
+  writer.Key("algorithms", static_cast<rapidjson::SizeType>(sizeof("algorithms") -1));
+  eows::core::write_string_array(algorithms.begin(), algorithms.end(), writer);
 
-    writer.EndObject();
+  writer.EndObject();
 
-    res.set_status(eows::core::http_response::OK);
+  res.set_status(eows::core::http_response::OK);
 
-    res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
-    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
+  res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
-    res.write(buff.GetString(), buff.GetSize());
+  res.write(buff.GetString(), buff.GetSize());
 }
 
 void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
                                             eows::core::http_response& res)
 {
-  const char* request = req.content();
 
-  rapidjson::Document doc;
-
+  // Parsing the request into a Document.
+  parseRequest parRequest;
   try
   {
-    doc.Parse(request);
+    parRequest.setParameters(req.content());
 
-    if(doc.HasParseError())
-    {
-      boost::format err_msg("Error parsing wtscs classify request: %1%.");
+    // TODO: Generate the  UUID identifier to create the AFL syntax.
 
-      throw eows::parse_error((err_msg % doc.GetParseError()).str());
-    }
-
-    if(!doc.IsObject() || doc.IsNull())
-      throw eows::parse_error("Error parsing wtscs classify request: unexpected request format.");
-
-    classify_request_parameters req_parameters;
-
-    rapidjson::Value::ConstMemberIterator jalgorithm = doc.FindMember("algorithm");
-
-    if((jalgorithm == doc.MemberEnd()) || (!jalgorithm->value.IsString()))
-      throw eows::parse_error("Please check key 'algorithm' in WTSCS classify request.");
-
-//  TODO: To get and check up the input parameters.
-
-//  If algorithm exist then extract the specific parameters.
-//
-//  req_parameters.algorithm = jalgorithm->value.GetString();
-
-//  rapidjson::Value::ConstMemberIterator jCoverage = doc.FindMember("coverage");
-//  if((jInputParameters == doc.MemberEnd()) || (!jInputParameters->value.IsString()))
-//  throw eows::parse_error("Please check key 'coverage' in WTSCS classify request.");
-//  ...
-//  Other case:
-//  eows::parse_error("Algortihm no found.");
-
-//  Obs: Store the patterns file in a directory visible by SciDB.
+//    boost::uuids::uuid u;
+//    int d = u.size();
+//    std::stringstream s;
+//    s << u;
+//    std::string mys = s.str();
+//    int a = 2;
+    // It Sends the AFL request.
+    // The answer is a URL wrapping the request UUID identifier.
+    // Ex. http://localhost:7654/wtscs/status?UUID=123456687
 
 
+//    // assembly the response
+//    rapidjson::StringBuffer buff;
+//    rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
 
-//  TODO: Generate the  UUID identifier to create the AFL syntax.
+//    writer.StartObject();
 
-//  It Sends the AFL request.
-//  The answer is a URL wrapping the request UUID identifier.
-//  Ex. http://localhost:7654/wtscs/status?UUID=123456687
+//    writer.Key("status", static_cast<rapidjson::SizeType>(sizeof("status") -1));
+//    writer.String(parRequest.algorithm.c_str(), static_cast<rapidjson::SizeType>(parRequest.algorithm.length()));
+//    writer.EndObject();
 
+//    res.set_status(eows::core::http_response::OK);
 
-//  assembly the response
-    rapidjson::StringBuffer buff;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
+//    res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
+//    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
-    writer.StartObject();
-
-    writer.Key("status", static_cast<rapidjson::SizeType>(sizeof("status") -1));
-    writer.String(req_parameters.algorithm.c_str(), static_cast<rapidjson::SizeType>(req_parameters.algorithm.length()));
-
-    writer.EndObject();
-
-    res.set_status(eows::core::http_response::OK);
-
-    res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
-    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-
-    res.write(buff.GetString(), buff.GetSize());
+//    res.write(buff.GetString(), buff.GetSize());
   }
   catch(const std::exception& e)
   {
