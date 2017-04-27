@@ -1,5 +1,5 @@
-file(GLOB EOWS_SRC_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.cpp)
-file(GLOB EOWS_HDR_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.hpp)
+file(GLOB_RECURSE EOWS_SRC_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.cpp)
+file(GLOB_RECURSE EOWS_HDR_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/ogc/wcs/*.hpp)
 
 source_group("Source Files"  FILES ${EOWS_SRC_FILES})
 source_group("Header Files"  FILES ${EOWS_HDR_FILES})
@@ -7,6 +7,8 @@ source_group("Header Files"  FILES ${EOWS_HDR_FILES})
 add_library(eows_wcs SHARED ${EOWS_HDR_FILES} ${EOWS_SRC_FILES})
 
 target_link_libraries(eows_wcs    eows_core
+                                  eows_geoarray
+                                  eows_scidb
                                   ${Boost_SYSTEM_LIBRARY}
                                   ${Boost_DATE_TIME_LIBRARY}
                                   ${Boost_CHRONO_LIBRARY}

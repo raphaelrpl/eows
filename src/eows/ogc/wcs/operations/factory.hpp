@@ -18,35 +18,44 @@
  */
 
 /*!
-  \file eows/ogc/wcs/exception.hpp
+  \file eows/ogc/wcs/operations/factory.hpp
 
-  \brief Specific exception types for OGC WCS Runtime module.
+  \brief Represents a factory WCS operation builder
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_OGC_WCS_EXCEPTION_HPP__
-#define __EOWS_OGC_WCS_EXCEPTION_HPP__
+#ifndef __EOWS_OGC_WCS_OPERATIONS_HPP__
+#define __EOWS_OGC_WCS_OPERATIONS_HPP__
 
 // EOWS
-#include "../exception.hpp"
+#include "../../../core/data_types.hpp"
+// STL
+#include <memory>
 
 namespace eows
 {
-  //! The namespace for the OGC WCS Runtime module of EOWS.
   namespace ogc
   {
     namespace wcs
     {
-      struct no_such_coverage_error : public virtual ogc_error
+      namespace core
       {
-        no_such_coverage_error(const std::string& s)
-          : ogc_error(s, "NoSuchCoverage")
-        {
-        }
-      };
-    } // end namespace wcs
-  }   // end namespace ogc
-}     // end namespace eows
+        //! Forward declarations
+        class operation;
+      }
 
-#endif  // __EOWS_OGC_WCS_EXCEPTION_HPP__
+      namespace operations
+      {
+        /**
+         * @brief It builds a OGC WCS operation based on query string
+         * @throws missing_parameter_error When request does not match required arguments
+         * @return Unique Ptr to the built operation
+         */
+        std::unique_ptr<eows::ogc::wcs::core::operation> build_operation(const eows::core::query_string_t&);
+      }
+    }
+  }
+}
+
+#endif // __EOWS_OGC_WCS_OPERATIONS_HPP__

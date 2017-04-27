@@ -62,7 +62,7 @@
 #endif
 
 #ifdef EOWS_OGC_OWS_ENABLED
-#include "../ogc/ows/utils.hpp"
+#include "../ogc/ows/ows.hpp"
 #endif
 
 #ifdef EOWS_SERVICE_ECHO_ENABLED

@@ -18,35 +18,39 @@
  */
 
 /*!
-  \file eows/ogc/wcs/exception.hpp
+  \file eows/ogc/wcs/operations/error_handler.cpp
 
-  \brief Specific exception types for OGC WCS Runtime module.
+  \brief This class defines WCS 2.0 error handler
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_OGC_WCS_EXCEPTION_HPP__
-#define __EOWS_OGC_WCS_EXCEPTION_HPP__
+#ifndef __EOWS_OGC_WCS_OPERATIONS_ERROR_HANDLES_HPP__
+#define __EOWS_OGC_WCS_OPERATIONS_ERROR_HANDLES_HPP__
 
 // EOWS
-#include "../exception.hpp"
+#include "../core/operation.hpp"
+
+#include "../../exception.hpp"
 
 namespace eows
 {
-  //! The namespace for the OGC WCS Runtime module of EOWS.
   namespace ogc
   {
     namespace wcs
     {
-      struct no_such_coverage_error : public virtual ogc_error
+      namespace operations
       {
-        no_such_coverage_error(const std::string& s)
-          : ogc_error(s, "NoSuchCoverage")
-        {
-        }
-      };
-    } // end namespace wcs
-  }   // end namespace ogc
-}     // end namespace eows
+        /**
+         * @brief It prepares WCS 2.0 XML error using eows ogc exception.
+         * @todo Should it handle std::exception?
+         *
+         * @return String representation (XML) of WCS 2.0 error document
+         */
+        const std::string handle_error(const eows::ogc::ogc_error&);
+      }
+    }
+  }
+}
 
-#endif  // __EOWS_OGC_WCS_EXCEPTION_HPP__
+#endif // __EOWS_OGC_WCS_OPERATIONS_ERROR_HANDLES_HPP__

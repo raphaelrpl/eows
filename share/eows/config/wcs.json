@@ -1,0 +1,41 @@
+{
+  "WCSCapabilities": {
+    "ServiceIdentification": {
+      "Title": "e-Sensing Web Coverage Service",
+      "Abstract": "Web Coverage Service maintained by the e-Sensing team",
+      "OnlineResource": "http://www.esensing.org",
+      "ServiceType": "OGC WCS",
+      "ServiceTypeVersion": "2.0.1",
+      "Profiles": []
+    },
+    "OperationsMetadata": [
+      {
+        "name": "GetCapabilities",
+        "DCP": {
+          "HTTP": {
+            "GET": "http://localhost:7654/wcs"
+          }
+        } 
+      },
+      {
+        "name": "DescribeCoverage",
+        "DCP": {
+          "HTTP": {
+            "GET": "http://localhost:7654/wcs"
+          }
+        } 
+      },
+      {
+        "name": "GetCoverage",
+        "DCP": {
+          "HTTP": {
+            "GET": "http://localhost:7654/wcs"
+          }
+        } 
+      }
+    ],
+    "ServiceMetadata": {
+      "formatSupported": ["application/gml+xml"]
+    }
+  }
+}

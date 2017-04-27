@@ -53,6 +53,25 @@ namespace eows
       \exception std::exception ...
      */
     void initialize();
+
+    /**
+     * \brief It tries to read rapidjson node value as string.
+     * \throws eows::parse_error When could not read or process as string like
+     * \return String value of node
+     */
+    const std::string read_node_as_string(const rapidjson::Value&, const std::string&);
+
+    /**
+     * \brief It transforms a string into lowercase
+     * \return String in lowercase
+     */
+    std::string to_lower(const std::string&);
+
+    /**
+     * \brief It applies lower case on given map keys and return a new map with these values
+     * \return Copy map with keys in lowercase
+     */
+    std::map<std::string, std::string> lowerify(const std::map<std::string, std::string>&);
     
     //! Split string into path and query-string
     std::pair<std::string, std::string>

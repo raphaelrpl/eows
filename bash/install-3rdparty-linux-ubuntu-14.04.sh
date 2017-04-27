@@ -30,7 +30,6 @@ function valid()
   fi
 }
 
-
 #
 # Check for tws-3rdparty-macosx-el-capitan.tar.gz
 #
@@ -59,7 +58,6 @@ sleep 1s
 cd eows-3rdparty-0.3.0-linux-ubuntu-14.04
 valid $? "Error: could not enter 'eows-3rdparty-0.3.0-linux-ubuntu-14.04' dir"
 
-
 #
 # Check installation dir
 #
@@ -72,6 +70,17 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EOWS_LIBS_DIR/lib"
 echo "installing 3rd-party libraries to '$EOWS_LIBS_DIR' ..."
 sleep 1s
 
+
+#
+# Check CMake version. EOWS requires 3.x
+#
+cmake_ver_test=`cmake --version | awk 'NR==1{print substr($3,0,2)}'`
+cmake_curr_ver=`cmake --version | awk 'NR==1{print $3}'`
+if [ $cmake_ver_test -le 2 ]; then
+  valid 1 "Error: EOWS requires CMake >= 3.x version but $cmake_curr_ver found. Please install CMake 3.x."
+else
+  echo "CMake installation ok. Version $cmake_curr_ver > 2.X"
+fi
 
 #
 # OpenSSL
@@ -121,10 +130,10 @@ if [ ! -f "$EOWS_LIBS_DIR/include/rapidjson/rapidjson.h" ]; then
   echo "installing RapidJSON..."
   sleep 1s
   
-  unzip rapidjson-1.1.0.zip
+  unzip -o rapidjson-1.1.0.zip
   valid $? "Error: RapidJSON!"
 
-  mkdir rapidjson-build
+  mkdir -p rapidjson-build
   valid $? "Error: RapidJSON!"
 
   cd rapidjson-build
@@ -154,7 +163,7 @@ if [ ! -f "$EOWS_LIBS_DIR/include/rapidxml/rapidxml.hpp" ]; then
   echo "installing RapidXML..."
   sleep 1s
 
-  unzip rapidxml-1.13.zip
+  unzip -o rapidxml-1.13.zip
   valid $? "Error: RapidXML!"
 
   mv rapidxml-1.13 $EOWS_LIBS_DIR/include/rapidxml
@@ -170,7 +179,7 @@ if [ ! -f "$EOWS_LIBS_DIR/include/crow_all.h" ]; then
   echo "installing Crow..."
   sleep 1s
 
-  unzip crow-master.zip
+  unzip -o crow-master.zip
   valid $? "Error: Crow!"
 
   cp crow-master/amalgamate/crow_all.h $EOWS_LIBS_DIR/include/
