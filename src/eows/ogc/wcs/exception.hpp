@@ -39,13 +39,21 @@ namespace eows
   {
     namespace wcs
     {
+      struct wcs_error : public ogc_error
+      {
+        wcs_error(const std::string& s, const std::string& l)
+          : ogc_error(s, l)
+        {
+        }
+      };
+
       /*!
        * \brief Represents an error for coverage(s) not found
        */
-      struct no_such_coverage_error : public virtual ogc_error
+      struct no_such_coverage_error : public virtual wcs_error
       {
         no_such_coverage_error(const std::string& s)
-          : ogc_error(s, "NoSuchCoverage")
+          : wcs_error(s, "NoSuchCoverage")
         {
         }
       };

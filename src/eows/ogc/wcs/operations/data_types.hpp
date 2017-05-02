@@ -82,6 +82,12 @@ namespace eows
         {
           get_coverage_request(const eows::core::query_string_t& query);
 
+          /*!
+           * \brief It process client subset and performs a minor validations like "already in" and syntax validation
+           * \param query - Query string
+           */
+          void digest_subset(const eows::core::query_string_t& query);
+
           std::string coverage_id; //!< Coverage Identifier
           std::string format; //!< Response format output
           std::size_t input_crs; //!< InputCRS of subsetting

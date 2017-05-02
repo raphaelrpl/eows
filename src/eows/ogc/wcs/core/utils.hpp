@@ -88,7 +88,8 @@ namespace eows
          */
         void make_coverage_domain_set(rapidxml::xml_document<>* doc,
                                       rapidxml::xml_node<>* node,
-                                      const geoarray::geoarray_t& array);
+                                      const geoarray::geoarray_t& array,
+                                      const std::vector<geoarray::dimension_t>& dimensions);
       }
     }
   }

@@ -49,10 +49,11 @@ namespace eows
       {
         /**
          * \brief It builds a OGC WCS operation based on query string
+         * \param query - Client Query String Map. All of the keys are in lowercase.
          * \throws missing_parameter_error When request does not match required arguments
          * \return Unique Ptr to the built operation
          */
-        std::unique_ptr<eows::ogc::wcs::core::operation> build_operation(const eows::core::query_string_t&);
+        std::unique_ptr<eows::ogc::wcs::core::operation> build_operation(const eows::core::query_string_t& query);
       }
     }
   }

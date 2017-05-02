@@ -95,15 +95,15 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 
   std::string default_format = "application/gml+xml";
   // Setting default format
-//  if (it == query.end())
+  if (it == query.end())
     format = default_format;
-//  else
-//  {
-//    if (it->second != default_format)
-//      throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
+  else
+  {
+    if (it->second != default_format)
+      throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
 
-//    format = it->second;
-//  }
+    format = it->second;
+  }
 
   // InputCRS
   it = query.find("inputcrs");
@@ -117,6 +117,19 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
     input_crs = 4326;
 
   // Process Subsets
+  digest_subset(query);
+
+  it = query.find("rangesubset");
+
+  if (it != query.end())
+  {
+    boost::split(range_subset.attributes, it->second, boost::is_any_of(","));
+    range_subset.raw = it->second;
+  }
+}
+
+void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows::core::query_string_t& query)
+{
   eows::core::query_string_t::const_iterator begin_it  = query.lower_bound("subset");
 
   if (begin_it != query.end())
@@ -133,7 +146,6 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 
       // TODO: Should use regex? (?<axis>[xyt]+)\((?<min>\d+),(?<max>\d+)\)
       ss << subset_str;
-
       validate_subset(ss);
 
       // Retrieve axis name
@@ -141,7 +153,6 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
       while(ss >> c && c != '(')
       {
         dimension.name += c;
-
         validate_subset(ss);
       }
 
@@ -161,7 +172,6 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
         throw eows::ogc::wcs::invalid_axis_error("Invalid axis ");
 
       validate_subset(ss);
-
       // Retrieve axis max
       ss >> dimension.max;
 
@@ -175,12 +185,4 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
       ++begin_it;
     }
   }  // end if it(subset) != end()
-
-  it = query.find("rangesubset");
-
-  if (it != query.end())
-  {
-    boost::split(range_subset.attributes, it->second, boost::is_any_of(","));
-    range_subset.raw = it->second;
-  }
 }

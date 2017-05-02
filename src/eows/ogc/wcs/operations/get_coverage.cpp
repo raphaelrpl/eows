@@ -70,18 +70,13 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   }
 
   /*!
-   * \brief It tries to find a geoarray dimension with client subsets. If found, use client subset limits. Otherwise, set default
-   * to Geo array
-   *
-   * \param dimensions - Dimensions Array to search. It must be client limits in WCS request or array default
-   * \param target - Target dimension to find
-   * \param min_value - Min value to append
-   * \param max_value - Max value to append
+   * \brief It generates a SciDB Query AFL to retrieve GetCoverage
+   * \param array - Current geoarray
+   * \param dimensions - Client subsets dimensions
+   * \return A SciDB AFL query
    */
-  void format_dimension_limits(const std::vector<eows::geoarray::dimension_t> dimensions,
-                               const eows::geoarray::dimension_t& target,
-                               std::string& min_value,
-                               std::string& max_value);
+  std::string generate_afl(const eows::geoarray::geoarray_t& array,
+                           const std::vector<eows::geoarray::dimension_t> dimensions);
 
   /*!
    * \brief It reprojects a dimension in lat long mode to Grid scale mode in order to retrieve correct array values
@@ -113,33 +108,27 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    */
   std::vector<eows::geoarray::dimension_t> retrieve_subsets(const eows::geoarray::grid& grid_array, geoarray::spatial_extent_t& extent);
 
+  /*!
+   * \brief It reads a SciDB query result as GML document. Once read, it prepares a WCS Coverage XML element with meta result
+   * \param array - Current Geo Array
+   * \param cell_it - SciDB Query Result
+   * \param array_attributes - SciDB Geo Array Attributes
+   * \param used_extent - Array extent used for retrieving SciDB data
+   * \param dimensions_query - Dimensions used to fetch query
+   */
+  void process_as_document(const eows::geoarray::geoarray_t& array,
+                           boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
+                           const ::scidb::Attributes& array_attributes,
+                           const eows::geoarray::spatial_extent_t& used_extent,
+                           const std::vector<geoarray::dimension_t> dimensions_query);
+
   //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
   //!< Represents a cast of array/client subset in lat/long mode to Grid scale mode based in SRID
   std::vector<eows::geoarray::dimension_t> grid_subset;
-  //!< Represents WCS GetCoverage output in GML format. TODO: Handle it as binary stream in order to enable image formats
+  //!< Represents WCS GetCoverage output in GML format.
   std::string output;
 };
-
-void eows::ogc::wcs::operations::get_coverage::impl::format_dimension_limits(const std::vector<eows::geoarray::dimension_t> dimensions,
-                                                                             const eows::geoarray::dimension_t& target,
-                                                                             std::string& min_value,
-                                                                             std::string& max_value)
-{
-  // Finding respective array dimension from client limits based in target (geoarray) dimension
-  auto dit = geoarray::find_by_name(dimensions, target.name);
-  if (dit != dimensions.end())
-  {
-    min_value += std::to_string(dit->min_idx);
-    max_value += std::to_string(dit->max_idx);
-  }
-  else
-  {
-    // Setting defaults
-    min_value += std::to_string(target.min_idx);
-    max_value += std::to_string(target.max_idx);
-  }
-}
 
 void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoarray::geoarray_t& array,
                                                                const std::size_t& srid,
@@ -183,6 +172,66 @@ void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoar
   eows::proj4::transform(*src_srs, *dst_srs, x, y);
 }
 
+std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const eows::geoarray::geoarray_t& array,
+                                                                         const std::vector<eows::geoarray::dimension_t> dimensions)
+{
+  // Preparing SciDB query string
+  std::string query_str = "between(" + array.name + ", ";
+
+  // Defining helpers for AFL Query generation
+  std::string min_values;
+  std::string max_values;
+
+  for(const eows::geoarray::dimension_t& dimension: dimensions)
+  {
+    min_values += std::to_string(dimension.min_idx) + ",";
+    max_values += std::to_string(dimension.max_idx) + ",";
+  }
+  // Removing extra comma
+  min_values.pop_back();
+  max_values.pop_back();
+
+  // Generating SciDB AFL statement
+  query_str +=  min_values + ", " + max_values + ")";
+
+  // attributes_afl
+  std::string attributes_afl;
+  // Checking WCS RangeSubsetting
+  if (!request.range_subset.attributes.empty())
+  {
+    // For each given attribute
+    for(std::size_t i = 0; i < request.range_subset.attributes.size(); ++i)
+    {
+      const std::string& given_attr = request.range_subset.attributes[i];
+
+      auto found = std::find_if(array.attributes.begin(),
+                                array.attributes.end(),
+                                [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
+                                  return given_attr == array_attr.name;
+                                });
+
+      if (found != array.attributes.end())
+        continue;
+
+      throw eows::ogc::wcs::no_such_field_error("No such field " + given_attr);
+    }
+    attributes_afl += request.range_subset.raw;
+  }
+  else
+  {
+    // Defaults
+    for(std::size_t i = 0; i < array.attributes.size(); ++i)
+      attributes_afl += array.attributes[i].name + ",";
+
+    // remove last char (",") from attributes_afl
+    attributes_afl.pop_back();
+  }
+
+  query_str = "project(" + query_str + ", " + attributes_afl + ")";
+
+  return query_str;
+}
+
 void eows::ogc::wcs::operations::get_coverage::impl::validate(const eows::geoarray::geoarray_t& array,
                                                               double& latitude,
                                                               double& longitude)
@@ -200,7 +249,12 @@ std::vector<eows::geoarray::dimension_t>
 eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geoarray::grid& grid_array,
                                                                  eows::geoarray::spatial_extent_t& extent)
 {
+  // Defining three dimensions fixed. TODO: We should get it from array.dimensions.size() if it were array
   std::vector<eows::geoarray::dimension_t> output;
+  // Appending defaults values in order
+  output.push_back(grid_array.geo_array->dimensions.x);
+  output.push_back(grid_array.geo_array->dimensions.y);
+  output.push_back(grid_array.geo_array->dimensions.t);
 
   // If WCS client gives subset limits, use them
   if (request.subsets.size() > 0)
@@ -222,7 +276,7 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
         d.name = client_subset.name;
         d.min_idx = grid_array.col(latitude);
         d.max_idx = grid_array.col(longitude);
-        output.push_back(d);
+        output[0] = d;
       }
       // Row ID
       else if(client_subset.name == grid_array.geo_array->dimensions.y.name)
@@ -236,7 +290,7 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
         d.name = client_subset.name;
         d.min_idx = grid_array.row(latitude);
         d.max_idx = grid_array.row(longitude);
-        output.push_back(d);
+        output[1] = d;
       }
       // Time ID
       else if(client_subset.name == grid_array.geo_array->dimensions.t.name)
@@ -249,7 +303,7 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
         time_dimension.name = client_subset.name;
         time_dimension.min_idx = client_subset.min;
         time_dimension.max_idx = client_subset.max;
-        output.push_back(time_dimension);
+        output[2] = time_dimension;
       }
       else
         throw eows::ogc::wcs::invalid_axis_error("No axis found. " + client_subset.name);
@@ -257,6 +311,96 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
   } // end if subsets.size()
 
   return output;
+}
+
+void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const eows::geoarray::geoarray_t& array,
+                                                                         boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
+                                                                         const ::scidb::Attributes& array_attributes,
+                                                                         const eows::geoarray::spatial_extent_t& used_extent,
+                                                                         const std::vector<eows::geoarray::dimension_t> dimensions_query)
+{
+  // Defining output stream where SciDB will be stored (GML format)
+  std::ostringstream ss;
+  // Retrieving Array size
+  auto attributes_size = array_attributes.size();
+  // Delimiter used in GML generation
+  const std::string row_deliter(",");
+  const std::string attr_delimiter(" ");
+  /*
+    It will generate SciDB data output in GML syntax.
+    Note: You may change delimiters as you need, but remember to update GML output.
+
+    data0_attr1 data0_attr2 data0_attrN,dataN_attr1 dataN_attr2 dataN_attrN,...
+  */
+  while(!cell_it->end())
+  {
+    for(std::size_t attr_pos = 0; attr_pos < attributes_size; ++attr_pos)
+    {
+      const ::scidb::AttributeDesc& attr_scidb = array_attributes[attr_pos];
+
+      const ::scidb::TypeId& type_id = attr_scidb.getType();
+
+      if (type_id == ::scidb::TID_INT16)
+        ss << cell_it->get_int16(attr_scidb.getName());
+      else if (type_id == ::scidb::TID_UINT8)
+        ss << cell_it->get_uint8(attr_scidb.getName());
+      else if (type_id == ::scidb::TID_INT8)
+        ss << std::to_string(cell_it->get_int8(attr_scidb.getName()));
+
+      // TODO: Remove this check. It should append and remove last char on finish attr
+      if (attr_pos + 1 < attributes_size)
+        ss << attr_delimiter;
+    }
+    ss << row_deliter;
+    cell_it->next();
+  }
+
+  // Defining GetCoverage XML document
+  rapidxml::xml_document<> xml_doc;
+
+  // Preparing Meta document
+  rapidxml::xml_node<>* decl = xml_doc.allocate_node(rapidxml::node_declaration);
+  decl->append_attribute(xml_doc.allocate_attribute("version", "1.0"));
+  decl->append_attribute(xml_doc.allocate_attribute("encoding", "UTF-8"));
+  xml_doc.append_node(decl);
+  // Preparing WCS Root Element
+  rapidxml::xml_node<>* wcs_document = xml_doc.allocate_node(rapidxml::node_element, "gmlcov:GridCoverage");
+  wcs_document->append_attribute(xml_doc.allocate_attribute("version", "2.0.1"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:gml","http://www.opengis.net/gml/3.2"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns","http://www.opengis.net/gml/3.2"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:gmlcov", "http://www.opengis.net/gmlcov/1.0"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:swe", "http://www.opengis.net/swe/2.0"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("xsi:schemaLocation",
+                                                            "http://www.opengis.net/swe/2.0 http://schemas.opengis.net/sweCommon/2.0/swe.xsd http://www.opengis.net/gmlcov/1.0 http://schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd"));
+  wcs_document->append_attribute(xml_doc.allocate_attribute("gml:id", array.name.c_str()));
+  xml_doc.append_node(wcs_document);
+
+  // Preparing bounded by
+  eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array, used_extent);
+  // Preparing domainset
+  eows::ogc::wcs::core::make_coverage_domain_set(&xml_doc, wcs_document, array, dimensions_query);
+
+  // Preparing rangeset
+  rapidxml::xml_node<>* range_set = xml_doc.allocate_node(rapidxml::node_element, "gml:rangeSet");
+  wcs_document->append_node(range_set);
+  rapidxml::xml_node<>* data_block = xml_doc.allocate_node(rapidxml::node_element, "gml:DataBlock");
+
+  const std::string scidb_data = ss.str();
+
+  rapidxml::xml_node<>* tuple_list = xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", scidb_data.c_str(), 0, scidb_data.size());
+  // Defining delimiter in order to client use to read properly row
+  tuple_list->append_attribute(xml_doc.allocate_attribute("ts", row_deliter.c_str()));
+  // Defining delimiter for coverage attribute
+  tuple_list->append_attribute(xml_doc.allocate_attribute("cs", attr_delimiter.c_str()));
+
+  data_block->append_node(tuple_list);
+  range_set->append_node(data_block);
+
+  // Preparing rangetype
+  eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, array);
+
+  rapidxml::print(std::back_inserter(output), xml_doc, 0);
 }
 
 // GetCoverage Implementations
@@ -288,61 +432,8 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Array containing client limits sent in WCS request that will be used to build SciDB AFL query
     std::vector<eows::geoarray::dimension_t> dimensions_to_query = pimpl_->retrieve_subsets(grid_array, used_extent);
 
-    // Preparing SciDB query string
-    std::string query_str = "between(" + array.name + ", ";
-
-    // Defining helpers for AFL Query generation
-    std::string min_values;
-    std::string max_values;
-
-    // Finding X
-    pimpl_->format_dimension_limits(dimensions_to_query, array.dimensions.x, min_values, max_values);
-    min_values += ", ";
-    max_values += ", ";
-    // Finding Y
-    pimpl_->format_dimension_limits(dimensions_to_query, array.dimensions.y, min_values, max_values);
-    min_values += ", ";
-    max_values += ", ";
-    // Finding T
-    pimpl_->format_dimension_limits(dimensions_to_query, array.dimensions.t, min_values, max_values);
-
-    // Generating SciDB AFL statement
-    query_str +=  min_values + ", " + max_values + ")";
-
-    // attributes_afl
-    std::string attributes_afl;
-    // Checking WCS RangeSubsetting
-    if (!pimpl_->request.range_subset.attributes.empty())
-    {
-      // For each given attribute
-      for(std::size_t i = 0; i < pimpl_->request.range_subset.attributes.size(); ++i)
-      {
-        const std::string& given_attr = pimpl_->request.range_subset.attributes[i];
-
-        auto found = std::find_if(array.attributes.begin(),
-                                  array.attributes.end(),
-                                  [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
-                                    return given_attr == array_attr.name;
-                                  });
-
-        if (found != array.attributes.end())
-          continue;
-
-        throw eows::ogc::wcs::no_such_field_error("No such field " + given_attr);
-      }
-      attributes_afl += pimpl_->request.range_subset.raw;
-    }
-    else
-    {
-      // Defaults
-      for(std::size_t i = 0; i < array.attributes.size(); ++i)
-        attributes_afl += array.attributes[i].name + ",";
-
-      // remove last char (",") from attributes_afl
-      attributes_afl.pop_back();
-    }
-
-    query_str = "project(" + query_str + ", " + attributes_afl + ")";
+    // Get Query AFL
+    std::string query_str = pimpl_->generate_afl(array, dimensions_to_query);
 
     // Open SciDB connection
     eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
@@ -358,90 +449,16 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     boost::shared_ptr<eows::scidb::cell_iterator> cell_it(new eows::scidb::cell_iterator(query_result->array));
 
-    // Defining output stream where SciDB will be stored (GML format)
-    std::ostringstream ss;
-
     const ::scidb::ArrayDesc& array_desc = query_result->array->getArrayDesc();
     const ::scidb::Attributes& array_attributes = array_desc.getAttributes(true);
 
-    auto attributes_size = array_attributes.size();
-
-    // Delimiter used in GML generation
-    const std::string row_deliter(",");
-    const std::string attr_delimiter(" ");
-
     /*
-      It will generate SciDB data output in GML syntax.
-      Note: You may change delimiters as you need, but remember to update GML output.
+      Defining how to build GetCoverage based in Format.
 
-      data0_attr1 data0_attr2 data0_attrN,dataN_attr1 dataN_attr2 dataN_attrN,...
+      TODO: Create a factory handler
     */
-    while(!cell_it->end())
-    {
-      for(std::size_t attr_pos = 0; attr_pos < attributes_size; ++attr_pos)
-      {
-        const ::scidb::AttributeDesc& attr_scidb = array_attributes[attr_pos];
-
-        const ::scidb::TypeId& type_id = attr_scidb.getType();
-
-        if (type_id == ::scidb::TID_INT16)
-          ss << cell_it->get_int16(attr_scidb.getName());
-        else if (type_id == ::scidb::TID_UINT8)
-          ss << std::to_string(cell_it->get_int8(attr_scidb.getName()));
-
-        if (attr_pos + 1 < attributes_size)
-          ss << attr_delimiter;
-      }
-      ss << row_deliter;
-      cell_it->next();
-    }
-
-    // Defining GetCoverage XML document
-    rapidxml::xml_document<> xml_doc;
-
-    // Preparing Meta document
-    rapidxml::xml_node<>* decl = xml_doc.allocate_node(rapidxml::node_declaration);
-    decl->append_attribute(xml_doc.allocate_attribute("version", "1.0"));
-    decl->append_attribute(xml_doc.allocate_attribute("encoding", "UTF-8"));
-    xml_doc.append_node(decl);
-    // Preparing WCS Root Element
-    rapidxml::xml_node<>* wcs_document = xml_doc.allocate_node(rapidxml::node_element, "gmlcov:GridCoverage");
-    wcs_document->append_attribute(xml_doc.allocate_attribute("version", "2.0.1"));
-    wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:gml","http://www.opengis.net/gml/3.2"));
-    wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns","http://www.opengis.net/gml/3.2"));
-    wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance"));
-    wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:gmlcov", "http://www.opengis.net/gmlcov/1.0"));
-    wcs_document->append_attribute(xml_doc.allocate_attribute("xmlns:swe", "http://www.opengis.net/swe/2.0"));
-    wcs_document->append_attribute(xml_doc.allocate_attribute("xsi:schemaLocation",
-                                                              "http://www.opengis.net/swe/2.0 http://schemas.opengis.net/sweCommon/2.0/swe.xsd http://www.opengis.net/gmlcov/1.0 http://schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd"));
-    wcs_document->append_attribute(xml_doc.allocate_attribute("gml:id", array.name.c_str()));
-    xml_doc.append_node(wcs_document);
-
-    // Preparing bounded by
-    eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array, used_extent);
-    // Preparing domainset
-    eows::ogc::wcs::core::make_coverage_domain_set(&xml_doc, wcs_document, array);
-
-    // Preparing rangeset
-    rapidxml::xml_node<>* range_set = xml_doc.allocate_node(rapidxml::node_element, "gml:rangeSet");
-    wcs_document->append_node(range_set);
-    rapidxml::xml_node<>* data_block = xml_doc.allocate_node(rapidxml::node_element, "gml:DataBlock");
-
-    const std::string scidb_data = ss.str();
-
-    rapidxml::xml_node<>* tuple_list = xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", scidb_data.c_str(), 0, scidb_data.size());
-    // Defining delimiter in order to client use to read properly row
-    tuple_list->append_attribute(xml_doc.allocate_attribute("ts", row_deliter.c_str()));
-    // Defining delimiter for coverage attribute
-    tuple_list->append_attribute(xml_doc.allocate_attribute("cs", attr_delimiter.c_str()));
-
-    data_block->append_node(tuple_list);
-    range_set->append_node(data_block);
-
-    // Preparing rangetype
-    eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, array);
-
-    rapidxml::print(std::back_inserter(pimpl_->output), xml_doc, 0);
+    if (pimpl_->request.format == "application/gml+xml")
+      pimpl_->process_as_document(array, std::move(cell_it), array_attributes, used_extent, dimensions_to_query);
   }
   // known module error
   catch(const eows::ogc::ogc_error&)
