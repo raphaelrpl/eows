@@ -136,13 +136,13 @@ void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* do
 
 void eows::ogc::wcs::core::make_coverage_range_type(rapidxml::xml_document<>* doc,
                                                     rapidxml::xml_node<>* node,
-                                                    const eows::geoarray::geoarray_t& array)
+                                                    const std::vector<eows::geoarray::attribute_t>& attributes)
 {
   rapidxml::xml_node<>* range_type = doc->allocate_node(rapidxml::node_element, "gmlcov:rangeType");
   node->append_node(range_type);
   rapidxml::xml_node<>* data_record = doc->allocate_node(rapidxml::node_element, "swe:DataRecord");
   range_type->append_node(data_record);
-  for(const geoarray::attribute_t& attribute: array.attributes)
+  for(const geoarray::attribute_t& attribute: attributes)
   {
     rapidxml::xml_node<>* field = doc->allocate_node(rapidxml::node_element, "swe:field");
     data_record->append_node(field);

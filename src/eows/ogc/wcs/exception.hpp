@@ -61,10 +61,10 @@ namespace eows
       /*!
        * \brief Represents a Axis error. Used while client requesting an invalid axis name or value on subset model
        */
-      struct invalid_axis_error : public virtual ogc_error
+      struct invalid_axis_error : public virtual wcs_error
       {
         invalid_axis_error(const std::string& s)
-          : ogc_error(s, "InvalidAxisLabel")
+          : wcs_error(s, "InvalidAxisLabel")
         {
         }
       };
@@ -72,10 +72,10 @@ namespace eows
       /*!
        * \brief Represents an invalid field while client requesting rangesubset values.
        */
-      struct no_such_field_error : public virtual ogc_error
+      struct no_such_field_error : public virtual wcs_error
       {
         no_such_field_error(const std::string& s)
-          : ogc_error(s, "NoSuchField")
+          : wcs_error(s, "NoSuchField")
         {
         }
       };

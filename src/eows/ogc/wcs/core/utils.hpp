@@ -18,6 +18,7 @@ namespace eows
     struct geoarray_t;
     struct dimension_t;
     struct spatial_extent_t;
+    struct attribute_t;
   }
 
   namespace ogc
@@ -78,7 +79,7 @@ namespace eows
          */
         void make_coverage_range_type(rapidxml::xml_document<>* doc,
                                       rapidxml::xml_node<>* node,
-                                      const geoarray::geoarray_t& array);
+                                      const std::vector<eows::geoarray::attribute_t>& attributes);
 
         /*!
          * \brief It generates WCS Coverage domain set

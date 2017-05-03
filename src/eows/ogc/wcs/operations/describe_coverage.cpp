@@ -148,7 +148,7 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
         }
       }
       // Preparing RangeSet
-      eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, coverage, array);
+      eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, coverage, array.attributes);
 
       // Preparing Service Parameters
       {

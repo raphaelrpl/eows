@@ -101,12 +101,20 @@ struct eows::ogc::wcs::operations::get_coverage::impl
 
   /*!
    * \brief It retrieves all subsets given by client. Once listed, it performs a subset validation for each one to provide a
-   * correct projection values and limits.
+   * correct projection values and limits. Remember that it retrieves default values even if passing a single value.
    * \param grid_array - geo array metadata
    * \param extent - Extent based in client subset
    * \return Array of subsets converted to grid dimensions
    */
   std::vector<eows::geoarray::dimension_t> retrieve_subsets(const eows::geoarray::grid& grid_array, geoarray::spatial_extent_t& extent);
+
+  /*!
+   * \brief It retrieves all range subset attributes given by client. If no set, retrieve array defaults.
+   * \throws eows::ogc::wcs::no_such_field_error When client attributes does not match with array attribute
+   * \param array - geo array
+   * \return Client given attributes or array attributes
+   */
+  std::vector<eows::geoarray::attribute_t> retrieve_attributes(const eows::geoarray::geoarray_t& array);
 
   /*!
    * \brief It reads a SciDB query result as GML document. Once read, it prepares a WCS Coverage XML element with meta result
@@ -196,36 +204,15 @@ std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const e
 
   // attributes_afl
   std::string attributes_afl;
-  // Checking WCS RangeSubsetting
-  if (!request.range_subset.attributes.empty())
-  {
-    // For each given attribute
-    for(std::size_t i = 0; i < request.range_subset.attributes.size(); ++i)
-    {
-      const std::string& given_attr = request.range_subset.attributes[i];
 
-      auto found = std::find_if(array.attributes.begin(),
-                                array.attributes.end(),
-                                [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
-                                  return given_attr == array_attr.name;
-                                });
+  // Retrieve client attributes or array defaults
+  std::vector<eows::geoarray::attribute_t> attributes = retrieve_attributes(array);
 
-      if (found != array.attributes.end())
-        continue;
+  for(auto& attribute: attributes)
+    attributes_afl += attribute.name + ",";
 
-      throw eows::ogc::wcs::no_such_field_error("No such field " + given_attr);
-    }
-    attributes_afl += request.range_subset.raw;
-  }
-  else
-  {
-    // Defaults
-    for(std::size_t i = 0; i < array.attributes.size(); ++i)
-      attributes_afl += array.attributes[i].name + ",";
-
-    // remove last char (",") from attributes_afl
-    attributes_afl.pop_back();
-  }
+  // remove last char (",") from attributes_afl
+  attributes_afl.pop_back();
 
   query_str = "project(" + query_str + ", " + attributes_afl + ")";
 
@@ -324,7 +311,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
   // Retrieving Array size
   auto attributes_size = array_attributes.size();
   // Delimiter used in GML generation
-  const std::string row_deliter(",");
+  const std::string row_delimiter(",");
   const std::string attr_delimiter(" ");
   /*
     It will generate SciDB data output in GML syntax.
@@ -351,7 +338,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
       if (attr_pos + 1 < attributes_size)
         ss << attr_delimiter;
     }
-    ss << row_deliter;
+    ss << row_delimiter;
     cell_it->next();
   }
 
@@ -398,9 +385,40 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
   range_set->append_node(data_block);
 
   // Preparing rangetype
-  eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, array);
+  eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, retrieve_attributes(array));
 
   rapidxml::print(std::back_inserter(output), xml_doc, 0);
+}
+
+std::vector<eows::geoarray::attribute_t>
+eows::ogc::wcs::operations::get_coverage::impl::retrieve_attributes(const eows::geoarray::geoarray_t& array)
+{
+  // Checking WCS RangeSubsetting
+  if (!request.range_subset.attributes.empty())
+  {
+    std::vector<eows::geoarray::attribute_t> output;
+
+    // For each given attribute
+    for(std::size_t i = 0; i < request.range_subset.attributes.size(); ++i)
+    {
+      const std::string& given_attr = request.range_subset.attributes[i];
+
+      auto found = std::find_if(array.attributes.begin(),
+                                array.attributes.end(),
+                                [&given_attr] (const eows::geoarray::attribute_t& array_attr) {
+                                  return given_attr == array_attr.name;
+                                });
+
+      if (found == array.attributes.end())
+        throw eows::ogc::wcs::no_such_field_error("No such field " + given_attr);
+
+      output.push_back(*found);
+    }
+
+    return output;
+  }
+  else
+    return array.attributes;
 }
 
 // GetCoverage Implementations
