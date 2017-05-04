@@ -377,7 +377,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
 
   rapidxml::xml_node<>* tuple_list = xml_doc.allocate_node(rapidxml::node_element, "gml:tupleList", scidb_data.c_str(), 0, scidb_data.size());
   // Defining delimiter in order to client use to read properly row
-  tuple_list->append_attribute(xml_doc.allocate_attribute("ts", row_deliter.c_str()));
+  tuple_list->append_attribute(xml_doc.allocate_attribute("ts", row_delimiter.c_str()));
   // Defining delimiter for coverage attribute
   tuple_list->append_attribute(xml_doc.allocate_attribute("cs", attr_delimiter.c_str()));
 
