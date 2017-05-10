@@ -99,7 +99,7 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
     format = default_format;
   else
   {
-    if (it->second != default_format)
+    if (it->second != default_format && it->second != "image/tiff")
       throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
 
     format = it->second;

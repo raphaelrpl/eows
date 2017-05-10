@@ -271,3 +271,8 @@ std::string eows::core::to_lower(const std::string& str)
 
   return out;
 }
+
+std::string eows::core::generate_unique_path()
+{
+  return boost::filesystem::unique_path().string();
+}

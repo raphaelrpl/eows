@@ -67,6 +67,12 @@ namespace eows
      */
     std::string to_lower(const std::string&);
 
+    /*!
+     * \brief It generates a unique path (temporary) in system.
+     * \return A Temp file name
+     */
+    std::string generate_unique_path();
+
     /**
      * \brief It applies lower case on given map keys and return a new map with these values
      * \return Copy map with keys in lowercase

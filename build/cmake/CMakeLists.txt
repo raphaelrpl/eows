@@ -218,6 +218,15 @@ else()
     message(STATUS "EOWS: could not find GD Library. Building without it!")
 endif()
 
+find_package(GDAL QUIET)
+
+if(GDAL_FOUND)
+    message(STATUS "EOWS: GDAL2 Library found")
+    include_directories(${GDAL_INCLUDE_DIR})
+else()
+    message(STATUS "EOWS: Could not find GDAL Library. Building without it")
+endif()
+
 #
 # Build options.
 #
@@ -226,6 +235,8 @@ CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CROW_ENABLED "Build http-server ON top of Crow 
 CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CPPNETLIB_ENABLED "Build http-server OFF top of C++ Network Library?" ON "cppnetlib_FOUND" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_PROJ4_ENABLED "Build Proj.4 Support?" ON "Proj4_FOUND" OFF)
+
+CMAKE_DEPENDENT_OPTION(EOWS_GDAL2_ENABLED "Build GDAL2 Support?" ON "GDAL_FOUND" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_SCIDB_ENABLED "Build SciDB runtime support for EOWS?" ON "SciDB_FOUND" OFF)
 
@@ -314,6 +325,11 @@ endif()
 if(EOWS_PROJ4_ENABLED)
   add_definitions(-DEOWS_PROJ4_ENABLED)
   add_subdirectory(proj4)
+endif()
+
+if(EOWS_GDAL2_ENABLED)
+  add_definitions(-DEOWS_GDAL2_ENABLED)
+  add_subdirectory(gdal2)
 endif()
 
 if(EOWS_SCIDB_ENABLED)
