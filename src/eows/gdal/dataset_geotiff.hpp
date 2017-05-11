@@ -50,6 +50,10 @@ namespace eows
         dataset_geotiff(const std::string& filename, std::size_t col, std::size_t row, std::size_t bands = 1);
         ~dataset_geotiff();
 
+        /*!
+         * \brief It tries to open a dataset.
+         * \throw eows::gdal::gdal_error When dataset cannot be opened
+         */
         void open();
         /*!
          * \brief It tries to close a dataset. It does not throw exception.
