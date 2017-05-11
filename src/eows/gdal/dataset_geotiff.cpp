@@ -45,16 +45,6 @@ struct eows::gdal::dataset_geotiff::impl
 
     if (!driver)
       throw std::runtime_error("Could not find " + format + " driver");
-
-    try
-    {
-      open();
-    }
-    catch(...)
-    {
-      delete driver;
-      throw;
-    }
   }
 
   GDALDataset* open(const std::string& name, GDALAccess access = GA_ReadOnly)
@@ -81,9 +71,6 @@ struct eows::gdal::dataset_geotiff::impl
   ~impl()
   {
     close();
-
-    if (driver)
-      delete driver;
   }
 
   GDALDataType get_data_type(const int& type);
