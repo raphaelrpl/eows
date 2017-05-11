@@ -138,6 +138,13 @@ struct eows::ogc::wcs::operations::get_coverage::impl
                            const eows::geoarray::spatial_extent_t& used_extent,
                            const std::vector<geoarray::dimension_t> dimensions_query);
 
+  /*!
+   * \brief It prepares Query result as GeoTIFF image.
+   * \param cell_it SciDB array query result
+   * \param array Geo array
+   * \param attributes SciDB array attributes
+   * \param dimensions An ordered dimensions used to Query(X, Y, T ...)
+   */
   void process_as_tiff(boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                        const eows::geoarray::geoarray_t& array,
                        const ::scidb::Attributes& attributes,
@@ -203,8 +210,8 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   const std::string tmp_file_path = "/tmp/" + eows::core::generate_unique_path() + ".tiff";
 
   const eows::geoarray::dimension_t& dimension_x = dimensions[0];
-  const eows::geoarray::dimension_t& dimension_y = dimensions[0];
-
+  const eows::geoarray::dimension_t& dimension_y = dimensions[1];
+  // Computing Image Limits
   const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
   const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
 
@@ -233,7 +240,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
       else if (data_type == ::scidb::TID_INT32)
         field_values[name].push_back(cell_it->get_int32(name));
       else
-        throw eows::ogc::wcs::no_such_field_error("Invalid attribute type");
+        throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
     }
 
     cell_it->next();
@@ -242,7 +249,11 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   int bid = 1;
   for(auto& it: field_values)
   {
-    file.write(it.second, bid);
+    auto found = std::find_if(array.attributes.begin(), array.attributes.end(), [&it](const geoarray::attribute_t& attr) {
+      return attr.name == it.first;
+    });
+
+    file.write(it.second, bid, found->datatype);
     ++bid;
   }
   // Close dataset

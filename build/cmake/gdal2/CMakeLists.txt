@@ -7,6 +7,7 @@ source_group("Header Files"  FILES ${EOWS_HDR_FILES})
 add_library(eows_gdal2 SHARED ${EOWS_HDR_FILES} ${EOWS_SRC_FILES})
 
 target_link_libraries(eows_gdal2 eows_core
+                                 eows_geoarray
                                  ${GDAL_LIBRARY}
                                  ${PROJ4_LIBRARY}
                                  ${Boost_SYSTEM_LIBRARY}

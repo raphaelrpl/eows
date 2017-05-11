@@ -91,7 +91,7 @@ namespace eows
           std::string coverage_id; //!< Coverage Identifier
           std::string format; //!< Response format output
           std::size_t input_crs; //!< InputCRS of subsetting
-          std::size_t output_crs {4326}; //!< OutputCRS of operation
+          std::size_t output_crs {4326}; //!< OutputCRS of operation. Default: 4326
           std::vector<eows::ogc::wcs::core::subset_t> subsets; //!< Client subsets to retrieve coverage portion
           eows::ogc::wcs::core::range_subset_t range_subset; //!< Coverage attributes to perform slice
         };

@@ -28,4 +28,24 @@
 #ifndef __EOWS_GDAL_EXCEPTION_HPP__
 #define __EOWS_GDAL_EXCEPTION_HPP__
 
+#include "../exception.hpp"
+
+namespace eows
+{
+  //! Namespace for handling GDAL module of EOWS
+  namespace gdal
+  {
+    /*!
+     * \brief Represents generic error for EOWS GDAL module
+     */
+    struct gdal_error : public virtual eows_error
+    {
+      gdal_error(const std::string& msg)
+        : gdal_error(msg)
+      {
+      }
+    };
+  }
+}
+
 #endif // __EOWS_GDAL_EXCEPTION_HPP__

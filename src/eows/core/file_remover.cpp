@@ -41,7 +41,6 @@ eows::core::file_remover::~file_remover()
     try
     {
       boost::filesystem::remove(file);
-      std::cout << "Removing " << file << std::endl;
     } catch (...)
     {
       EOWS_LOG_DEBUG("Could not remove " + file + ". Maybe it's already been deleted by OS");

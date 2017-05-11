@@ -25,9 +25,9 @@
   \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_OGC_DEFINES_DEFINES_HPP__
-#define __EOWS_OGC_DEFINES_DEFINES_HPP__
+#ifndef __EOWS_GEOARRAY_DEFINES_HPP__
+#define __EOWS_GEOARRAY_DEFINES_HPP__
 
 #define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
 
-#endif // __EOWS_OGC_DEFINES_DEFINES_HPP__
+#endif // __EOWS_GEOARRAY_DEFINES_HPP__

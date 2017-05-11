@@ -63,7 +63,7 @@ void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
     op->execute();
 
     // Retrieving Result
-    std::string output = op->to_string();
+    const std::string output = op->to_string();
 
     res.set_status(eows::core::http_response::OK);
     res.add_header(eows::core::http_response::CONTENT_TYPE, op->content_type());
