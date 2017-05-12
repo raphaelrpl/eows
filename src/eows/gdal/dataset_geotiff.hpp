@@ -28,10 +28,16 @@
 #ifndef __EOWS_GDAL_DATASETGEOTIFF_HPP__
 #define __EOWS_GDAL_DATASETGEOTIFF_HPP__
 
+#include "exception.hpp"
+
 // STL
 #include <string>
 #include <memory>
 #include <vector>
+
+// GDAL
+#include <gdal_priv.h>
+#include <cpl_config.h>
 
 // Boost
 #include <boost/noncopyable.hpp>
@@ -67,10 +73,16 @@ namespace eows
          * \param band Band identifier
          * \param type Data type value. See more in eows::geoarray::datatype_t
          */
-        void write(std::vector<double> values, const std::size_t& band, const int& type);
+        void write_int16(std::vector<GInt16> values, const std::size_t& band);
+        void write_int32(std::vector<GInt32> values, const std::size_t& band);
       private:
-        struct impl;
-        impl* pimpl_;
+        std::string format_;
+        std::string filename_;
+        std::size_t col_;
+        std::size_t row_;
+        std::size_t bands_;
+        GDALDriver* driver_;
+        GDALDataset* dset_;
     };
 
     //! Shared dataset pointer

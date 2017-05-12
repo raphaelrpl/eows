@@ -53,6 +53,9 @@
 // EOWS GDAL
 #include "../../../gdal/dataset_geotiff.hpp"
 
+// GDAL
+#include <gdal_priv.h>
+
 // STL
 #include <fstream>
 
@@ -207,21 +210,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
                                                                      const ::scidb::Attributes& attributes,
                                                                      const std::vector<eows::geoarray::dimension_t> dimensions)
 {
-  const std::string tmp_file_path = "/tmp/" + eows::core::generate_unique_path() + ".tiff";
-
-  const eows::geoarray::dimension_t& dimension_x = dimensions[0];
-  const eows::geoarray::dimension_t& dimension_y = dimensions[1];
-  // Computing Image Limits
-  const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
-  const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
-
-  // TODO: Get array limits (from scidb query or input parameters?)
-  eows::gdal::dataset_geotiff file(tmp_file_path, x, y, array.attributes.size());
-
-  // Adding to File_remover
-  file_handler->add(tmp_file_path);
-
-  std::unordered_map<std::string, std::vector<double>> field_values;
+  std::unordered_map<std::string, std::vector<GInt16>> field_values;
 
   while(!cell_it->end())
   {
@@ -246,6 +235,20 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
     cell_it->next();
   }
 
+  const std::string tmp_file_path = "/tmp/" + eows::core::generate_unique_path() + ".tiff";
+
+  const eows::geoarray::dimension_t& dimension_x = dimensions[0];
+  const eows::geoarray::dimension_t& dimension_y = dimensions[1];
+  // Computing Image Limits
+  const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
+  const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
+
+  // TODO: Get array limits (from scidb query or input parameters?)
+  eows::gdal::dataset_geotiff file(tmp_file_path, x, y, attributes.size());
+
+  // Adding to File_remover
+  file_handler->add(tmp_file_path);
+
   int bid = 1;
   for(auto& it: field_values)
   {
@@ -253,7 +256,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
       return attr.name == it.first;
     });
 
-    file.write(it.second, bid, found->datatype);
+    file.write_int16(it.second, bid);
     ++bid;
   }
   // Close dataset
@@ -269,9 +272,6 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
 std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const eows::geoarray::geoarray_t& array,
                                                                          const std::vector<eows::geoarray::dimension_t> dimensions)
 {
-  // Preparing SciDB query string
-  std::string query_str = "between(" + array.name + ", ";
-
   // Defining helpers for AFL Query generation
   std::string min_values;
   std::string max_values;
@@ -286,7 +286,9 @@ std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const e
   max_values.pop_back();
 
   // Generating SciDB AFL statement
-  query_str +=  min_values + ", " + max_values + ")";
+  std::string query_str = "between(" + array.name + ", "
+                                     + min_values + ", "
+                                     + max_values + ")";
 
   // attributes_afl
   std::string attributes_afl;
