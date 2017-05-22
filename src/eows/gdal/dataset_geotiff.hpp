@@ -67,7 +67,7 @@ namespace eows
          */
         void close();
 
-        void geo_transform(const OGRSpatialReference& ogr,
+        void geo_transform(const std::string& proj_wkt,
                            const double llx,
                            const double lly,
                            const double urx,

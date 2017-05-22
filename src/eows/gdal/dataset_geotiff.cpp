@@ -29,8 +29,22 @@
 #include "dataset_geotiff.hpp"
 #include "exception.hpp"
 
+// EOWS Core (file remover)
+#include "../core/file_remover.hpp"
+
 // EOWS GeoArray
 #include "../geoarray/data_types.hpp"
+
+const std::string fake_dataset_name(const std::string& filename)
+{
+  std::string output = filename;
+  std::size_t pos = filename.find(".tif");
+
+  if (pos != std::string::npos)
+    output = filename.substr(0, pos) + "-temp" + filename.substr(pos, filename.size());
+
+  return output;
+}
 
 eows::gdal::dataset_geotiff::dataset_geotiff(const std::string& filename, std::size_t col, std::size_t row, std::size_t bands)
   : format_("GTiff"), filename_(filename), col_(col), row_(row), bands_(bands), metadata_(nullptr), driver_(nullptr), dset_(nullptr)
@@ -72,7 +86,7 @@ void eows::gdal::dataset_geotiff::close()
   }
 }
 
-void eows::gdal::dataset_geotiff::geo_transform(const OGRSpatialReference& ogr,
+void eows::gdal::dataset_geotiff::geo_transform(const std::string& proj_wkt,
                                                 const double llx,
                                                 const double lly,
                                                 const double urx,
@@ -80,13 +94,10 @@ void eows::gdal::dataset_geotiff::geo_transform(const OGRSpatialReference& ogr,
                                                 const double resx,
                                                 const double resy)
 {
-  double gtransform[] {llx, resx, urx, lly, ury, resy};
+  double gtransform[] {llx, urx, resx, lly, ury, resy};
 
   dset_->SetGeoTransform(&gtransform[0]);
-
-  char* projection_wkt = nullptr;
-  ogr.exportToWkt(&projection_wkt);
-  dset_->SetProjection(projection_wkt);
+  dset_->SetProjection(proj_wkt.c_str());
 }
 
 void eows::gdal::dataset_geotiff::set_name(const std::string& name)
@@ -96,7 +107,6 @@ void eows::gdal::dataset_geotiff::set_name(const std::string& name)
 
 void eows::gdal::dataset_geotiff::set_description(const std::string& desc)
 {
-//  dset_->SetDescription(desc.c_str());
   set_metadata("TIFFTAG_IMAGEDESCRIPTION", desc.c_str());
 }
 
