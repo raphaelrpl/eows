@@ -86,9 +86,8 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
   eows::core::query_string_t::const_iterator it = query.find("coverageid");
 
   if (it == query.end())
-  {
     throw eows::ogc::missing_parameter_error("Missing parameter 'CoverageID'", "emptyCoverageIdList");
-  }
+
   coverage_id = it->second;
 
   it = query.find("format");

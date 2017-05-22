@@ -38,6 +38,7 @@
 // GDAL
 #include <gdal_priv.h>
 #include <cpl_config.h>
+#include <ogr_spatialref.h>
 
 // Boost
 #include <boost/noncopyable.hpp>
@@ -62,27 +63,52 @@ namespace eows
          */
         void open();
         /*!
-         * \brief It tries to close a dataset. It does not throw exception.
+         * \brief It tries to close a dataset if it open. It does not throw exception.
          */
         void close();
 
+        void geo_transform(const OGRSpatialReference& ogr,
+                           const double llx,
+                           const double lly,
+                           const double urx,
+                           const double ury,
+                           const double resx,
+                           const double resy);
+
+        void set_name(const std::string& name);
+
+        void set_description(const std::string& desc);
+
         /*!
-         * \brief It writes values to grid dataset.
+         * \brief It configures a GeoTIFF metadata information.
+         * \param key Data set metadata key
+         * \param value Data set metadata value
+         */
+        void set_metadata(const std::string& key, const std::string& value);
+
+        /*!
+         * \brief It writes INT16 values to grid dataset.
          * \throws eows::gdal::gdal_error When type is invalid or could not write in dataset
          * \param values Data to write
          * \param band Band identifier
-         * \param type Data type value. See more in eows::geoarray::datatype_t
          */
         void write_int16(std::vector<GInt16> values, const std::size_t& band);
+        /*!
+         * \brief It writes INT32 values to grid dataset.
+         * \throws eows::gdal::gdal_error When type is invalid or could not write in dataset
+         * \param values Data to write
+         * \param band Band identifier
+         */
         void write_int32(std::vector<GInt32> values, const std::size_t& band);
       private:
-        std::string format_;
-        std::string filename_;
-        std::size_t col_;
-        std::size_t row_;
-        std::size_t bands_;
-        GDALDriver* driver_;
-        GDALDataset* dset_;
+        std::string format_; //!< Defines Data set Format (GTiff)
+        std::string filename_; //!< Represents dataset is defined
+        std::size_t col_; //!< Defines X value for Data set
+        std::size_t row_; //!< Defines Y value for Data set
+        std::size_t bands_; //!< Defines Data set band number
+        char** metadata_; //!< Defines raw GDAL data set metadata
+        GDALDriver* driver_; //!< Defines raw GDAL driver location
+        GDALDataset* dset_; //!< Defines raw GDAL data set
     };
 
     //! Shared dataset pointer

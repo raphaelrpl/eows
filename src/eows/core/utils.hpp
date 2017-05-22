@@ -71,7 +71,7 @@ namespace eows
      * \brief It generates a unique path (temporary) in system.
      * \return A Temp file name
      */
-    std::string generate_unique_path();
+    std::string generate_unique_path(const std::string& path_prefix = "/tmp/");
 
     /**
      * \brief It applies lower case on given map keys and return a new map with these values

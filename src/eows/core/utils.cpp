@@ -272,7 +272,7 @@ std::string eows::core::to_lower(const std::string& str)
   return out;
 }
 
-std::string eows::core::generate_unique_path()
+std::string eows::core::generate_unique_path(const std::string& path_prefix)
 {
-  return boost::filesystem::unique_path().string();
+  return path_prefix + boost::filesystem::unique_path().string();
 }

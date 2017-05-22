@@ -55,6 +55,7 @@
 
 // GDAL
 #include <gdal_priv.h>
+#include <ogr_spatialref.h>
 
 // STL
 #include <fstream>
@@ -235,7 +236,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
     cell_it->next();
   }
 
-  const std::string tmp_file_path = "/tmp/" + eows::core::generate_unique_path() + ".tiff";
+  const std::string tmp_file_path = eows::core::generate_unique_path("/tmp/") + ".tiff";
 
   const eows::geoarray::dimension_t& dimension_x = dimensions[0];
   const eows::geoarray::dimension_t& dimension_y = dimensions[1];
@@ -246,16 +247,30 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   // TODO: Get array limits (from scidb query or input parameters?)
   eows::gdal::dataset_geotiff file(tmp_file_path, x, y, attributes.size());
 
+  // Setting TIFF metadata
+  file.set_name(array.name);
+  file.set_description(array.description);
+  file.set_metadata("TIFFTAG_XRESOLUTION", std::to_string(array.spatial_resolution.x));
+  file.set_metadata("TIFFTAG_YRESOLUTION", std::to_string(array.spatial_resolution.y));
+
+  // Array GeoTransform
+  OGRSpatialReference ogr;
+  ogr.SetWellKnownGeogCS(("EPSG:" + std::to_string(array.srid)).c_str());
+
+  file.geo_transform(ogr,
+                     array.spatial_extent.xmin,
+                     array.spatial_extent.ymax,
+                     array.spatial_extent.xmax,
+                     array.spatial_extent.ymax,
+                     array.spatial_resolution.x,
+                     array.spatial_resolution.y);
+
   // Adding to File_remover
   file_handler->add(tmp_file_path);
 
   int bid = 1;
   for(auto& it: field_values)
   {
-    auto found = std::find_if(array.attributes.begin(), array.attributes.end(), [&it](const geoarray::attribute_t& attr) {
-      return attr.name == it.first;
-    });
-
     file.write_int16(it.second, bid);
     ++bid;
   }

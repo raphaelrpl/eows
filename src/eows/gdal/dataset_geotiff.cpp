@@ -33,7 +33,7 @@
 #include "../geoarray/data_types.hpp"
 
 eows::gdal::dataset_geotiff::dataset_geotiff(const std::string& filename, std::size_t col, std::size_t row, std::size_t bands)
-  : format_("GTiff"), filename_(filename), col_(col), row_(row), bands_(bands), driver_(nullptr)
+  : format_("GTiff"), filename_(filename), col_(col), row_(row), bands_(bands), metadata_(nullptr), driver_(nullptr), dset_(nullptr)
 {
   driver_ = GetGDALDriverManager()->GetDriverByName(format_.c_str());
 
@@ -50,7 +50,7 @@ eows::gdal::dataset_geotiff::~dataset_geotiff()
 
 void eows::gdal::dataset_geotiff::open()
 {
-  dset_ = driver_->Create(filename_.c_str(), col_, row_, bands_, GDT_Float32, nullptr);
+  dset_ = driver_->Create(filename_.c_str(), col_, row_, bands_, GDT_Float32, metadata_);
   if (dset_ == nullptr)
     throw eows::gdal::gdal_error("Could not open dataset");
 }
@@ -59,9 +59,50 @@ void eows::gdal::dataset_geotiff::close()
 {
   if (dset_ != nullptr)
   {
+    if (metadata_ != nullptr)
+      dset_->SetMetadata(metadata_);
+
     GDALClose(static_cast<GDALDatasetH>(dset_));
     dset_ = nullptr;
   }
+  if (metadata_ != nullptr)
+  {
+    CSLDestroy(metadata_);
+    metadata_ = nullptr;
+  }
+}
+
+void eows::gdal::dataset_geotiff::geo_transform(const OGRSpatialReference& ogr,
+                                                const double llx,
+                                                const double lly,
+                                                const double urx,
+                                                const double ury,
+                                                const double resx,
+                                                const double resy)
+{
+  double gtransform[] {llx, resx, urx, lly, ury, resy};
+
+  dset_->SetGeoTransform(&gtransform[0]);
+
+  char* projection_wkt = nullptr;
+  ogr.exportToWkt(&projection_wkt);
+  dset_->SetProjection(projection_wkt);
+}
+
+void eows::gdal::dataset_geotiff::set_name(const std::string& name)
+{
+  set_metadata("TIFFTAG_DOCUMENTNAME", name.c_str());
+}
+
+void eows::gdal::dataset_geotiff::set_description(const std::string& desc)
+{
+//  dset_->SetDescription(desc.c_str());
+  set_metadata("TIFFTAG_IMAGEDESCRIPTION", desc.c_str());
+}
+
+void eows::gdal::dataset_geotiff::set_metadata(const std::string& key, const std::string& value)
+{
+  metadata_ = CSLSetNameValue(metadata_, key.c_str(), value.c_str());
 }
 
 void eows::gdal::dataset_geotiff::write_int16(std::vector<GInt16> values, const std::size_t& band)
