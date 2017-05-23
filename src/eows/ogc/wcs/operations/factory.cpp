@@ -41,7 +41,7 @@ std::unique_ptr<eows::ogc::wcs::core::operation> eows::ogc::wcs::operations::bui
 {
   eows::core::query_string_t::const_iterator request_it = query.find("request");
 
-  if (request_it == query.end()) {
+  if (request_it == query.end() || request_it->second.empty()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
   }
 

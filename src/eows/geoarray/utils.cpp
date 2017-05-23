@@ -27,8 +27,8 @@
 
 // EOWS
 #include "utils.hpp"
+#include "defines.hpp"
 #include "../core/app_settings.hpp"
-#include "../core/defines.hpp"
 #include "../core/logger.hpp"
 #include "../core/utils.hpp"
 #include "exception.hpp"
@@ -420,7 +420,7 @@ static void load_geoarrays()
   const rapidjson::Value& jarrays = doc["arrays"];
   
   if(!jarrays.IsArray())
-    throw eows::parse_error("Key 'arrays' in file '" EOWS_CONFIG_FILE "' must be a valid JSON array of objects.");
+    throw eows::parse_error("Key 'arrays' in file '" EOWS_GEOARRAYS_FILE "' must be a valid JSON array of objects.");
 
   for(rapidjson::SizeType i = 0; i < jarrays.Size(); ++i)
   {
@@ -450,3 +450,16 @@ void eows::geoarray::initialize()
 
   EOWS_LOG_INFO("GeoArrays runtime module initialized!");
 }
+
+std::vector<eows::geoarray::dimension_t>::const_iterator eows::geoarray::find_by_name(const std::vector<eows::geoarray::dimension_t>& dimensions,
+                                                                                      const std::string& name)
+{
+  std::vector<eows::geoarray::dimension_t>::const_iterator it;
+  for(it = dimensions.begin(); it != dimensions.end(); ++it)
+  {
+    if (it->name == name)
+      return it;
+  }
+  return it;
+}
+

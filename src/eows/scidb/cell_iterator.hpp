@@ -82,10 +82,16 @@ namespace eows
         //uint64_t get_uint64(const std::string& attr_name) const;
 
         //! Returns a 32-bit unsigned integer for the attribute indicated by a given position.
-        //uint32_t get_uint32(const std::size_t attr_pos) const;
+        uint32_t get_uint32(const std::size_t attr_pos) const;
 
         //! Returns a 32-bit unsigned integer for the attribute indicated by a given name.
-        //uint32_t get_uint32(const std::string& attr_name) const;
+        uint32_t get_uint32(const std::string& attr_name) const;
+
+        //! Returns a 32-bit signed integer for the attribute indicated by a given position.
+        int32_t get_int32(const std::size_t attr_pos) const;
+
+        //! Returns a 32-bit signed integer for the attribute indicated by a given name.
+        int32_t get_int32(const std::string& attr_name) const;
 
         //! Returns a 16-bit signed integer for the attribute indicated by a given position.
         int16_t get_int16(const std::size_t attr_pos) const;
@@ -100,10 +106,10 @@ namespace eows
         int8_t get_int8(const std::string& attr_name) const;
 
         //! Returns a 16-bit unsigned integer for the attribute indicated by a given position.
-        //uint16_t get_uint16(const std::size_t attr_pos) const;
+        uint16_t get_uint16(const std::size_t attr_pos) const;
 
         //! Returns a 16-bit unsigned integer for the attribute indicated by a given name.
-        //uint16_t get_uint16(const std::string& attr_name) const;
+        uint16_t get_uint16(const std::string& attr_name) const;
 
         //! Returns a 8-bit unsigned integer for the attribute indicated by a given position.
         uint8_t get_uint8(const std::size_t attr_pos) const;

@@ -42,3 +42,6 @@
 
 # Chronos specific files
 *.chronos
+
+# Git
+*.orig

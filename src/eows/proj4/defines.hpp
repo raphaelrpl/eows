@@ -18,26 +18,16 @@
  */
 
 /*!
-  \file eows/scidb/utils.hpp
+  \file eows/proj4/defines.hpp
 
-  \brief General utility functions.
+  \brief Defines for Proj4 module.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_SCIDB_UTILS_HPP__
-#define __EOWS_SCIDB_UTILS_HPP__
+#ifndef __EOWS_PROJ4_DEFINES_HPP__
+#define __EOWS_PROJ4_DEFINES_HPP__
 
-namespace eows
-{
-  namespace scidb
-  {
+#define  EOWS_SRS_FILE "share/eows/config/srs.json"
 
-    /*!
-      \exception std::exception ...
-     */
-    void initialize();
-  }  // end namespace scidb
-}    // end namespace eows
-
-#endif  // __EOWS_SCIDB_UTILS_HPP__
+#endif // __EOWS_PROJ4_DEFINES_HPP__
