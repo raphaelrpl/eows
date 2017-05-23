@@ -18,26 +18,16 @@
  */
 
 /*!
-  \file eows/scidb/utils.hpp
+  \file eows/ogc/wms/defines.hpp
 
-  \brief General utility functions.
+  \brief Defines for OGC WMS module.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_SCIDB_UTILS_HPP__
-#define __EOWS_SCIDB_UTILS_HPP__
+#ifndef __EOWS_OGC_WMS_DEFINES_HPP__
+#define __EOWS_OGC_WMS_DEFINES_HPP__
 
-namespace eows
-{
-  namespace scidb
-  {
+#define  EOWS_WMS_FILE "share/eows/config/wms.json"
 
-    /*!
-      \exception std::exception ...
-     */
-    void initialize();
-  }  // end namespace scidb
-}    // end namespace eows
-
-#endif  // __EOWS_SCIDB_UTILS_HPP__
+#endif // __EOWS_OGC_WMS_DEFINES_HPP__

@@ -30,6 +30,9 @@
 #include "../../exception.hpp"
 #include "../../core/utils.hpp"
 
+// EOWS OWS
+#include "../ows/manager.hpp"
+
 // STL
 #include <iterator>
 
@@ -89,12 +92,7 @@ eows::ogc::wms::read(const rapidjson::Value& jservice, service_t& service)
 
   service.online_resource.href = jit->value.GetString();
 
-  jit = jservice.FindMember("ContactInformation");
-
-  if(jit == jservice.MemberEnd())
-    throw eows::parse_error("Please, check the key 'Service/ContactInformation' in JSON document.");
-
-  read(jit->value, service.contact_information);
+  service.provider = eows::ogc::ows::manager::instance().provider();
 
   jit = jservice.FindMember("MaxWidth");
 
@@ -137,12 +135,6 @@ eows::ogc::wms::read(const rapidjson::Value& jcapability, capability_t& capabili
     throw eows::parse_error("Please, check the key 'Capability/Layer' in JSON document.");
 
   read(jit->value, capability.layer);
-}
-
-void
-eows::ogc::wms::read(const rapidjson::Value& jcontact_information, contact_information_t& contact_information)
-{
-
 }
 
 void

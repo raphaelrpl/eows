@@ -27,12 +27,12 @@
 
 // EOWS
 #include "manager.hpp"
-#include "../../core/app_settings.hpp"
-#include "../../core/utils.hpp"
-#include "../../core/defines.hpp"
+#include "core/defines.hpp"
 #include "core/utils.hpp"
 #include "core/data_types.hpp"
 #include "exception.hpp"
+#include "../../core/app_settings.hpp"
+#include "../../core/utils.hpp"
 #include "../../core/logger.hpp"
 
 // Boost

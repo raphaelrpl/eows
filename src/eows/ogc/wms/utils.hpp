@@ -47,8 +47,6 @@ namespace eows
 
       void read(const rapidjson::Value& jcapability, capability_t& capability);
 
-      void read(const rapidjson::Value& jcontact_information, contact_information_t& contact_information);
-
       void read(const rapidjson::Value& jrequest, request_t& request);
 
       void read(const rapidjson::Value& jexception, exception_t& exception);

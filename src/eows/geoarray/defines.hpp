@@ -18,26 +18,16 @@
  */
 
 /*!
-  \file eows/scidb/utils.hpp
+  \file eows/geoarray/defines.hpp
 
-  \brief General utility functions.
+  \brief Defines for Geo Array module.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_SCIDB_UTILS_HPP__
-#define __EOWS_SCIDB_UTILS_HPP__
+#ifndef __EOWS_OGC_DEFINES_DEFINES_HPP__
+#define __EOWS_OGC_DEFINES_DEFINES_HPP__
 
-namespace eows
-{
-  namespace scidb
-  {
+#define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
 
-    /*!
-      \exception std::exception ...
-     */
-    void initialize();
-  }  // end namespace scidb
-}    // end namespace eows
-
-#endif  // __EOWS_SCIDB_UTILS_HPP__
+#endif // __EOWS_OGC_DEFINES_DEFINES_HPP__

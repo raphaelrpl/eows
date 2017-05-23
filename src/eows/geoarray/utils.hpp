@@ -101,6 +101,13 @@ namespace eows
     internal_metadata_t
     read_internal_metadata(const rapidjson::Value& jinternal_metadata);
 
+    /*!
+     * \brief It retrieves a geoarray subset by name
+     * \return Dimension iterator
+     */
+    std::vector<eows::geoarray::dimension_t>::const_iterator find_by_name(const std::vector<eows::geoarray::dimension_t>&,
+                                                                          const std::string&);
+
     template<class Writer>
     void write(Writer& writer, const dimension_t& dim);
 

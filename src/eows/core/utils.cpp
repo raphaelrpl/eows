@@ -251,9 +251,9 @@ const std::string eows::core::read_node_as_string(const rapidjson::Value& node, 
 }
 
 
-std::map<std::string, std::string> eows::core::lowerify(const std::map<std::string, std::string>& given)
+std::multimap<std::string, std::string> eows::core::lowerify(const std::multimap<std::string, std::string>& given)
 {
-  std::map<std::string, std::string> out;
+  std::multimap<std::string, std::string> out;
 
   for(auto& it: given)
   {

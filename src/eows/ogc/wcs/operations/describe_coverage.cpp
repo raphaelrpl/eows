@@ -100,7 +100,7 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
       coverage->append_attribute(xml_doc.allocate_attribute("gml:id", array.name.c_str()));
 
       // Preparing Bounds
-      eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, coverage, array);
+      eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, coverage, array, array.spatial_extent);
       // Preparing CoverageID
       {
         rapidxml::xml_node<>* coverage_id = xml_doc.allocate_node(rapidxml::node_element,
@@ -148,14 +148,14 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
         }
       }
       // Preparing RangeSet
-      eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, coverage, array);
+      eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, coverage, array.attributes);
 
       // Preparing Service Parameters
       {
         rapidxml::xml_node<>* parameters = xml_doc.allocate_node(rapidxml::node_element, "wcs:ServiceParameters");
         coverage->append_node(parameters);
         // TODO: Is it dynamically?
-        parameters->append_node(xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSubtype", "RectifiedGridCoverage"));
+        parameters->append_node(xml_doc.allocate_node(rapidxml::node_element, "wcs:CoverageSubtype", "GridCoverage"));
         parameters->append_node(xml_doc.allocate_node(rapidxml::node_element, "wcs:nativeFormat", "image/tiff"));
       }
       // Appending CoverageDescription into WCS document

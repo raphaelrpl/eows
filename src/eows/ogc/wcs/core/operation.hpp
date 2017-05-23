@@ -47,7 +47,6 @@ namespace eows
           public:
             operation()
             {
-
             }
 
             virtual ~operation()
