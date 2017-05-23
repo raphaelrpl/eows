@@ -46,6 +46,18 @@ namespace eows
     {
       namespace operations
       {
+        /*!
+         * \brief It defines output formats supported in WCS operation
+         */
+        enum class format_t
+        {
+          APPLICATION_GML_XML, //!< application/gml+xml,
+          IMAGE_TIFF //!< image/tiff
+        };
+
+        std::string to_string(const format_t fmt);
+        format_t from(const std::string& fmt);
+
         /**
          * \brief It represents a base request structure for WCS access
          * \throws
@@ -89,7 +101,7 @@ namespace eows
           void digest_subset(const eows::core::query_string_t& query);
 
           std::string coverage_id; //!< Coverage Identifier
-          std::string format; //!< Response format output
+          format_t format; //!< Response format output
           std::size_t input_crs; //!< InputCRS of subsetting
           std::size_t output_crs {4326}; //!< OutputCRS of operation. Default: 4326
           std::vector<eows::ogc::wcs::core::subset_t> subsets; //!< Client subsets to retrieve coverage portion

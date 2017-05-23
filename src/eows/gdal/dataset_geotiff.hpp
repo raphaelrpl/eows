@@ -38,7 +38,6 @@
 // GDAL
 #include <gdal_priv.h>
 #include <cpl_config.h>
-#include <ogr_spatialref.h>
 
 // Boost
 #include <boost/noncopyable.hpp>

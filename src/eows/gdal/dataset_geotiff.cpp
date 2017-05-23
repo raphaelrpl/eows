@@ -35,16 +35,6 @@
 // EOWS GeoArray
 #include "../geoarray/data_types.hpp"
 
-const std::string fake_dataset_name(const std::string& filename)
-{
-  std::string output = filename;
-  std::size_t pos = filename.find(".tif");
-
-  if (pos != std::string::npos)
-    output = filename.substr(0, pos) + "-temp" + filename.substr(pos, filename.size());
-
-  return output;
-}
 
 eows::gdal::dataset_geotiff::dataset_geotiff(const std::string& filename, std::size_t col, std::size_t row, std::size_t bands)
   : format_("GTiff"), filename_(filename), col_(col), row_(row), bands_(bands), metadata_(nullptr), driver_(nullptr), dset_(nullptr)
@@ -94,7 +84,7 @@ void eows::gdal::dataset_geotiff::geo_transform(const std::string& proj_wkt,
                                                 const double resx,
                                                 const double resy)
 {
-  double gtransform[] {llx, urx, resx, lly, ury, resy};
+  double gtransform[] {llx, resx, urx, lly, ury, resy};
 
   dset_->SetGeoTransform(&gtransform[0]);
   dset_->SetProjection(proj_wkt.c_str());

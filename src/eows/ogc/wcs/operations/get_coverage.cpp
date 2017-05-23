@@ -577,10 +577,17 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
       TODO: Create a factory handler
     */
-    if (pimpl_->request.format == "application/gml+xml")
-      pimpl_->process_as_document(array, std::move(cell_it), array_attributes, used_extent, dimensions_to_query);
-    else if (pimpl_->request.format == "image/tiff")
-      pimpl_->process_as_tiff(std::move(cell_it), array, array_attributes, dimensions_to_query);
+    switch(pimpl_->request.format)
+    {
+      case eows::ogc::wcs::operations::format_t::APPLICATION_GML_XML:
+        pimpl_->process_as_document(array, std::move(cell_it), array_attributes, used_extent, dimensions_to_query);
+        break;
+      case eows::ogc::wcs::operations::format_t::IMAGE_TIFF:
+        pimpl_->process_as_tiff(std::move(cell_it), array, array_attributes, dimensions_to_query);
+        break;
+      default:
+        throw eows::ogc::not_implemented_error("Format not supported", "NotSupported");
+    }
   }
   // known module error
   catch(const eows::ogc::ogc_error&)
@@ -606,7 +613,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
 const char*eows::ogc::wcs::operations::get_coverage::content_type() const
 {
-  return pimpl_->request.format.c_str();
+  return eows::ogc::wcs::operations::to_string(pimpl_->request.format).c_str();
 }
 
 const std::string& eows::ogc::wcs::operations::get_coverage::to_string() const

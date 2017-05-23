@@ -12,6 +12,28 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+eows::ogc::wcs::operations::format_t eows::ogc::wcs::operations::from(const std::string& fmt)
+{
+  if (fmt == "application/xml" || fmt == "application/gml+xml")
+    return format_t::APPLICATION_GML_XML;
+  if (fmt == "image/tiff")
+    return format_t::IMAGE_TIFF;
+
+  throw eows::ogc::wcs::wcs_error("Format not supported", "InvalidParameterValue");
+}
+
+std::string eows::ogc::wcs::operations::to_string(const format_t fmt)
+{
+  switch(fmt)
+  {
+    case format_t::APPLICATION_GML_XML:
+      return "application/gml+xml";
+    case format_t::IMAGE_TIFF:
+      return "image/tiff";
+  }
+  throw eows::ogc::wcs::wcs_error("Format not supported", "format");
+}
+
 eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_string_t& query)
   : request(), version(), service()
 {
@@ -19,14 +41,14 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
 
   eows::core::query_string_t::const_iterator it = query.find("request");
 
-  if (it == query.end() || it->second.empty()) {
+  if (it == query.end()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
   }
   request = it->second;
 
   it = query.find("service");
 
-  if (it == query.end() || it->second.empty()) {
+  if (it == query.end()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'service'", "service");
   }
 
@@ -92,17 +114,11 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
 
   it = query.find("format");
 
-  std::string default_format = "application/gml+xml";
   // Setting default format
   if (it == query.end())
-    format = default_format;
+    format = format_t::APPLICATION_GML_XML;
   else
-  {
-    if (it->second != default_format && it->second != "image/tiff")
-      throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
-
-    format = it->second;
-  }
+    format = from(it->second); // It may throw exception (format non-supported)
 
   // InputCRS
   it = query.find("inputcrs");
