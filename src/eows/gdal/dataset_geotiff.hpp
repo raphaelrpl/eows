@@ -30,6 +30,9 @@
 
 #include "exception.hpp"
 
+// EOWS GDAL Band
+#include "band.hpp"
+
 // STL
 #include <string>
 #include <memory>
@@ -46,6 +49,7 @@ namespace eows
 {
   namespace gdal
   {
+    class band;
     /*!
      * \brief Simple implementation of GDAL GeoTiff dataset.
      * \todo Define a Generic dataset and dataset implementations in order to build as factory.
@@ -53,7 +57,7 @@ namespace eows
     class dataset_geotiff : private boost::noncopyable
     {
       public:
-        dataset_geotiff(const std::string& filename, std::size_t col, std::size_t row, std::size_t bands = 1);
+        dataset_geotiff(const std::string& filename, std::size_t col, std::size_t row);
         ~dataset_geotiff();
 
         /*!
@@ -66,17 +70,24 @@ namespace eows
          */
         void close();
 
-        void geo_transform(const std::string& proj_wkt,
-                           const double llx,
+        void geo_transform(const double llx,
                            const double lly,
                            const double urx,
                            const double ury,
                            const double resx,
                            const double resy);
 
+        void set_projection(const std::string& proj_wkt);
+
         void set_name(const std::string& name);
 
         void set_description(const std::string& desc);
+
+        void add_band(band* b);
+
+        band* get_band(const std::size_t& id) const;
+
+        bool is_open() const;
 
         /*!
          * \brief It configures a GeoTIFF metadata information.
@@ -104,10 +115,10 @@ namespace eows
         std::string filename_; //!< Represents dataset is defined
         std::size_t col_; //!< Defines X value for Data set
         std::size_t row_; //!< Defines Y value for Data set
-        std::size_t bands_; //!< Defines Data set band number
         char** metadata_; //!< Defines raw GDAL data set metadata
         GDALDriver* driver_; //!< Defines raw GDAL driver location
-        GDALDataset* dset_; //!< Defines raw GDAL data set
+        GDALDataset* dset_; //!< Defines raw GDAL data set. TODO: Use smartpointer
+        std::vector<band*> bands_;
     };
 
     //! Shared dataset pointer

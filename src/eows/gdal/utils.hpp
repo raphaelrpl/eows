@@ -9,6 +9,11 @@ namespace eows
      * \brief It initializes EOWS Gdal module
      */
     void initialize();
+
+    void get_int16(int index, void* buffer, double* value);
+
+    void set_int16(int index, void* buffer, double* value);
+
   }
 }
 

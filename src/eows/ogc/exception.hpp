@@ -50,6 +50,8 @@ namespace eows
       explicit ogc_error(const char*& s, const std::string& c)
         : eows_error(s), error_code(c) {}
 
+      virtual ~ogc_error() = default;
+
       //! Defines code error useful during exception handling
       std::string error_code;
       //! Defines value user typed during OGC request

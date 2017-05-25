@@ -52,6 +52,7 @@
 
 // EOWS GDAL
 #include "../../../gdal/dataset_geotiff.hpp"
+#include "../../../gdal/band.hpp"
 
 // GDAL
 #include <gdal_priv.h>
@@ -212,22 +213,50 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
 {
   std::unordered_map<std::string, std::vector<GInt16>> field_values;
 
+  const eows::geoarray::dimension_t& dimension_x = dimensions[0];
+  const eows::geoarray::dimension_t& dimension_y = dimensions[1];
+  // Computing Image Limits
+  const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
+  const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
+  const int t = dimensions[2].max_idx - dimensions[2].min_idx + 1;
+
+  const std::string tmp_file_path = eows::core::generate_unique_path("/tmp/") + ".tiff";
+
+  // TODO: Get array limits (from scidb query or input parameters?)
+  eows::gdal::dataset_geotiff file(tmp_file_path, x, y);
+
+  // Preparing bands
   while(!cell_it->end())
   {
-    for(const ::scidb::AttributeDesc& attribute: attributes)
+    for(std::size_t index = 0; index < attributes.size(); ++index)
     {
-      const std::string& name = attribute.getName();
+      const ::scidb::AttributeDesc& attribute = attributes[index];
       const ::scidb::TypeId& data_type = attribute.getType();
       if (data_type == ::scidb::TID_INT16)
-        field_values[name].push_back(cell_it->get_int16(name));
+        file.add_band(new eows::gdal::band(x*y*t, eows::gdal::band::INT16));
       else if (data_type == ::scidb::TID_UINT16)
-        field_values[name].push_back(cell_it->get_uint16(name));
+        file.add_band(new eows::gdal::band(x*y*t, eows::gdal::band::UINT16));
       else if (data_type == ::scidb::TID_INT8)
-        field_values[name].push_back(cell_it->get_int8(name));
-      else if (data_type == ::scidb::TID_UINT8)
-        field_values[name].push_back(cell_it->get_uint8(name));
-      else if (data_type == ::scidb::TID_INT32)
-        field_values[name].push_back(cell_it->get_int32(name));
+        file.add_band(new eows::gdal::band(x*y*t, eows::gdal::band::INT8));
+    }
+
+    break;
+  }
+  // Open/Create DataSet
+  file.open();
+  // fill
+  while(!cell_it->end())
+  {
+    for(std::size_t index; index < attributes.size(); ++index)
+    {
+      const ::scidb::AttributeDesc& attribute = attributes[index];
+      eows::gdal::band* band = file.get_band(index);
+      const ::scidb::TypeId& data_type = attribute.getType();
+
+      if (data_type == ::scidb::TID_INT16 ||
+          data_type == ::scidb::TID_INT8 ||
+          data_type == ::scidb::TID_UINT16)
+        band->set_value(cell_it->get_position()[0], cell_it->get_position()[1], cell_it->get_uint16(attribute.getName()));
       else
         throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
     }
@@ -235,34 +264,23 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
     cell_it->next();
   }
 
-  const std::string tmp_file_path = eows::core::generate_unique_path("/tmp/") + ".tiff";
-
-  const eows::geoarray::dimension_t& dimension_x = dimensions[0];
-  const eows::geoarray::dimension_t& dimension_y = dimensions[1];
-  // Computing Image Limits
-  const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
-  const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
-
-  // TODO: Get array limits (from scidb query or input parameters?)
-  eows::gdal::dataset_geotiff file(tmp_file_path, x, y, attributes.size());
-
   // Setting TIFF metadata
   file.set_name(array.name);
   file.set_description(array.description);
   file.set_metadata("TIFFTAG_XRESOLUTION", std::to_string(array.spatial_resolution.x));
   file.set_metadata("TIFFTAG_YRESOLUTION", std::to_string(array.spatial_resolution.y));
 
+  // Array gtransform
+//  file.geo_transform(array.spatial_extent.xmin,
+//                     array.spatial_extent.ymax,
+//                     array.spatial_extent.xmax,
+//                     array.spatial_extent.ymax,
+//                     array.spatial_resolution.x,
+//                     array.spatial_resolution.y);
   // Retrieving Projection. CHECK: It may throw exception when not found.
   const eows::proj4::srs_description_t& proj = eows::proj4::srs_manager::instance().get(array.srid);
-
-  // Array gtransform
-  file.geo_transform(proj.wkt, array.spatial_extent.xmin,
-                               array.spatial_extent.ymax,
-                               array.spatial_extent.xmax,
-                               array.spatial_extent.ymax,
-                               array.spatial_resolution.x,
-                               array.spatial_resolution.y);
-
+  // Setting Projection
+  file.set_projection(proj.proj4_txt);
   // Adding to File remover
   file_handler->add(tmp_file_path);
 
@@ -270,6 +288,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   int bid = 1;
   for(auto& it: field_values)
   {
+    // TODO: Write it into respective array type
     file.write_int16(it.second, bid);
     ++bid;
   }

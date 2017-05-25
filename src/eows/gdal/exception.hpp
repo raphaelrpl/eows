@@ -41,7 +41,7 @@ namespace eows
     struct gdal_error : public virtual eows_error
     {
       gdal_error(const std::string& msg)
-        : gdal_error(msg)
+        : eows_error(msg)
       {
       }
     };

@@ -48,6 +48,8 @@ namespace eows
   {
     explicit eows_error(const std::string& s) : std::runtime_error(s) {}
     explicit eows_error(const char* s) : std::runtime_error(s) {}
+
+    virtual ~eows_error() = default;
   };
 
 }   // end namespace eows
