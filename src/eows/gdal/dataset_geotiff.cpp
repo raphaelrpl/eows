@@ -65,10 +65,10 @@ void eows::gdal::dataset_geotiff::close()
   {
     for(std::size_t i = 0; i < bands_.size(); ++i)
     {
-      band* b = bands_[i];
-      GDALRasterBand* raster_band = dset_->GetRasterBand(i);
+//      band* b = bands_[i];
+//      GDALRasterBand* raster_band = dset_->GetRasterBand(i);
 
-      raster_band->WriteBlock(col_, row_, )
+//      raster_band->WriteBlock(col_, row_, )
     }
 
     if (metadata_ != nullptr)

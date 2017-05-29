@@ -8,45 +8,48 @@ namespace eows
 {
   namespace gdal
   {
-    class dataset_geotiff;
+    struct property;
+    class raster;
 
     class band
     {
       public:
-        enum type
-        {
-          INT8,
-          INT16,
-          UINT16,
-          INT32
-        };
-
         typedef void (*get_buffer_value_ptr)(int index, void* buffer, double* value);
         typedef void (*set_buffer_value_ptr)(int index, void* buffer, double* value);
 
-        band(dataset_geotiff* parent, const std::size_t& buffer_size, type t, GDALRasterBand* gdal_band);
+        band(raster* parent, const std::size_t& id, GDALRasterBand* gdal_band);
 
         virtual ~band();
 
-        double get_value(const std::size_t& x, const std::size_t& y);
+        void get_value(const std::size_t& x, const std::size_t& y, double* value);
 
         void set_value(const std::size_t& x, const std::size_t& y, double v);
 
-      protected:
-        void get_int16(int index, double* value) const;
-        void set_int16(int index, const double* value);
+        std::size_t block_size();
+      private:
+        property* make_property(GDALRasterBand* gdalband, const std::size_t index);
+        void write(std::size_t col, std::size_t row);
+        int place_buffer(int col, int row);
+        void read(std::size_t col, std::size_t row);
 
       private:
         std::size_t id_;
-        std::size_t size_;
-        std::size_t x;
-        std::size_t y;
-        type type_;
+        int x_;
+        int y_;
+        property* property_;
         get_buffer_value_ptr getter_;
         set_buffer_value_ptr setter_;
-        dataset_geotiff* parent_;
+        raster* parent_;
+        GDALDataType datatype_;
         GDALRasterBand* gdal_;
         void* buffer_;
+        bool update_buffer_;
+
+        int current_x_;                     //!< Block x position.
+        int current_y_;                     //!< Block y position.
+        int current_col_;                     //!< Block column position.
+        int current_row_;                     //!< Block row position.
+        int current_i_;                         //!< Block index.
     };
   }
 }

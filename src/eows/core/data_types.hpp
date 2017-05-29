@@ -58,7 +58,8 @@ namespace eows
       IMAGE_X_TIFF,
       TEXT_PLAIN,
       TEXT_XML,
-      TEXT_HTML
+      TEXT_HTML,
+      APPLICATION_OCTET_STREAM
     };
     
   } // end namespace core

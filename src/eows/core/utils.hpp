@@ -85,6 +85,7 @@ namespace eows
 
     /*! \brief Returns the string representation for a give content type. */
     const char* to_str(content_type_t content_type);
+    content_type_t from_string(const std::string& content);
     
     /*!
       \brief Find out the righ request-method (GET, PUT, POST) and and process the request.
