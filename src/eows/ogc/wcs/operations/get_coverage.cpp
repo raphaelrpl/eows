@@ -51,8 +51,10 @@
 #include "../../../proj4/srs.hpp"
 
 // EOWS GDAL
-#include "../../../gdal/dataset_geotiff.hpp"
+//#include "../../../gdal/dataset_geotiff.hpp"
 #include "../../../gdal/band.hpp"
+#include "../../../gdal/raster.hpp"
+#include "../../../gdal/data_types.hpp"
 
 // GDAL
 #include <gdal_priv.h>
@@ -211,20 +213,18 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
                                                                      const ::scidb::Attributes& attributes,
                                                                      const std::vector<eows::geoarray::dimension_t> dimensions)
 {
-  std::unordered_map<std::string, std::vector<GInt16>> field_values;
-
   const eows::geoarray::dimension_t& dimension_x = dimensions[0];
   const eows::geoarray::dimension_t& dimension_y = dimensions[1];
   // Computing Image Limits
   const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
   const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
-  const int t = dimensions[2].max_idx - dimensions[2].min_idx + 1;
 
   const std::string tmp_file_path = eows::core::generate_unique_path("/tmp/") + ".tiff";
 
   // TODO: Get array limits (from scidb query or input parameters?)
-  eows::gdal::dataset_geotiff file(tmp_file_path, x, y);
+  eows::gdal::raster file;
 
+  std::vector<eows::gdal::property> properties;
   // Preparing bands
   while(!cell_it->end())
   {
@@ -233,31 +233,45 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
       const ::scidb::AttributeDesc& attribute = attributes[index];
       const ::scidb::TypeId& data_type = attribute.getType();
       if (data_type == ::scidb::TID_INT16)
-        file.add_band(new eows::gdal::band(x*y*t, eows::gdal::band::INT16));
+        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int16));
       else if (data_type == ::scidb::TID_UINT16)
-        file.add_band(new eows::gdal::band(x*y*t, eows::gdal::band::UINT16));
+        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint16));
       else if (data_type == ::scidb::TID_INT8)
-        file.add_band(new eows::gdal::band(x*y*t, eows::gdal::band::INT8));
+        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int8));
+      else if (data_type == ::scidb::TID_UINT16)
+        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint16));
+      else if (data_type == ::scidb::TID_UINT8)
+        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint8));
+      else
+        throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
     }
 
     break;
   }
-  // Open/Create DataSet
-  file.open();
+  // Creating dataset
+  file.create(tmp_file_path, x, y, properties);
   // fill
   while(!cell_it->end())
   {
-    for(std::size_t index; index < attributes.size(); ++index)
+    const ::scidb::Coordinate& x = cell_it->get_position()[0];
+    const ::scidb::Coordinate& y = cell_it->get_position()[1];
+
+    for(std::size_t index = 0; index < attributes.size(); ++index)
     {
       const ::scidb::AttributeDesc& attribute = attributes[index];
       eows::gdal::band* band = file.get_band(index);
       const ::scidb::TypeId& data_type = attribute.getType();
+      const std::string& name = attribute.getName();
 
-      if (data_type == ::scidb::TID_INT16 ||
-          data_type == ::scidb::TID_INT8 ||
-          data_type == ::scidb::TID_UINT16)
-        band->set_value(cell_it->get_position()[0], cell_it->get_position()[1], cell_it->get_uint16(attribute.getName()));
-      else
+      if (data_type == ::scidb::TID_INT8)
+        band->set_value(x, y, cell_it->get_int8(name));
+      else if (data_type == ::scidb::TID_UINT8)
+        band->set_value(x, y, cell_it->get_uint8(name));
+      else if (data_type == ::scidb::TID_INT16)
+        band->set_value(x, y, cell_it->get_uint16(name));
+      else if (data_type == ::scidb::TID_UINT16)
+        band->set_value(x, y, cell_it->get_uint16(name));
+      else // TODO
         throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
     }
 
@@ -267,31 +281,22 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   // Setting TIFF metadata
   file.set_name(array.name);
   file.set_description(array.description);
-  file.set_metadata("TIFFTAG_XRESOLUTION", std::to_string(array.spatial_resolution.x));
-  file.set_metadata("TIFFTAG_YRESOLUTION", std::to_string(array.spatial_resolution.y));
+  file.set_metadata(gdal::raster::metadata::x_resolution, std::to_string(array.spatial_resolution.x));
+  file.set_metadata(gdal::raster::metadata::y_resolution, std::to_string(array.spatial_resolution.y));
 
   // Array gtransform
-//  file.geo_transform(array.spatial_extent.xmin,
-//                     array.spatial_extent.ymax,
-//                     array.spatial_extent.xmax,
-//                     array.spatial_extent.ymax,
-//                     array.spatial_resolution.x,
-//                     array.spatial_resolution.y);
+  file.transform(array.spatial_extent.xmin,
+                 array.spatial_extent.ymax,
+                 array.spatial_extent.xmax,
+                 array.spatial_extent.ymax,
+                 array.spatial_resolution.x,
+                 array.spatial_resolution.y);
   // Retrieving Projection. CHECK: It may throw exception when not found.
   const eows::proj4::srs_description_t& proj = eows::proj4::srs_manager::instance().get(array.srid);
   // Setting Projection
-  file.set_projection(proj.proj4_txt);
+  file.set_projection(proj.wkt);
   // Adding to File remover
   file_handler->add(tmp_file_path);
-
-  // Band identifider
-  int bid = 1;
-  for(auto& it: field_values)
-  {
-    // TODO: Write it into respective array type
-    file.write_int16(it.second, bid);
-    ++bid;
-  }
   // Close dataset
   file.close();
   // Opening generated image
@@ -598,10 +603,10 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     */
     switch(pimpl_->request.format)
     {
-      case eows::ogc::wcs::operations::format_t::APPLICATION_GML_XML:
+      case eows::core::APPLICATION_XML:
         pimpl_->process_as_document(array, std::move(cell_it), array_attributes, used_extent, dimensions_to_query);
         break;
-      case eows::ogc::wcs::operations::format_t::IMAGE_TIFF:
+      case eows::core::IMAGE_TIFF:
         pimpl_->process_as_tiff(std::move(cell_it), array, array_attributes, dimensions_to_query);
         break;
       default:
@@ -612,6 +617,10 @@ void eows::ogc::wcs::operations::get_coverage::execute()
   catch(const eows::ogc::ogc_error&)
   {
     throw;
+  }
+  catch(const eows::gdal::gdal_error& e)
+  {
+    throw eows::ogc::ogc_error(e.what(), "UnappliedCode");
   }
   // thirdparty errors
   catch(const eows::scidb::connection_open_error& e)
@@ -632,7 +641,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
 const char*eows::ogc::wcs::operations::get_coverage::content_type() const
 {
-  return eows::ogc::wcs::operations::to_string(pimpl_->request.format).c_str();
+  return eows::core::to_str(pimpl_->request.format);
 }
 
 const std::string& eows::ogc::wcs::operations::get_coverage::to_string() const
