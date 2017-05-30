@@ -92,6 +92,8 @@ namespace eows
      *
      *  Record the WTSCS service operations.
      */
+    void open_request_list();
+
     void initialize();
 
   } // end namespace wtscs

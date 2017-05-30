@@ -19,7 +19,7 @@
 
 // EOWS
 #include "wtscs.hpp"
-#include "parserequest.hpp"
+#include "request.hpp"
 #include "../core/http_response.hpp"
 #include "../core/http_request.hpp"
 #include "../core/logger.hpp"
@@ -31,26 +31,32 @@
 
 //// C++ Standard Library
 //#include <memory>
-#include <sstream>
+
 
 // Boost
 #include <boost/format.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 // RapidJSON
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
+#include <cstdlib>
+
+using namespace std;
+
+string scidb_shared_directory;
+string config_directory;
+string name_service;
+
+eows::wtscs::request* pRequestList;
 static void return_exception(const char* msg, eows::core::http_response& res);
 
 void eows::wtscs::status_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   // TODO: See how to implement the status_handler methods!.
 
-  std::string return_msg("\"status_handler\"");
+  string return_msg("\"status_handler\"");
 
   res.set_status(eows::core::http_response::OK);
 
@@ -61,7 +67,7 @@ void eows::wtscs::status_handler::do_get(const eows::core::http_request& req, eo
 
 void eows::wtscs::list_algorithms_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
-  std::vector<std::string> algorithms{ "twdtw", "bfast", "bfast-monitor" };
+  vector<string> algorithms{ "twdtw", "bfast", "bfast-monitor" };
 
   rapidjson::StringBuffer buff;
   rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
@@ -86,18 +92,31 @@ void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
 {
 
   // Parsing the request into a Document.
-  parseRequest parRequest;
+  request* oRequest = new request;
+
   try
   {
-    parRequest.setParameters(req.content());
+    oRequest->set_UUID(name_service);
+    oRequest->set_parameters(req.content(), scidb_shared_directory);
+    oRequest->check_parameters();
+    if((oRequest->get_status()).compare("Scheduled") == 0)
+    {
+      eows::wtscs::request* pTempPosition = pRequestList;
+      eows::wtscs::request* pPrevPosition = pTempPosition;
+      pTempPosition = pTempPosition->pNext;
+      while(pTempPosition)
+      {
+        pPrevPosition = pTempPosition;
+        pTempPosition = pTempPosition->pNext;
+      }
+      pPrevPosition->pNext = oRequest;
 
-    // TODO: Generate the  UUID identifier to create the AFL syntax.
+      // TODO: Save the request list on disk (wtscs_request_list.json)
+      // You will use the config_directory string
 
-    boost::uuids::uuid u;
-    int d = u.size();
-    std::stringstream s;
-    s << u;
-    std::string mys = s.str();
+    }
+
+    system("/opt/scidb/15.12/bin/iquery -aq \"remove(Array1)\"");
     int a = 2;
     // It Sends the AFL request.
     // The answer is a URL wrapping the request UUID identifier.
@@ -121,7 +140,7 @@ void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
 
 //    res.write(buff.GetString(), buff.GetSize());
   }
-  catch(const std::exception& e)
+  catch(const exception& e)
   {
     return_exception(e.what(), res);
   }
@@ -131,18 +150,33 @@ void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
   }
 }
 
+void eows::wtscs::open_request_list()
+{
+  scidb_shared_directory = "/home/edullapa/mydevel/eows/scidb/";
+  config_directory = "/home/edullapa/mydevel/eows/codebase/share/eows/config/"
+  name_service = "WTSCS";
+
+  pRequestList = new request;
+
+
+  EOWS_LOG_INFO("request file was analized!");
+}
+
 void eows::wtscs::initialize()
 {
   EOWS_LOG_INFO("Initializing WTSCS...");
 
-  std::unique_ptr<eows::wtscs::status_handler> s_h(new eows::wtscs::status_handler);
-  eows::core::service_operations_manager::instance().insert("/wtscs/status", std::move(s_h));
+  //Read UUID using WTSCS
+  eows::wtscs::open_request_list();
 
-  std::unique_ptr<list_algorithms_handler> la_h(new list_algorithms_handler);
-  eows::core::service_operations_manager::instance().insert("/wtscs/list_algorithms", std::move(la_h));
+  unique_ptr<eows::wtscs::status_handler> s_h(new eows::wtscs::status_handler);
+  eows::core::service_operations_manager::instance().insert("/wtscs/status", move(s_h));
 
-  std::unique_ptr<classify_handler> c_h(new classify_handler);
-  eows::core::service_operations_manager::instance().insert("/wtscs/classify", std::move(c_h));
+  unique_ptr<list_algorithms_handler> la_h(new list_algorithms_handler);
+  eows::core::service_operations_manager::instance().insert("/wtscs/list_algorithms", move(la_h));
+
+  unique_ptr<classify_handler> c_h(new classify_handler);
+  eows::core::service_operations_manager::instance().insert("/wtscs/classify", move(c_h));
 
   EOWS_LOG_INFO("WTSCS service initialized!");
 }
