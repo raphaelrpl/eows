@@ -61,6 +61,8 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
       setter_ = eows::gdal::set_uint16;
       break;
     case GDT_Int32:
+      getter_ = eows::gdal::get_int32;
+      setter_ = eows::gdal::set_int32;
       break;
     default:
       throw eows::gdal::gdal_error("No GDAL raster band type found");
@@ -78,7 +80,7 @@ eows::gdal::band::~band()
   if (flag != CE_None)
     EOWS_LOG_DEBUG("Could not write block while destroying band object");
 
-  unsigned char* buff = (unsigned char*)buffer_;
+  unsigned char* buff = static_cast<unsigned char*>(buffer_);
   delete [] buff;
 }
 
@@ -91,6 +93,7 @@ void eows::gdal::band::get_value(const std::size_t& x, const std::size_t& y, dou
 
 void eows::gdal::band::set_value(const std::size_t& x, const std::size_t& y, double v)
 {
+  std::cout << v;
   current_i_ = place_buffer(x, y);
 
   setter_(current_i_, buffer_, &v);
@@ -111,7 +114,7 @@ std::size_t eows::gdal::band::block_size()
   return blksize;
 }
 
-eows::gdal::property*eows::gdal::band::make_property(GDALRasterBand* gdalband, const std::size_t index)
+eows::gdal::property* eows::gdal::band::make_property(GDALRasterBand* gdalband, const std::size_t index)
 {
   if (gdalband == nullptr)
     return nullptr;
@@ -133,6 +136,8 @@ void eows::gdal::band::write(std::size_t col, std::size_t row)
     EOWS_LOG_DEBUG("Could not write in dataset " + std::to_string(col) + " - " + std::to_string(row));
 
   gdal_->FlushCache();
+
+  update_buffer_ = false;
 }
 
 int eows::gdal::band::place_buffer(int col, int row)
@@ -145,11 +150,7 @@ int eows::gdal::band::place_buffer(int col, int row)
   if (current_x_ != x_ || current_y_ != y_)
   {
     if (update_buffer_)
-    {
       write(col, row);
-
-      update_buffer_ = false;
-    }
 
     read(current_x_, current_y_);
 
@@ -167,7 +168,6 @@ void eows::gdal::band::read(std::size_t col, std::size_t row)
   if (update_buffer_)
   {
     write(col, row);
-    update_buffer_ = false;
     x_ = col;
     y_ = row;
   }

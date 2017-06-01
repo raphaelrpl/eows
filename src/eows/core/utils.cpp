@@ -303,3 +303,24 @@ eows::core::content_type_t eows::core::from_string(const std::string& content)
     return TEXT_XML;
   return APPLICATION_OCTET_STREAM; // Default/unknown/no extension format
 }
+
+std::string eows::core::decode(const std::string& encoded_string)
+{
+  std::string output;
+
+  int tmp;
+  for(std::size_t i = 0; i < encoded_string.size(); ++i)
+  {
+    if (encoded_string[i] == '%')
+    {
+      std::string t = encoded_string.substr(i + 1, 2);
+      std::stringstream ss(t);
+      ss >> std::hex >> tmp;
+      output += tmp;
+      i = i + 2;
+    }
+    else
+      output += encoded_string[i];
+  }
+  return output;
+}

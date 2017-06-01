@@ -68,6 +68,13 @@ namespace eows
     std::string to_lower(const std::string&);
 
     /*!
+     * \brief It tries to decode a string value
+     * \param encoded_string - Encoded String
+     * \return Decoded string
+     */
+    std::string decode(const std::string& encoded_string);
+
+    /*!
      * \brief It generates a unique path (temporary) in system.
      * \return A Temp file name
      */

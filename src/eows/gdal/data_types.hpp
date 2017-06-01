@@ -8,6 +8,9 @@ namespace eows
 {
   namespace gdal
   {
+    /*!
+     * \brief
+     */
     enum class datatype
     {
       int8,
@@ -20,11 +23,11 @@ namespace eows
 
     struct property
     {
-      std::size_t index;
-      datatype dtype;
-      double dummy;
-      int width;
-      int height;
+      std::size_t index; //!< Property index (same band)
+      datatype dtype;    //!< Band datatype definition
+      double dummy;      //!< Dummy value for band
+      int width;         //!< Band width
+      int height;        //!< Band height
       int block_x;
       int block_y;
 
@@ -33,6 +36,11 @@ namespace eows
       {
       }
 
+      /*!
+       * \brief Retrieves a property data type from GDALDataType
+       * \param dt - GDAL datatype
+       * \return Band datatype
+       */
       static datatype from_gdal_datatype(GDALDataType dt)
       {
         switch(dt)

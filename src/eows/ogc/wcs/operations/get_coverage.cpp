@@ -238,10 +238,10 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
         properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint16));
       else if (data_type == ::scidb::TID_INT8)
         properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int8));
-      else if (data_type == ::scidb::TID_UINT16)
-        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint16));
       else if (data_type == ::scidb::TID_UINT8)
         properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint8));
+      else if (data_type == ::scidb::TID_INT32)
+        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int32));
       else
         throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
     }
@@ -250,11 +250,14 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   }
   // Creating dataset
   file.create(tmp_file_path, x, y, properties);
+
   // fill
   while(!cell_it->end())
   {
-    const ::scidb::Coordinate& x = cell_it->get_position()[0];
-    const ::scidb::Coordinate& y = cell_it->get_position()[1];
+    const ::scidb::Coordinate& x = cell_it->get_position()[0] - dimension_x.min_idx;
+    const ::scidb::Coordinate& y = cell_it->get_position()[1] - dimension_y.min_idx;
+
+    std::cout << "X - " << x << ", Y - " << y << " = ";
 
     for(std::size_t index = 0; index < attributes.size(); ++index)
     {
@@ -271,9 +274,13 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
         band->set_value(x, y, cell_it->get_uint16(name));
       else if (data_type == ::scidb::TID_UINT16)
         band->set_value(x, y, cell_it->get_uint16(name));
+      else if (data_type == ::scidb::TID_INT32)
+        band->set_value(x, y, cell_it->get_int32(name));
       else // TODO
         throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
     }
+
+    std::cout << std::endl;
 
     cell_it->next();
   }
@@ -578,6 +585,8 @@ void eows::ogc::wcs::operations::get_coverage::execute()
 
     // Get Query AFL
     std::string query_str = pimpl_->generate_afl(array, dimensions_to_query);
+
+    EOWS_LOG_INFO(query_str);
 
     // Open SciDB connection
     eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);

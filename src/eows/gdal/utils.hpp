@@ -39,6 +39,7 @@ namespace eows
      * \param value - Value to append
      */
     void set_uint16(int index, void* buffer, double* value);
+
     /*!
      * \brief It reads an int8 type from buffer
      * \param index - Buffer index
@@ -67,6 +68,20 @@ namespace eows
      * \param value - Value to append
      */
     void set_uint8(int index, void* buffer, double* value);
+    /*!
+     * \brief Reads an int32 type from buffer
+     * \param index - Buffer index
+     * \param buffer - Buffer
+     * \param value - Variable to store value
+     */
+    void get_int32(int index, void* buffer, double* value);
+    /*!
+     * \brief It sets an int32 value to buffer
+     * \param index - Buffer index
+     * \param buffer - Buffer
+     * \param value - Value to append
+     */
+    void set_int32(int index, void* buffer, double* value);
 
     /*!
      * \brief It retrieve real size of a datatype in bytes

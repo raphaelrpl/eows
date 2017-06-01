@@ -20,16 +20,16 @@ int eows::gdal::pixel_size(eows::gdal::datatype dt)
     return sizeof(unsigned char);
 
   if (dt == datatype::int16)
-    return sizeof(boost::int16_t);
+    return sizeof(int16_t);
 
   if (dt == datatype::int32)
-    return sizeof(boost::int32_t);
+    return sizeof(int32_t);
 
   if (dt == datatype::uint16)
-    return sizeof(boost::uint16_t);
+    return sizeof(uint16_t);
 
   if (dt == datatype::uint32)
-    return sizeof(boost::uint32_t);
+    return sizeof(uint32_t);
 
   return 1;
 }
@@ -47,6 +47,11 @@ void eows::gdal::get_int16(int index, void* buffer, double* value)
 void eows::gdal::get_uint16(int index, void* buffer, double* value)
 {
   *value = static_cast<double>(static_cast<uint16_t*>(buffer)[index]);
+}
+
+void eows::gdal::get_int32(int index, void* buffer, double* value)
+{
+  *value = static_cast<double>(static_cast<int32_t*>(buffer)[index]);
 }
 
 void eows::gdal::get_uint8(int index, void* buffer, double* value)
@@ -72,4 +77,9 @@ void eows::gdal::set_int16(int index, void* buffer, double* value)
 void eows::gdal::set_uint16(int index, void* buffer, double* value)
 {
   (static_cast<uint16_t*>(buffer))[index] = static_cast<uint16_t>(*value);
+}
+
+void eows::gdal::set_int32(int index, void* buffer, double* value)
+{
+  static_cast<int32_t*>(buffer)[index] = static_cast<int32_t>(*value);
 }

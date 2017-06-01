@@ -1,3 +1,31 @@
+/*
+  Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
+
+  This file is part of Earth Observation Web Services (EOWS).
+
+  EOWS is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 3 as
+  published by the Free Software Foundation.
+
+  EOWS is distributed  "AS-IS" in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY OF ANY KIND; without even the implied warranty
+  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with EOWS. See LICENSE. If not, write to
+  e-sensing team at <esensing-team@dpi.inpe.br>.
+ */
+
+/*!
+  \file eows/gdal/raster.hpp
+
+  \brief Defines an abstract class for raster structures
+
+  \author Raphael Willian da Costa
+ */
+
+
 #ifndef __EOWS_GDAL_RASTER_HPP__
 #define __EOWS_GDAL_RASTER_HPP__
 
@@ -21,7 +49,7 @@ namespace eows
     /*!
      * \brief Defines an interface for handling Raster elements.
      *
-     * \todo Currently it handles GeoTIFF. We need be able to handle other Raster formats like HDF
+     * \note Currently it handles only GeoTIFF format
      *
      * \example
      * // Defining raster object
@@ -98,6 +126,11 @@ namespace eows
          */
         void close();
 
+        /*!
+         * \brief Retrieves eows raster band to be able to manipulate raw object
+         * \param id - Band id
+         * \return Pointer to raster band
+         */
         band* get_band(const std::size_t& id) const;
 
         void set_value(const std::size_t& col, const std::size_t& row, const double& value, const std::size_t id);
@@ -110,21 +143,25 @@ namespace eows
                        const double resx,
                        const double resy);
 
-
         void set_name(const std::string& name);
         void set_description(const std::string& desc);
         void set_metadata(metadata flag, const std::string& value);
         void set_projection(const std::string& proj_wkt);
 
         static void get_bands(raster* rst, GDALDataset* dset, std::vector<band*>& bands);
+        /*!
+         * \brief It retrieves a string representation of GeoTIFF metadata
+         * \param flag - Enum of GeoTIFF metadata key
+         * \return String representation of GeoTIFF dataset metadata key
+         */
         static const std::string get_metadata_key(metadata flag);
       private:
-        access_policy policy_;
-        std::size_t col_;
-        std::size_t row_;
-        std::vector<band*> bands_;
-        GDALDataset* dataset_;
-        char** metadata_;
+        access_policy policy_;     //!< Access Policy for raster handling
+        std::size_t col_;          //!< Y Axis value
+        std::size_t row_;          //!< X Axis value
+        std::vector<band*> bands_; //!< Raster bands with raw data
+        GDALDataset* dataset_;     //!< GDAL dataset object
+        char** metadata_;          //!< GDAL dataset metadata
     };
   }
 }

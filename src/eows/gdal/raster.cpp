@@ -1,3 +1,31 @@
+/*
+  Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
+
+  This file is part of Earth Observation Web Services (EOWS).
+
+  EOWS is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 3 as
+  published by the Free Software Foundation.
+
+  EOWS is distributed  "AS-IS" in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY OF ANY KIND; without even the implied warranty
+  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with EOWS. See LICENSE. If not, write to
+  e-sensing team at <esensing-team@dpi.inpe.br>.
+ */
+
+/*!
+  \file eows/gdal/raster.cpp
+
+  \brief Defines an abstract class for raster structures
+
+  \author Raphael Willian da Costa
+ */
+
+// EOWS
 #include "raster.hpp"
 #include "band.hpp"
 #include "exception.hpp"
@@ -40,6 +68,10 @@ void eows::gdal::raster::create(const std::string& filename, const std::size_t& 
   // Setting dataset limits
   col_ = col;
   row_ = row;
+
+  if (properties.size() == 0)
+    throw gdal_error("There is no property set. Could not determine raster type.");
+
   // Retrieving base datatype for dataset band
   GDALDataType dataset_type = property::from_datatype(properties[0].dtype);
   // Always create raster with one band. Once created, use properties to set respective band types
