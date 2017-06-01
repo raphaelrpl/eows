@@ -68,17 +68,33 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
       throw eows::gdal::gdal_error("No GDAL raster band type found");
   }
 
-  x_ = std::numeric_limits<int>::max();
-  y_ = std::numeric_limits<int>::max();
+  x_ = 0;//std::numeric_limits<int>::max();
+  y_ = 0;//std::numeric_limits<int>::max();
 }
 
 eows::gdal::band::~band()
 {
-  delete property_;
+  double* tmp = new double;
+  for(int i = 0; i < property_->width; ++i)
+  {
+    for(int j = 0; j < property_->height; ++j)
+    {
+      get_value(i, j, tmp);
+      std::cout << "X " << i << " - Y " << j << " = " << *tmp << std::endl;
+    }
+  }
 
-  CPLErr flag = gdal_->WriteBlock(x_, y_, buffer_);
-  if (flag != CE_None)
-    EOWS_LOG_DEBUG("Could not write block while destroying band object");
+  if (update_buffer_)
+  {
+    int x = property_->width;
+    int y = property_->height;
+    CPLErr flag = gdal_->RasterIO(GF_Write, 0, 0, x, y, buffer_, x, y, datatype_, 0, 0);
+    gdal_->FlushCache();
+    if (flag != CE_None)
+      EOWS_LOG_DEBUG("Could not write block while destroying band object");
+  }
+
+  delete property_;
 
   unsigned char* buff = static_cast<unsigned char*>(buffer_);
   delete [] buff;
@@ -87,18 +103,14 @@ eows::gdal::band::~band()
 void eows::gdal::band::get_value(const std::size_t& x, const std::size_t& y, double* value)
 {
   current_i_ = place_buffer(x, y);
-
   getter_(current_i_, buffer_, value);
 }
 
 void eows::gdal::band::set_value(const std::size_t& x, const std::size_t& y, double v)
 {
-  std::cout << v;
   current_i_ = place_buffer(x, y);
 
   setter_(current_i_, buffer_, &v);
-
-  update_buffer_ = true;
 }
 
 std::size_t eows::gdal::band::block_size()
@@ -121,7 +133,10 @@ eows::gdal::property* eows::gdal::band::make_property(GDALRasterBand* gdalband, 
 
   std::unique_ptr<property> property_ptr(new property(index, property::from_gdal_datatype(gdalband->GetRasterDataType())));
 
-  gdalband->GetBlockSize(&property_ptr->width, &property_ptr->height);
+//  gdalband->GetBlockSize(&property_ptr->width, &property_ptr->height);
+  property_ptr->width = gdalband->GetXSize();
+  property_ptr->height = gdalband->GetYSize();
+
   property_ptr->block_x= (gdalband->GetXSize() + property_ptr->width - 1) / property_ptr->width;
   property_ptr->block_y = (gdalband->GetYSize() + property_ptr->height - 1) / property_ptr->height;
 
@@ -147,19 +162,6 @@ int eows::gdal::band::place_buffer(int col, int row)
   current_col_ = col % property_->width;
   current_row_ = row % property_->height;
 
-  if (current_x_ != x_ || current_y_ != y_)
-  {
-    if (update_buffer_)
-      write(col, row);
-
-    read(current_x_, current_y_);
-
-    x_ = current_x_;
-
-    y_ = current_y_;
-  }
-
-  // calculates and returns the value of m_i
   return (current_col_ + current_row_ * property_->width);
 }
 

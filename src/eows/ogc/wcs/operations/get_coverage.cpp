@@ -257,8 +257,6 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
     const ::scidb::Coordinate& x = cell_it->get_position()[0] - dimension_x.min_idx;
     const ::scidb::Coordinate& y = cell_it->get_position()[1] - dimension_y.min_idx;
 
-    std::cout << "X - " << x << ", Y - " << y << " = ";
-
     for(std::size_t index = 0; index < attributes.size(); ++index)
     {
       const ::scidb::AttributeDesc& attribute = attributes[index];
@@ -279,8 +277,6 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
       else // TODO
         throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
     }
-
-    std::cout << std::endl;
 
     cell_it->next();
   }
