@@ -74,16 +74,6 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
 
 eows::gdal::band::~band()
 {
-  double* tmp = new double;
-  for(int i = 0; i < property_->width; ++i)
-  {
-    for(int j = 0; j < property_->height; ++j)
-    {
-      get_value(i, j, tmp);
-      std::cout << "X " << i << " - Y " << j << " = " << *tmp << std::endl;
-    }
-  }
-
   if (update_buffer_)
   {
     int x = property_->width;

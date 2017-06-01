@@ -134,7 +134,7 @@ namespace eows
         band* get_band(const std::size_t& id) const;
 
         void set_value(const std::size_t& col, const std::size_t& row, const double& value, const std::size_t id);
-        void get_value(const std::size_t& col, const std::size_t& row, const std::size_t id, double* value);
+        void get_value(const std::size_t& col, const std::size_t& row, const std::size_t id, double* value) const;
 
         void transform(const double llx,
                        const double lly,

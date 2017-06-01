@@ -87,9 +87,9 @@ void eows::gdal::raster::create(const std::string& filename, const std::size_t& 
 
 void eows::gdal::raster::close()
 {
+  // Cleaning up bands
   for(const band* b: bands_)
     delete b;
-
   bands_.clear();
 
   if (dataset_ != nullptr)
@@ -110,7 +110,7 @@ void eows::gdal::raster::set_value(const std::size_t& col, const std::size_t& ro
   get_band(id)->set_value(col, row, value);
 }
 
-void eows::gdal::raster::get_value(const std::size_t& col, const std::size_t& row, const std::size_t id, double* value)
+void eows::gdal::raster::get_value(const std::size_t& col, const std::size_t& row, const std::size_t id, double* value) const
 {
   get_band(id)->get_value(col, row, value);
 }
