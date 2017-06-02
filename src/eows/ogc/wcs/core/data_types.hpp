@@ -83,6 +83,27 @@ namespace eows
           std::string raw;
           std::vector<std::string> attributes;
         };
+
+        struct axis_t
+        {
+          std::string name;
+          double x;
+          double y;
+        };
+
+        struct envelope_with_time_period_t
+        {
+          std::string srs_name;
+          std::string dimension;
+
+          std::vector<axis_t> axis;
+        };
+
+        struct coverage_description_t
+        {
+          std::string name;
+          envelope_with_time_period_t envelope;
+        };
       }
     }
   }

@@ -51,7 +51,6 @@
 #include "../../../proj4/srs.hpp"
 
 // EOWS GDAL
-//#include "../../../gdal/dataset_geotiff.hpp"
 #include "../../../gdal/band.hpp"
 #include "../../../gdal/raster.hpp"
 #include "../../../gdal/data_types.hpp"
@@ -493,7 +492,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
   xml_doc.append_node(wcs_document);
 
   // Preparing bounded by
-  eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array, used_extent);
+  eows::ogc::wcs::core::make_coverage_bounded_by(&xml_doc, wcs_document, array, used_extent, dimensions_query[2]);
   // Preparing domainset
   eows::ogc::wcs::core::make_coverage_domain_set(&xml_doc, wcs_document, array, dimensions_query);
 

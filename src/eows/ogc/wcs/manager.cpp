@@ -42,6 +42,7 @@
 struct eows::ogc::wcs::manager::impl
 {
   eows::ogc::wcs::core::capabilities_t capabilities;
+  std::vector<eows::ogc::wcs::core::coverage_description_t> coverages;
 };
 
 eows::ogc::wcs::manager::manager()
@@ -63,6 +64,16 @@ eows::ogc::wcs::manager& eows::ogc::wcs::manager::instance()
 const eows::ogc::wcs::core::capabilities_t& eows::ogc::wcs::manager::capabilities() const
 {
   return pimpl_->capabilities;
+}
+
+const eows::ogc::wcs::core::coverage_description_t& eows::ogc::wcs::manager::describe(const std::string& id) const
+{
+  for(auto& coverage: pimpl_->coverages)
+  {
+    if (coverage.name == id)
+      return coverage;
+  }
+  throw eows::eows_error("No description found");
 }
 
 void eows::ogc::wcs::manager::initialize()

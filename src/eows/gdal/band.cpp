@@ -127,8 +127,8 @@ eows::gdal::property* eows::gdal::band::make_property(GDALRasterBand* gdalband, 
   property_ptr->width = gdalband->GetXSize();
   property_ptr->height = gdalband->GetYSize();
 
-  property_ptr->block_x= (gdalband->GetXSize() + property_ptr->width - 1) / property_ptr->width;
-  property_ptr->block_y = (gdalband->GetYSize() + property_ptr->height - 1) / property_ptr->height;
+//  property_ptr->block_x= (gdalband->GetXSize() + property_ptr->width - 1) / property_ptr->width;
+//  property_ptr->block_y = (gdalband->GetYSize() + property_ptr->height - 1) / property_ptr->height;
 
   return property_ptr.release();
 }

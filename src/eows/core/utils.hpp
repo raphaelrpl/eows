@@ -76,6 +76,8 @@ namespace eows
 
     /*!
      * \brief It generates a unique path (temporary) in system.
+     *
+     * \param path_prefix - Prefix to append in order to generate custom path
      * \return A Temp file name
      */
     std::string generate_unique_path(const std::string& path_prefix = "/tmp/");
