@@ -34,6 +34,7 @@ namespace eows
         struct service_metadata_t;
         struct content_t;
         struct operation_metadata_t;
+        struct coverage_description_t;
 
         /**
          * \brief It reads WCS Capabilities from JSON document and fill values into capabilities object
@@ -56,6 +57,8 @@ namespace eows
          * \brief It reads WCS Operations metadata from JSON document and fill values into object
          */
         void read(const rapidjson::Value &, operation_metadata_t&);
+
+        void read_coverage_descriptions(const capabilities_t& capability, std::vector<coverage_description_t>& coverages);
 
         /*!
          * \brief It generates WCS Coverage bounded by element.

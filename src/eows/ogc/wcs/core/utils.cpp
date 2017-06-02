@@ -7,6 +7,7 @@
 #include "../../ows/manager.hpp"
 // EOWS Geo Array
 #include "../../../geoarray/data_types.hpp"
+#include "../../../geoarray/geoarray_manager.hpp"
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& capability)
 {
@@ -229,5 +230,15 @@ void eows::ogc::wcs::core::make_coverage_domain_set(rapidxml::xml_document<>* do
       array_limits_str += array.dimensions.t.name;
       limits->append_node(doc->allocate_node(rapidxml::node_element, "gml:axisLabels", doc->allocate_string(array_limits_str.c_str())));
     }
+  }
+}
+
+void eows::ogc::wcs::core::read_coverage_descriptions(const eows::ogc::wcs::core::capabilities_t& capability, std::vector<eows::ogc::wcs::core::coverage_description_t>& coverages)
+{
+  for(const std::string& array_name: geoarray::geoarray_manager::instance().list_arrays())
+  {
+    const geoarray::geoarray_t& array = geoarray::geoarray_manager::instance().get(array_name);
+
+
   }
 }

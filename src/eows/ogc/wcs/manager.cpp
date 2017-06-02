@@ -93,5 +93,8 @@ void eows::ogc::wcs::manager::initialize()
 
   core::read(jcapabilities, pimpl_->capabilities);
 
+  // Load Coverage Descriptions
+  core::read_coverage_descriptions(pimpl_->capabilities, pimpl_->coverages);
+
   EOWS_LOG_INFO("Finished reading file '" + cfg_file.string() + "'!");
 }

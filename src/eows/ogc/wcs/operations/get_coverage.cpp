@@ -288,7 +288,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
 
   // Array gtransform
   file.transform(array.spatial_extent.xmin,
-                 array.spatial_extent.ymax,
+                 array.spatial_extent.ymin,
                  array.spatial_extent.xmax,
                  array.spatial_extent.ymax,
                  array.spatial_resolution.x,

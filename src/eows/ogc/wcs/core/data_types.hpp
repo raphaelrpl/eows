@@ -4,6 +4,9 @@
 // EOWS ogc ows
 #include "../../ows/data_types.hpp"
 
+// EOWS GeoArray
+#include "../../../geoarray/data_types.hpp"
+
 // STL
 #include <string>
 #include <vector>
@@ -94,7 +97,7 @@ namespace eows
         struct envelope_with_time_period_t
         {
           std::string srs_name;
-          std::string dimension;
+          std::size_t dimension;
 
           std::vector<axis_t> axis;
         };
@@ -103,6 +106,8 @@ namespace eows
         {
           std::string name;
           envelope_with_time_period_t envelope;
+          geoarray::geoarray_t* array;
+
         };
       }
     }
