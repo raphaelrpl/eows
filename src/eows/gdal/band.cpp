@@ -68,8 +68,8 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
       throw eows::gdal::gdal_error("No GDAL raster band type found");
   }
 
-  x_ = 0;//std::numeric_limits<int>::max();
-  y_ = 0;//std::numeric_limits<int>::max();
+//  x_ = 0;//std::numeric_limits<int>::max();
+//  y_ = 0;//std::numeric_limits<int>::max();
 }
 
 eows::gdal::band::~band()
@@ -155,16 +155,16 @@ int eows::gdal::band::place_buffer(int col, int row)
   return (current_col_ + current_row_ * property_->width);
 }
 
-void eows::gdal::band::read(std::size_t col, std::size_t row)
-{
-  if (update_buffer_)
-  {
-    write(col, row);
-    x_ = col;
-    y_ = row;
-  }
+//void eows::gdal::band::read(std::size_t col, std::size_t row)
+//{
+//  if (update_buffer_)
+//  {
+//    write(col, row);
+//    x_ = col;
+//    y_ = row;
+//  }
 
-  CPLErr flag = gdal_->ReadBlock(col, row, buffer_);
-  if (flag != CE_None)
-    EOWS_LOG_ERROR("Could not read dataset block " + std::to_string(col) + " - " + "row");
-}
+//  CPLErr flag = gdal_->ReadBlock(col, row, buffer_);
+//  if (flag != CE_None)
+//    EOWS_LOG_ERROR("Could not read dataset block " + std::to_string(col) + " - " + "row");
+//}

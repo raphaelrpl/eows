@@ -9,18 +9,21 @@ namespace eows
   namespace gdal
   {
     /*!
-     * \brief
+     * \brief EOWS GDAL Data type representation
      */
     enum class datatype
     {
-      int8,
-      uint8,
-      int16,
-      uint16,
-      int32,
-      uint32
+      int8,   //!< Integer 8 bits (stl int8_t)
+      uint8,  //!< Unsigned Integer 8 bits (stl uint8_t)
+      int16,  //!< Integer 2 bytes (stl int16_t)
+      uint16, //!< Unsigned Integer 2 bytes (stl uint16_t)
+      int32,  //!< Integer 4 bytes (stl int32_t)
+      uint32  //!< Unsigned Integer 4 bytes (stl uint32_t)
     };
 
+    /*!
+     * \brief Defines a EOWS Raster Band property containing metadata information like dummy value, eows data type, etc.
+     */
     struct property
     {
       std::size_t index; //!< Property index (same band)
@@ -28,11 +31,11 @@ namespace eows
       double dummy;      //!< Dummy value for band
       int width;         //!< Band width
       int height;        //!< Band height
-      int block_x;
-      int block_y;
+//      int block_x;       //!< Defines block position of axis X. Used for cache handling
+//      int block_y;       //!< Defines block position of axis Y. Used for cache handling
 
       property(const std::size_t i, datatype t)
-        : index(i), dtype(t)
+        : index(i), dtype(t), dummy(-9999), width(0), height(0)
       {
       }
 
@@ -61,7 +64,12 @@ namespace eows
           }
         }
       }
-
+      /*!
+       * \brief Retrieves a GDALDataType from EOWS GDAL datatype
+       * \throws eows::gdal::gdal_error When a datatype does not exists or not supported yet.
+       * \param dt - EOWS GDAL data type
+       * \return GDAL data type
+       */
       static GDALDataType from_datatype(datatype dt)
       {
         switch(dt)
@@ -83,7 +91,7 @@ namespace eows
         }
       }
     };
-  }
-}
+  } //! end namespace gdal
+}   //! end namespace eows
 
 #endif //__EOWS_GDAL_DATA_TYPES_HPP__

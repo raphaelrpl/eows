@@ -28,4 +28,14 @@
 #ifndef __EOWS_GDAL_DEFINES_HPP__
 #define __EOWS_GDAL_DEFINES_HPP__
 
+namespace eows
+{
+  /*!
+   * \brief This namespace defines a EOWS GDAL set of libraries for Raster data formats.
+   */
+  namespace gdal
+  {
+  }
+}
+
 #endif // __EOWS_GDAL_DEFINES_HPP__
