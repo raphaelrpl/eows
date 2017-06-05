@@ -117,8 +117,8 @@ void eows::gdal::raster::get_value(const std::size_t& col, const std::size_t& ro
 
 void eows::gdal::raster::transform(const double llx, const double lly, const double urx, const double ury, const double resx, const double resy)
 {
-  double gtransform[] {llx, resx, urx, lly, ury, resy};
-//  double gtransform[] = {llx, resx, 0, lly, 0, resy};
+//  double gtransform[] {llx, resx, urx, lly, ury, resy};
+  double gtransform[] = {llx, resx, 0, lly, 0, resy * -1};
 
   dataset_->SetGeoTransform(&gtransform[0]);
 }
