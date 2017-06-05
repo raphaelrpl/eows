@@ -28,8 +28,6 @@
 #ifndef __EOWS_OGC_WCS_MANAGER_HPP__
 #define __EOWS_OGC_WCS_MANAGER_HPP__
 
-#include <string>
-
 // Boost dependency
 #include <boost/noncopyable.hpp>
 
@@ -43,7 +41,6 @@ namespace eows
       {
         // Forward declarations
         struct capabilities_t;
-        struct coverage_description_t;
       }
 
       class manager : private boost::noncopyable
@@ -56,8 +53,6 @@ namespace eows
            * @return Capabilities instance with values
            */
           const core::capabilities_t& capabilities() const;
-
-          const core::coverage_description_t& describe(const std::string& id) const;
           /**
            * @brief It initializes Manager scope, loading WCS meta information into memory
            */

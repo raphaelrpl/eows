@@ -7,7 +7,6 @@
 #include "../../ows/manager.hpp"
 // EOWS Geo Array
 #include "../../../geoarray/data_types.hpp"
-#include "../../../geoarray/geoarray_manager.hpp"
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& doc, capabilities_t& capability)
 {

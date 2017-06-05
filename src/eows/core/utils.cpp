@@ -121,7 +121,7 @@ static const char application_json_[] = "application/json",
                   text_plain_[] = "text/plain",
                   text_xml_[] = "text/xml",
                   text_html_[] = "text/html",
-                  unknown_[] = "unknown";
+                  unknown_[] = "application/octet-stream";
 
 const char*
 eows::core::to_str(content_type_t content_type)
