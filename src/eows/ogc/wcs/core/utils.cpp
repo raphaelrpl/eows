@@ -232,13 +232,3 @@ void eows::ogc::wcs::core::make_coverage_domain_set(rapidxml::xml_document<>* do
     }
   }
 }
-
-void eows::ogc::wcs::core::read_coverage_descriptions(const eows::ogc::wcs::core::capabilities_t& capability, std::vector<eows::ogc::wcs::core::coverage_description_t>& coverages)
-{
-  for(const std::string& array_name: geoarray::geoarray_manager::instance().list_arrays())
-  {
-    const geoarray::geoarray_t& array = geoarray::geoarray_manager::instance().get(array_name);
-
-
-  }
-}

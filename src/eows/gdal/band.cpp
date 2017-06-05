@@ -64,9 +64,13 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
       getter_ = eows::gdal::get_int32;
       setter_ = eows::gdal::set_int32;
       break;
-    default:
-      throw eows::gdal::gdal_error("No GDAL raster band type found");
+    default: // GDT_Unknown
+      getter_ = eows::gdal::get_int8;
+      setter_ = eows::gdal::set_int8;
   }
+
+  // TODO: Remove it.
+  update_buffer_ = true;
 
 //  x_ = 0;//std::numeric_limits<int>::max();
 //  y_ = 0;//std::numeric_limits<int>::max();

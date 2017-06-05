@@ -58,8 +58,6 @@ namespace eows
          */
         void read(const rapidjson::Value &, operation_metadata_t&);
 
-        void read_coverage_descriptions(const capabilities_t& capability, std::vector<coverage_description_t>& coverages);
-
         /*!
          * \brief It generates WCS Coverage bounded by element.
          * \param doc - XML root document
