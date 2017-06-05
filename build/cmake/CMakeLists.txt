@@ -261,6 +261,13 @@ else()
   set(EOWS_INSTALL_CMAKE_DIR lib/cmake/eows-${EOWS_VERSION_STRING})
 endif()
 
+# Detecting User home directory to create EOWS log execution
+IF(UNIX)
+  set(EOWS_USER_HOME "$ENV{HOME}")
+ELSE()
+  set(EOWS_USER_HOME "$ENV{USERPROFILE}")
+ENDIF()
+
 #
 # Make relative paths absolute: needed to redistribute CMake files
 #
@@ -283,6 +290,9 @@ configure_file(${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/build_config.hpp.in
 
 configure_file(${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/version.hpp.in
                ${PROJECT_BINARY_DIR}/eows_version.hpp @ONLY)
+
+configure_file(${EOWS_ABSOLUTE_ROOT_DIR}/share/eows/config/eows.json.in
+               ${EOWS_ABSOLUTE_ROOT_DIR}/share/eows/config/eows.json @ONLY)
 
 install(FILES ${PROJECT_BINARY_DIR}/build_config.hpp
               ${PROJECT_BINARY_DIR}/eows_version.hpp
