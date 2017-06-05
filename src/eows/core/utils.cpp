@@ -112,6 +112,7 @@ eows::core::split_path_and_query_str(const std::string& str)
 
 static const char application_json_[] = "application/json",
                   application_xml_[] = "application/xml",
+                  application_gml_xml[] = "application/gml+xml",
                   image_gif_[] = "image/gif",
                   image_jpeg_[] = "image/jpeg",
                   image_png_[] = "image/png",
@@ -120,7 +121,7 @@ static const char application_json_[] = "application/json",
                   text_plain_[] = "text/plain",
                   text_xml_[] = "text/xml",
                   text_html_[] = "text/html",
-                  unknown_[] = "unknown";
+                  unknown_[] = "application/octet-stream";
 
 const char*
 eows::core::to_str(content_type_t content_type)
@@ -270,4 +271,56 @@ std::string eows::core::to_lower(const std::string& str)
   std::transform(str.begin(), str.end(), out.begin(), ::tolower);
 
   return out;
+}
+
+std::string eows::core::generate_unique_path(const std::string& path_prefix)
+{
+  return path_prefix + boost::filesystem::unique_path().string();
+}
+
+eows::core::content_type_t eows::core::from_string(const std::string& content)
+{
+  if (content == application_xml_ ||
+      content == application_gml_xml)
+    return APPLICATION_XML;
+  if (content == application_json_)
+    return APPLICATION_JSON;
+  if (content == image_gif_)
+    return IMAGE_GIF;
+  if (content == image_jpeg_)
+    return IMAGE_JPEG;
+  if (content == image_png_)
+    return IMAGE_PNG;
+  if (content == image_tiff_)
+    return IMAGE_TIFF;
+  if (content == image_x_tiff_)
+    return IMAGE_X_TIFF;
+  if (content == text_html_)
+    return TEXT_HTML;
+  if (content == text_plain_)
+    return TEXT_PLAIN;
+  if (content == text_xml_)
+    return TEXT_XML;
+  return APPLICATION_OCTET_STREAM; // Default/unknown/no extension format
+}
+
+std::string eows::core::decode(const std::string& encoded_string)
+{
+  std::string output;
+
+  int tmp;
+  for(std::size_t i = 0; i < encoded_string.size(); ++i)
+  {
+    if (encoded_string[i] == '%')
+    {
+      std::string t = encoded_string.substr(i + 1, 2);
+      std::stringstream ss(t);
+      ss >> std::hex >> tmp;
+      output += tmp;
+      i = i + 2;
+    }
+    else
+      output += encoded_string[i];
+  }
+  return output;
 }

@@ -18,16 +18,24 @@
  */
 
 /*!
-  \file eows/geoarray/defines.hpp
+  \file eows/gdal/defines.hpp
 
-  \brief Defines for Geo Array module.
+  \brief Defines for GDAL.
 
   \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_GEOARRAY_DEFINES_HPP__
-#define __EOWS_GEOARRAY_DEFINES_HPP__
+#ifndef __EOWS_GDAL_DEFINES_HPP__
+#define __EOWS_GDAL_DEFINES_HPP__
 
-#define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
+namespace eows
+{
+  /*!
+   * \brief This namespace defines a EOWS GDAL set of libraries for Raster data formats.
+   */
+  namespace gdal
+  {
+  }
+}
 
-#endif // __EOWS_GEOARRAY_DEFINES_HPP__
+#endif // __EOWS_GDAL_DEFINES_HPP__

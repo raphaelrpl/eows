@@ -18,16 +18,34 @@
  */
 
 /*!
-  \file eows/geoarray/defines.hpp
+  \file eows/gdal/exception.hpp
 
-  \brief Defines for Geo Array module.
+  \brief Defines GDAL exception types.
 
   \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_GEOARRAY_DEFINES_HPP__
-#define __EOWS_GEOARRAY_DEFINES_HPP__
+#ifndef __EOWS_GDAL_EXCEPTION_HPP__
+#define __EOWS_GDAL_EXCEPTION_HPP__
 
-#define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
+#include "../exception.hpp"
 
-#endif // __EOWS_GEOARRAY_DEFINES_HPP__
+namespace eows
+{
+  //! Namespace for handling GDAL module of EOWS
+  namespace gdal
+  {
+    /*!
+     * \brief Represents generic error for EOWS GDAL module
+     */
+    struct gdal_error : public virtual eows_error
+    {
+      gdal_error(const std::string& msg)
+        : eows_error(msg)
+      {
+      }
+    };
+  }
+}
+
+#endif // __EOWS_GDAL_EXCEPTION_HPP__

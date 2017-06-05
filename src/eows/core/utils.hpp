@@ -67,6 +67,21 @@ namespace eows
      */
     std::string to_lower(const std::string&);
 
+    /*!
+     * \brief It tries to decode a string value
+     * \param encoded_string - Encoded String
+     * \return Decoded string
+     */
+    std::string decode(const std::string& encoded_string);
+
+    /*!
+     * \brief It generates a unique path (temporary) in system.
+     *
+     * \param path_prefix - Prefix to append in order to generate custom path
+     * \return A Temp file name
+     */
+    std::string generate_unique_path(const std::string& path_prefix = "/tmp/");
+
     /**
      * \brief It applies lower case on given map keys and return a new map with these values
      * \return Copy map with keys in lowercase
@@ -79,6 +94,7 @@ namespace eows
 
     /*! \brief Returns the string representation for a give content type. */
     const char* to_str(content_type_t content_type);
+    content_type_t from_string(const std::string& content);
     
     /*!
       \brief Find out the righ request-method (GET, PUT, POST) and and process the request.

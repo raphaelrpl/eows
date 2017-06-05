@@ -18,16 +18,37 @@
  */
 
 /*!
-  \file eows/geoarray/defines.hpp
+  \file eows/core/file_remover.cpp
 
-  \brief Defines for Geo Array module.
+  \brief Implementation of file remover.
 
   \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_GEOARRAY_DEFINES_HPP__
-#define __EOWS_GEOARRAY_DEFINES_HPP__
+// Definition
+#include "file_remover.hpp"
 
-#define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
+// EOWS Logger
+#include "logger.hpp"
 
-#endif // __EOWS_GEOARRAY_DEFINES_HPP__
+// Boost (Remove File)
+#include <boost/filesystem/operations.hpp>
+
+eows::core::file_remover::~file_remover()
+{
+  for(auto& file: files_)
+  {
+    try
+    {
+      boost::filesystem::remove(file);
+    } catch (...)
+    {
+      EOWS_LOG_DEBUG("Could not remove " + file + ". Maybe it's already been deleted by OS");
+    }
+  }
+}
+
+void eows::core::file_remover::add(const std::string &file)
+{
+  files_.emplace(file);
+}

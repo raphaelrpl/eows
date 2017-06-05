@@ -30,6 +30,7 @@
 #include "../../exception.hpp"
 #include "../../core/http_server_builder.hpp"
 #include "../../core/logger.hpp"
+#include "../../core/utils.hpp"
 #include "http_server.hpp"
 
 // Boost
@@ -68,13 +69,13 @@ eows::http::crow::expand(const std::string& query_str)
 
     std::string v = *ikv;
 
-    std::string decoded_k;
-    std::string decoded_v;
+    std::string decoded_k = eows::core::decode(k);
+    std::string decoded_v = eows::core::decode(v);
 
     //boost::network::uri::decode(k.begin(), k.end(), std::back_inserter(decoded_k));
     //boost::network::uri::decode(v.begin(), v.end(), std::back_inserter(decoded_v));
 
-    result.insert(std::pair<std::string, std::string>(k, v));
+    result.insert(std::pair<std::string, std::string>(decoded_k, decoded_v));
 
 //    result[decoded_k] = decoded_v;
 //    result[k] = ;

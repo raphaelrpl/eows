@@ -4,6 +4,9 @@
 // EOWS ogc ows
 #include "../../ows/data_types.hpp"
 
+// EOWS GeoArray
+#include "../../../geoarray/data_types.hpp"
+
 // STL
 #include <string>
 #include <vector>

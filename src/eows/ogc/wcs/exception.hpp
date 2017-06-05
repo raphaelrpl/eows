@@ -45,6 +45,8 @@ namespace eows
           : ogc_error(s, l)
         {
         }
+
+        virtual ~wcs_error() = default;
       };
 
       /*!

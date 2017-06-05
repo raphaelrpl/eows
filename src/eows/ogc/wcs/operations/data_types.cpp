@@ -19,14 +19,14 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
 
   eows::core::query_string_t::const_iterator it = query.find("request");
 
-  if (it == query.end() || it->second.empty()) {
+  if (it == query.end()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'request'", "request");
   }
   request = it->second;
 
   it = query.find("service");
 
-  if (it == query.end() || it->second.empty()) {
+  if (it == query.end()) {
     throw eows::ogc::missing_parameter_error("Missing parameter 'service'", "service");
   }
 
@@ -86,24 +86,17 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
   eows::core::query_string_t::const_iterator it = query.find("coverageid");
 
   if (it == query.end())
-  {
     throw eows::ogc::missing_parameter_error("Missing parameter 'CoverageID'", "emptyCoverageIdList");
-  }
+
   coverage_id = it->second;
 
   it = query.find("format");
 
-  std::string default_format = "application/gml+xml";
   // Setting default format
   if (it == query.end())
-    format = default_format;
+    format = eows::core::APPLICATION_XML;
   else
-  {
-    if (it->second != default_format)
-      throw eows::ogc::invalid_parameter_error("Format '" + it->second + "' not supported", "format");
-
-    format = it->second;
-  }
+    format = eows::core::from_string(it->second); // It may throw exception (format non-supported)
 
   // InputCRS
   it = query.find("inputcrs");

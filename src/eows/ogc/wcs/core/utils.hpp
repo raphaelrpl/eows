@@ -67,7 +67,8 @@ namespace eows
         void make_coverage_bounded_by(rapidxml::xml_document<>*,
                                       rapidxml::xml_node<>*,
                                       const geoarray::geoarray_t& array,
-                                      const geoarray::spatial_extent_t&);
+                                      const geoarray::spatial_extent_t&,
+                                      const geoarray::dimension_t& time_dimension);
 
         /*!
          * \brief It generates WCS Coverage range type with SWE elements.
