@@ -61,7 +61,9 @@ namespace eows
           \brief Tells EOWS where temporary files are stored.
 
           This folder will be used when an EOWS operations requires to generate an output file in disk
-          and then serialize to http stream. It tries to create a folder if there it does not exist.
+          and then serialize to http stream.
+
+          \todo Should it creates directory if it does not exist?
 
           \exception std::invalid_argument When could not create tmp data dir
          */

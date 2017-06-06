@@ -54,7 +54,7 @@ namespace eows
         {
           base_request(const eows::core::query_string_t& query);
 
-          virtual ~base_request() = default;
+          virtual ~base_request();
 
           std::string request; //!< WCS rqeuest operation
           std::string version; //!< WCS version
