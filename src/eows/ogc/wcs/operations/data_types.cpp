@@ -47,11 +47,6 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
   }
 }
 
-eows::ogc::wcs::operations::base_request::~base_request()
-{
-
-}
-
 eows::ogc::wcs::operations::get_capabilities_request::get_capabilities_request(const eows::core::query_string_t& query)
   : base_request(query)
 {

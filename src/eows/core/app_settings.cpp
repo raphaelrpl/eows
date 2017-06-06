@@ -23,6 +23,7 @@
   \brief A singleton that stores the application settings.
 
   \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
 // EOWS
@@ -38,6 +39,7 @@
 struct eows::core::app_settings::impl
 {
   std::string base_dir;
+  std::string tmp_data_dir;
   rapidjson::Document settings;
 };
 
@@ -63,10 +65,29 @@ eows::core::app_settings::set_base_dir(const std::string& dir)
   pimpl_->base_dir = dir;
 }
 
+void eows::core::app_settings::set_tmp_data_dir(const std::string& dir)
+{
+  boost::filesystem::path tmp_dir(dir);
+
+  if (!boost::filesystem::exists(tmp_dir))
+  {
+    //TODO: Should create a temp dir if not found?
+    boost::format err_msg("The informed path is not valid or does not exist: %1%.");
+    throw std::invalid_argument((err_msg % dir).str());
+  }
+
+  pimpl_->tmp_data_dir = dir;
+}
+
 const std::string&
-eows::core::app_settings::get_base_dir()
+eows::core::app_settings::get_base_dir() const
 {
   return pimpl_->base_dir;
+}
+
+const std::string&eows::core::app_settings::get_tmp_data_dir() const
+{
+  return pimpl_->tmp_data_dir;
 }
 
 void

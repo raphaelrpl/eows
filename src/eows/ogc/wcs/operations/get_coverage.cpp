@@ -218,7 +218,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
   const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
 
-  const std::string tmp_file_path = eows::core::generate_unique_path("/tmp/") + ".tiff";
+  const std::string tmp_file_path = eows::core::generate_unique_path(".tiff");
 
   // TODO: Get array limits (from scidb query or input parameters?)
   eows::gdal::raster file;

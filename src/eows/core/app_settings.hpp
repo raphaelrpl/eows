@@ -56,9 +56,22 @@ namespace eows
           \exception std::invalid_argument If the directory doesn't have a layout recognized by EOWS.
          */
         void set_base_dir(const std::string& dir);
+
+        /*!
+          \brief Tells EOWS where temporary files are stored.
+
+          This folder will be used when an EOWS operations requires to generate an output file in disk
+          and then serialize to http stream. It tries to create a folder if there it does not exist.
+
+          \exception std::invalid_argument When could not create tmp data dir
+         */
+        void set_tmp_data_dir(const std::string& dir);
       
         //! Returns the directory where EOWS is installed.
-        const std::string& get_base_dir();
+        const std::string& get_base_dir() const;
+
+        //! Returns the directory where temporary data files are stored.
+        const std::string& get_tmp_data_dir() const;
       
         /*!
           \brief Sets the JSON document storing the configuration of EOWS.

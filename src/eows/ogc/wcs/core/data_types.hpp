@@ -77,8 +77,8 @@ namespace eows
         {
           std::string name; //!< Axis name
           std::size_t srid; //!< Projection SRID (TODO: Implement it)
-          double min; //!< Axis minimum value
-          double max; //!< Axis maximum value
+          double  min; //!< Axis minimum value
+          double  max; //!< Axis maximum value
         };
 
         struct range_subset_t
