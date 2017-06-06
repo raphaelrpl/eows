@@ -58,7 +58,7 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
     throw eows::parse_error("Please, check the key 'Profiles' in JSON document.");
 
   for(auto& v: jit->value.GetArray())
-    service.profiles.push_back(v.GetString());
+    service.profiles.push_back(eows::core::read_node_as_string(v));
 }
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::service_metadata_t& metadata)
@@ -72,7 +72,7 @@ void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs
     throw eows::parse_error("Key 'ServiceMetadata' must be a array.");
 
   for(auto& format: jit->value.GetArray())
-    metadata.formats_supported.push_back(format.GetString());
+    metadata.formats_supported.push_back(eows::core::read_node_as_string(format));
 }
 
 void eows::ogc::wcs::core::read(const rapidjson::Value& jservice, eows::ogc::wcs::core::operation_metadata_t& operation_meta)

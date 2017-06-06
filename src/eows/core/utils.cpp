@@ -68,12 +68,7 @@ eows::core::initialize()
   // Setting temporary data directory
   app_settings::instance().set_tmp_data_dir(temp_data_dir);
 
-  rapidjson::Value::ConstMemberIterator jlog_file = doc.FindMember("log_file");
-
-  if((jlog_file == doc.MemberEnd()) || (!jlog_file->value.IsString()))
-    throw eows::parse_error("Please check key 'log_file' in file: \"" EOWS_CONFIG_FILE "\".");
-
-  const std::string log_file_name = jlog_file->value.GetString();
+  const std::string log_file_name = read_node_as_string(doc, "log_file");
   
 // Prepare log format
   boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
