@@ -7,7 +7,6 @@ source_group("Header Files"  FILES ${EOWS_HDR_FILES})
 add_executable(eows_app_server ${EOWS_SRC_FILES} ${EOWS_HDR_FILES})
 
 target_link_libraries(eows_app_server   eows_core
-                                        eows_gdal2
                                         ${Boost_SYSTEM_LIBRARY}
                                         ${Boost_DATE_TIME_LIBRARY}
                                         ${Boost_CHRONO_LIBRARY}
