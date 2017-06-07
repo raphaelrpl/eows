@@ -22,6 +22,11 @@ if(EOWS_PROJ4_ENABLED)
   target_link_libraries(eows_app_server ${PROJ4_LIBRARY})
 endif()
 
+if(EOWS_GDAL2_ENABLED)
+  target_link_libraries(eows_app_server eows_gdal2)
+  target_link_libraries(eows_app_server ${GDAL_LIBRARY})
+endif()
+
 if(EOWS_GEOARRAY_ENABLED)
   target_link_libraries(eows_app_server eows_geoarray)
 endif()
