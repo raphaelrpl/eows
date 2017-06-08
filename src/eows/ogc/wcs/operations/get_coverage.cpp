@@ -104,18 +104,7 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
    * if latitude/longitude reprojected intersects with geoarray. Throws exception when it does not intersects.
    *
-   * \param array - Geo array with meta information
-   * \param latitude - Latitude value
-   * \param longitude - Longitude value
-   * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
-   */
-  void validate(const eows::geoarray::geoarray_t& array, double& latitude, double& longitude);
-
-  /*!
-   * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
-   * if latitude/longitude reprojected intersects with geoarray. Throws exception when it does not intersects.
-   *
-   * \param array - Geo array with meta information
+   * \param srid - SRID to cast
    * \param latitude - Latitude value
    * \param longitude - Longitude value
    * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
@@ -163,7 +152,8 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   void process_as_tiff(boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                        const eows::geoarray::geoarray_t& array,
                        const ::scidb::Attributes& attributes,
-                       const std::vector<eows::geoarray::dimension_t> dimensions);
+                       const std::vector<eows::geoarray::dimension_t> dimensions,
+                       const geoarray::spatial_extent_t& used_extent);
 
   //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
@@ -219,7 +209,8 @@ void eows::ogc::wcs::operations::get_coverage::impl::reproject(const std::size_t
 void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                                                                      const eows::geoarray::geoarray_t& array,
                                                                      const ::scidb::Attributes& attributes,
-                                                                     const std::vector<eows::geoarray::dimension_t> dimensions)
+                                                                     const std::vector<eows::geoarray::dimension_t> dimensions,
+                                                                     const eows::geoarray::spatial_extent_t& used_extent)
 {
   const eows::geoarray::dimension_t& dimension_x = dimensions[0];
   const eows::geoarray::dimension_t& dimension_y = dimensions[1];
@@ -233,6 +224,10 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   eows::gdal::raster file;
 
   std::vector<eows::gdal::property> properties;
+
+  if (cell_it->end())
+    throw eows::ogc::wcs::wcs_error("No data retrieved with subset provided", "UnAppliedCode");
+
   // Preparing bands
   while(!cell_it->end())
   {
@@ -256,6 +251,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
 
     break;
   }
+
   // Creating dataset
   file.create(tmp_file_path, x, y, properties);
 
@@ -296,10 +292,10 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   file.set_metadata(gdal::raster::metadata::y_resolution, std::to_string(array.spatial_resolution.y));
 
   // Array gtransform
-  file.transform(array.spatial_extent.xmin,
-                 array.spatial_extent.ymin,
-                 array.spatial_extent.xmax,
-                 array.spatial_extent.ymax,
+  file.transform(used_extent.xmin,
+                 used_extent.ymin,
+                 used_extent.xmax,
+                 used_extent.ymax,
                  array.spatial_resolution.x,
                  array.spatial_resolution.y);
   // Retrieving Projection. CHECK: It may throw exception when not found.
@@ -442,9 +438,9 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
           time_dimension.max_idx = max;
           output[2] = time_dimension;
         }
-        catch(const std::out_of_range&)
+        catch(const std::out_of_range& err)
         {
-          throw eows::ogc::wcs::invalid_axis_error("Invalid time range");
+          throw eows::ogc::wcs::invalid_axis_error(std::string("Invalid time range ") + err.what());
         }
       }
       else
@@ -650,7 +646,7 @@ void eows::ogc::wcs::operations::get_coverage::execute()
         pimpl_->process_as_document(array, std::move(cell_it), array_attributes, used_extent, dimensions_to_query);
         break;
       case eows::core::IMAGE_TIFF:
-        pimpl_->process_as_tiff(std::move(cell_it), array, array_attributes, dimensions_to_query);
+        pimpl_->process_as_tiff(std::move(cell_it), array, array_attributes, dimensions_to_query, used_extent);
         break;
       default:
         throw eows::ogc::not_implemented_error("Format not supported", "NotSupported");

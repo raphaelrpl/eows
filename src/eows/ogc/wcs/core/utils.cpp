@@ -118,7 +118,7 @@ void eows::ogc::wcs::core::make_coverage_bounded_by(rapidxml::xml_document<>* do
     // Appending Envelope into bound
     bound->append_node(envelope);
 
-    std::string axis_labels = array.dimensions.x.name + " " + array.dimensions.y.name + " " + time_dimension.name;
+    std::string axis_labels = array.dimensions.x.alias + " " + array.dimensions.y.alias + " " + time_dimension.alias;
     envelope->append_attribute(doc->allocate_attribute("srsName", "http://www.opengis.net/def/crs/EPSG/0/4326"));
     envelope->append_attribute(doc->allocate_attribute("axisLabels", doc->allocate_string(axis_labels.c_str())));
     envelope->append_attribute(doc->allocate_attribute("srsDimension", "3"));
