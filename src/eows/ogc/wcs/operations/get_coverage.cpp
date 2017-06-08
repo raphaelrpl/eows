@@ -94,12 +94,11 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   /*!
    * \brief It reprojects a dimension in lat long mode to Grid scale mode in order to retrieve correct array values
    *
-   * \param array - Geo array with dimensions
    * \param srid - SRID to convert
    * \param x - Value of X to reproject
    * \param y - Value of Y to reproject
    */
-  void reproject(const eows::geoarray::geoarray_t& array, const std::size_t& srid, double& x, double& y);
+  void reproject(const std::size_t& srid, double& x, double& y);
 
   /*!
    * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
@@ -111,6 +110,17 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
    */
   void validate(const eows::geoarray::geoarray_t& array, double& latitude, double& longitude);
+
+  /*!
+   * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
+   * if latitude/longitude reprojected intersects with geoarray. Throws exception when it does not intersects.
+   *
+   * \param array - Geo array with meta information
+   * \param latitude - Latitude value
+   * \param longitude - Longitude value
+   * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
+   */
+  void validate(const std::size_t& srid, const eows::geoarray::spatial_extent_t& extent, double& latitude, double& longitude);
 
   /*!
    * \brief It retrieves all subsets given by client. Once listed, it performs a subset validation for each one to provide a
@@ -165,8 +175,7 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   std::string output;
 };
 
-void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoarray::geoarray_t& array,
-                                                               const std::size_t& srid,
+void eows::ogc::wcs::operations::get_coverage::impl::reproject(const std::size_t& srid,
                                                                double& x,
                                                                double& y)
 {
@@ -189,19 +198,19 @@ void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoar
     t_srs_idx.insert(std::make_pair(request.input_crs, std::move(srs)));
   }
 
-  eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(array.i_meta.srid);
+  eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(srid);
 
   if(it_srid_target != t_srs_idx.end())
     dst_srs = it_srid_target->second.get();
   else
   {
-    const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(array.i_meta.srid);
+    const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(srid);
 
     std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(dst_desc.proj4_txt));
 
     dst_srs = srs.get();
 
-    t_srs_idx.insert(std::make_pair(array.i_meta.srid, std::move(srs)));
+    t_srs_idx.insert(std::make_pair(srid, std::move(srs)));
   }
 
   eows::proj4::transform(*src_srs, *dst_srs, x, y);
@@ -347,16 +356,17 @@ std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const e
   return query_str;
 }
 
-void eows::ogc::wcs::operations::get_coverage::impl::validate(const eows::geoarray::geoarray_t& array,
+void eows::ogc::wcs::operations::get_coverage::impl::validate(const std::size_t& srid,
+                                                              const eows::geoarray::spatial_extent_t& extent,
                                                               double& latitude,
                                                               double& longitude)
 {
   // Performs re-projection of values if the SRID are different
-  if (request.input_crs != array.srid)
-    reproject(array, request.input_crs, latitude, longitude);
+  if (request.input_crs != srid)
+    reproject(srid, latitude, longitude);
 
   // Validate Limits
-  if (!array.spatial_extent.intersects(latitude, longitude))
+  if (!extent.intersects(longitude, latitude))
     throw eows::ogc::wcs::invalid_axis_error("Values does not intersects");
 }
 
@@ -369,7 +379,12 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
   // Appending defaults values in order
   output.push_back(grid_array.geo_array->dimensions.x);
   output.push_back(grid_array.geo_array->dimensions.y);
-  output.push_back(grid_array.geo_array->dimensions.t);
+  // Setting default time as max
+  geoarray::dimension_t default_time_dimension = grid_array.geo_array->dimensions.t;
+  default_time_dimension.min_idx = default_time_dimension.max_idx;
+  output.push_back(default_time_dimension);
+
+  geoarray::spatial_extent_t ext = grid_array.geo_array->spatial_extent;
 
   // If WCS client gives subset limits, use them
   if (request.subsets.size() > 0)
@@ -377,53 +392,77 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
     // Now, we offer coverage 3 dimensions. In this case, we formed harded-code with this value to process GetCoverage. TODO: change it
     for(const eows::ogc::wcs::core::subset_t& client_subset: request.subsets)
     {
-      double latitude = client_subset.min;
-      double longitude = client_subset.max;
       // Col_id
-      if(client_subset.name == grid_array.geo_array->dimensions.x.name)
+      if(client_subset.name == grid_array.geo_array->dimensions.x.alias)
       {
-        validate(*(grid_array.geo_array), latitude, longitude);
+        double min = std::stod(client_subset.min);
+        double max;
 
-        extent.xmin = latitude;
-        extent.xmax = longitude;
+        if (client_subset.max == wcs::core::subset_t::no_value)
+          max = min;
+        else
+          max= std::stod(client_subset.max);
 
-        eows::geoarray::dimension_t d;
-        d.name = client_subset.name;
-        d.min_idx = grid_array.col(latitude);
-        d.max_idx = grid_array.col(longitude);
-        output[0] = d;
+        ext.xmin = min;
+        ext.xmax = max;
       }
       // Row ID
-      else if(client_subset.name == grid_array.geo_array->dimensions.y.name)
+      else if(client_subset.name == grid_array.geo_array->dimensions.y.alias)
       {
-        validate(*(grid_array.geo_array), latitude, longitude);
+        double min = std::stod(client_subset.min);
+        double max;
 
-        extent.ymin = latitude;
-        extent.ymax = longitude;
+        if (client_subset.max == wcs::core::subset_t::no_value)
+          max = min;
+        else
+          max= std::stod(client_subset.max);
 
-        eows::geoarray::dimension_t d;
-        d.name = client_subset.name;
-        d.min_idx = grid_array.row(latitude);
-        d.max_idx = grid_array.row(longitude);
-        output[1] = d;
+        ext.ymin = min;
+        ext.ymax = max;
       }
       // Time ID
-      else if(client_subset.name == grid_array.geo_array->dimensions.t.name)
+      else if(client_subset.name == grid_array.geo_array->dimensions.t.alias)
       {
-        if (client_subset.min < grid_array.geo_array->dimensions.t.min_idx ||
-            client_subset.max > grid_array.geo_array->dimensions.t.max_idx)
-          throw eows::ogc::wcs::invalid_axis_error("Time axis does not intersects. " + client_subset.name);
+        try
+        {
+          eows::geoarray::dimension_t time_dimension;
+          time_dimension.name = client_subset.name;
+          int64_t min = grid_array.geo_array->timeline.index(client_subset.min);
+          int64_t max;
+//          if (client_subset.max == wcs::core::subset_t::no_value)
+//            max = grid_array.geo_array->dimensions.t.max_idx;
+//          else
+            max = grid_array.geo_array->timeline.index(client_subset.min);
 
-        eows::geoarray::dimension_t time_dimension;
-        time_dimension.name = client_subset.name;
-        time_dimension.min_idx = client_subset.min;
-        time_dimension.max_idx = client_subset.max;
-        output[2] = time_dimension;
+          if (min < grid_array.geo_array->dimensions.t.min_idx ||
+              max > grid_array.geo_array->dimensions.t.max_idx)
+            throw eows::ogc::wcs::invalid_axis_error("Time axis does not intersects. " + client_subset.name);
+
+          time_dimension.min_idx = min;
+          time_dimension.max_idx = max;
+          output[2] = time_dimension;
+        }
+        catch(const std::out_of_range&)
+        {
+          throw eows::ogc::wcs::invalid_axis_error("Invalid time range");
+        }
       }
       else
         throw eows::ogc::wcs::invalid_axis_error("No axis found. " + client_subset.name);
     } // end for
   } // end if subsets.size()
+
+  validate(grid_array.geo_array->srid, grid_array.geo_array->i_meta.spatial_extent, ext.ymin, ext.xmin);
+  validate(grid_array.geo_array->srid, grid_array.geo_array->i_meta.spatial_extent, ext.ymin, ext.xmax);
+  output[0].min_idx = grid_array.col(ext.xmin);
+  output[0].max_idx = grid_array.col(ext.xmax);
+  output[1].min_idx = grid_array.row(ext.ymin);
+  output[1].max_idx = grid_array.row(ext.ymax);
+
+  extent.xmin = ext.xmin;
+  extent.xmax = ext.xmax;
+  extent.ymin = ext.ymin;
+  extent.ymax = ext.ymax;
 
   return output;
 }

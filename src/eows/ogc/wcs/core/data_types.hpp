@@ -75,10 +75,11 @@ namespace eows
          */
         struct subset_t
         {
+          static const std::string no_value; //!< Const flag to determine no value in specific axis
           std::string name; //!< Axis name
           std::size_t srid; //!< Projection SRID (TODO: Implement it)
-          double  min; //!< Axis minimum value
-          double  max; //!< Axis maximum value
+          std::string  min; //!< Axis minimum value
+          std::string  max; //!< Axis maximum value
         };
 
         struct range_subset_t

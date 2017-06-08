@@ -194,6 +194,7 @@ namespace eows
     struct dimension_t
     {
       std::string name;
+      std::string alias;
       int64_t min_idx;
       int64_t max_idx;
       

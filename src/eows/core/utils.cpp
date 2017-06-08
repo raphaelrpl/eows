@@ -58,16 +58,6 @@ eows::core::initialize()
 // Find out the log file name and temporary data directory
   const rapidjson::Document& doc = app_settings::instance().get();
 
-  // Default temporary directory
-  std::string temp_data_dir("/tmp/");
-
-  rapidjson::Value::ConstMemberIterator temp_data_it = doc.FindMember("tmp_data_dir");
-
-  if (temp_data_it != doc.MemberEnd() && temp_data_it->value.IsString())
-    temp_data_dir = read_node_as_string(doc, "tmp_data_dir");
-  // Setting temporary data directory
-  app_settings::instance().set_tmp_data_dir(temp_data_dir);
-
   const std::string log_file_name = read_node_as_string(doc, "log_file");
   
 // Prepare log format
@@ -89,6 +79,16 @@ eows::core::initialize()
                            boost::log::keywords::channel = channel_name,
                            boost::log::keywords::filter = (channel == channel_name)
                           );
+
+  // Default temporary directory
+  std::string temp_data_dir("/tmp/");
+
+  rapidjson::Value::ConstMemberIterator temp_data_it = doc.FindMember("tmp_data_dir");
+
+  if (temp_data_it != doc.MemberEnd() && temp_data_it->value.IsString())
+    temp_data_dir = read_node_as_string(temp_data_it->value);
+  // Setting temporary data directory
+  app_settings::instance().set_tmp_data_dir(temp_data_dir);
 
   EOWS_LOG_INFO("EOWS core runtime initialized!");
 }

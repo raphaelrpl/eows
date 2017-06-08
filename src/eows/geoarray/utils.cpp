@@ -189,6 +189,7 @@ eows::geoarray::read_dimension(const rapidjson::Value& jdimension)
   dimension_t dim;
 
   dim.name = eows::core::read_node_as_string(jdimension, "name");
+  dim.alias = eows::core::read_node_as_string(jdimension, "alias");
   dim.min_idx = eows::core::read_node_as_int64(jdimension, "min_idx");
   dim.max_idx = eows::core::read_node_as_int64(jdimension, "max_idx");
 

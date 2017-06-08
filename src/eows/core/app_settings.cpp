@@ -90,12 +90,14 @@ void eows::core::app_settings::set_tmp_data_dir(const std::string& dir)
       }
     }
   }
-
-  if(!boost::filesystem::is_directory(tmp_dir))
+  else
   {
-    boost::format err_msg("The informed path is not a valid directory: %1%");
+    if(!boost::filesystem::is_directory(tmp_dir))
+    {
+      boost::format err_msg("The informed path is not a valid directory: %1%");
 
-    throw std::invalid_argument((err_msg % dir).str());
+      throw std::invalid_argument((err_msg % dir).str());
+    }
   }
 
   pimpl_->tmp_data_dir = dir;
