@@ -489,10 +489,14 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
 
       if (type_id == ::scidb::TID_INT16)
         ss << cell_it->get_int16(attr_scidb.getName());
+      if (type_id == ::scidb::TID_UINT16)
+        ss << cell_it->get_uint16(attr_scidb.getName());
       else if (type_id == ::scidb::TID_UINT8)
         ss << cell_it->get_uint8(attr_scidb.getName());
       else if (type_id == ::scidb::TID_INT8)
         ss << std::to_string(cell_it->get_int8(attr_scidb.getName()));
+      else if (type_id == ::scidb::TID_INT32)
+        ss << cell_it->get_int32(attr_scidb.getName());
 
       // TODO: Remove this check. It should append and remove last char on finish attr
       if (attr_pos + 1 < attributes_size)

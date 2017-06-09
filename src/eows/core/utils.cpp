@@ -90,6 +90,9 @@ eows::core::initialize()
   // Setting temporary data directory
   app_settings::instance().set_tmp_data_dir(temp_data_dir);
 
+  boost::format debug_msg("Using temporary data directory: %1%");
+  EOWS_LOG_INFO((debug_msg % app_settings::instance().get_tmp_data_dir()).str());
+
   EOWS_LOG_INFO("EOWS core runtime initialized!");
 }
 
