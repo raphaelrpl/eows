@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include "../core/logger.hpp"
+#include "../geoarray/data_types.hpp"
 
 #include <gdal_priv.h>
 
@@ -11,27 +12,9 @@ void eows::gdal::initialize()
   EOWS_LOG_INFO("EOWS Gdal initialized.");
 }
 
-int eows::gdal::pixel_size(eows::gdal::datatype dt)
+int eows::gdal::pixel_size(int dt)
 {
-  if (dt == datatype::int8)
-    return sizeof(char) * 8;
-
-  if (dt == datatype::uint8)
-    return sizeof(unsigned char);
-
-  if (dt == datatype::int16)
-    return sizeof(int16_t);
-
-  if (dt == datatype::int32)
-    return sizeof(int32_t);
-
-  if (dt == datatype::uint16)
-    return sizeof(uint16_t);
-
-  if (dt == datatype::uint32)
-    return sizeof(uint32_t);
-
-  return 1;
+  return eows::geoarray::datatype_t::bytes(dt);
 }
 
 void eows::gdal::get_int8(int index, void* buffer, double* value)

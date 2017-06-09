@@ -91,7 +91,6 @@ namespace eows
          * \return Index to insert
          */
         int place_buffer(int col, int row);
-//        void read(std::size_t col, std::size_t row);
 
       private:
         std::size_t id_; //!< Band id

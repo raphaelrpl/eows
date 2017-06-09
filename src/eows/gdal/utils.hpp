@@ -88,7 +88,7 @@ namespace eows
      * \param dt Datatype
      * \return Size in bytes of a datatype
      */
-    int pixel_size(datatype dt);
+    int pixel_size(int dt);
   }
 }
 

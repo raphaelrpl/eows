@@ -232,22 +232,8 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   std::vector<eows::gdal::property> properties;
 
   for(const eows::geoarray::attribute_t& attribute: used_attributes)
-  {
-    const std::size_t index = cell_it->attribute_pos(attribute.name);
-    if (attribute.datatype == eows::geoarray::datatype_t::int16_dt)
-      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int16));
-    else if (attribute.datatype == eows::geoarray::datatype_t::uint16_dt)
-      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint16));
-    else if (attribute.datatype == eows::geoarray::datatype_t::int8_dt)
-      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int8));
-    else if (attribute.datatype == eows::geoarray::datatype_t::uint8_dt)
-      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint8));
-    else if (attribute.datatype == eows::geoarray::datatype_t::int32_dt)
-      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int32));
-    else
-      throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " +
-                                                eows::geoarray::datatype_t::to_string(attribute.datatype));
-  }
+    properties.push_back(eows::gdal::property(cell_it->attribute_pos(attribute.name),
+                                              attribute.datatype));
 
   // Creating dataset
   file.create(tmp_file_path, x, y, properties);
