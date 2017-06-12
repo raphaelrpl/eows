@@ -48,7 +48,7 @@ namespace eows
       {
         /**
          * \brief It represents a base request structure for WCS access
-         * \throws
+         * \throws eows::ogc::missing_parameter_error when no service,version or request provided.
          */
         struct base_request
         {
@@ -56,12 +56,13 @@ namespace eows
 
           virtual ~base_request();
 
-          std::string request; //!< WCS rqeuest operation
+          std::string request; //!< WCS request operation
           std::string version; //!< WCS version
           std::string service; //!< WCS service name (Fixed to "WCS")
         };
         /**
          * \brief Represents a GetCapabilities request structure
+         * \throws eows::ogc::missing_parameter_error when required parameter no given.
          */
         struct get_capabilities_request : public base_request
         {
@@ -69,6 +70,7 @@ namespace eows
         };
         /**
          * \brief Represents DescriveCoverage Request structure
+         * \throws eows::ogc::missing_parameter_error when required parameter no given.
          */
         struct describe_coverage_request : public base_request
         {
@@ -77,6 +79,7 @@ namespace eows
         };
         /**
          * \brief Represents GetCoverage request structure
+         * \throws eows::ogc::missing_parameter_error when required parameter no given.
          */
         struct get_coverage_request : public base_request
         {
@@ -84,6 +87,7 @@ namespace eows
 
           /*!
            * \brief It process client subset and performs a minor validations like "already in" and syntax validation
+           * \throws eows::ogc::invalid_axis_error When could not parse axis in string representation
            * \param query - Query string
            */
           void digest_subset(const eows::core::query_string_t& query);
