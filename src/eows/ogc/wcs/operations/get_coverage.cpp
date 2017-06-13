@@ -148,6 +148,9 @@ struct eows::ogc::wcs::operations::get_coverage::impl
 
   /*!
    * \brief It prepares Query result as GeoTIFF image.
+   *
+   * \throws eows::ogc::wcs::no_such_field_error When an attribute value is not supported by eows
+   *
    * \param cell_it SciDB array query result
    * \param array Geo array
    * \param attributes SciDB array attributes
@@ -162,8 +165,6 @@ struct eows::ogc::wcs::operations::get_coverage::impl
 
   //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
-  //!< Represents a cast of array/client subset in lat/long mode to Grid scale mode based in SRID
-  std::vector<eows::geoarray::dimension_t> grid_subset;
   //!< Represents Auto File remover for Image generation
   eows::core::file_remover_ptr file_handler;
   //!< Represents WCS GetCoverage output in GML format.
