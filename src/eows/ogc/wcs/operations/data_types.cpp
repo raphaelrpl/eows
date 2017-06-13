@@ -95,7 +95,7 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
   if (it == query.end())
     format = eows::core::APPLICATION_XML;
   else
-    format = eows::core::from_string(it->second); // It may throw exception (format non-supported)
+    format = eows::core::from_string(it->second);
 
   // InputCRS
   it = query.find("inputcrs");
@@ -175,7 +175,7 @@ void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows:
         }
       }
       else
-        throw eows::ogc::wcs::invalid_axis_error("Invalid axis ");
+        throw eows::ogc::wcs::invalid_axis_error("Invalid axis while parsing " + dimension.name);
 
       subsets.push_back(dimension);
 

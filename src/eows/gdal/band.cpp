@@ -18,7 +18,7 @@
  */
 
 /*!
-  \file eows/gdal/band.hpp
+  \file eows/gdal/band.cpp
 
   \brief Implementation of Raster band
 
