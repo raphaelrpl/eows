@@ -55,11 +55,52 @@ namespace eows
     void initialize();
 
     /**
-     * \brief It tries to read rapidjson node value as string.
-     * \throws eows::parse_error When could not read or process as string like
+     * \brief Tries to find a member by name in RapidJSON Node and then read it as string.
+     * \throws eows::parse_error When could not find member name or process as string like
      * \return String value of node
      */
     const std::string read_node_as_string(const rapidjson::Value&, const std::string&);
+
+    /*!
+     * \brief Tries to read RapidJSON Node as string value.
+     * \throws eows::parse_error When node is not string readble
+     * \return String value of node
+     */
+    const std::string read_node_as_string(const rapidjson::Value& node);
+
+    /*!
+     * \brief Tries to find a member by name in RapidJSON Node and then read it as int64.
+     * \throws eows::parse_error When could not read or process as int64_t
+     * \param node - RapidJSON node
+     * \param member_name - Member to find in node
+     * \return Value int64
+     */
+    int64_t read_node_as_int64(const rapidjson::Value& node, const std::string& member_name);
+
+    /*!
+     * \brief Tries to find a member by name in RapidJSON Node and then read it as int64_t.
+     * \throws eows::parse_error When could not read or process as int64_t
+     * \param node - RapidJSON node
+     * \return Value int64_t
+     */
+    int64_t read_node_as_int64(const rapidjson::Value& node);
+
+    /*!
+     * \brief Tries to find a member by name in RapidJSON Node and then read it as double.
+     * \throws eows::parse_error When could not read or process as double
+     * \param node - RapidJSON node
+     * \param member_name - Member to find in node
+     * \return Value double
+     */
+    int64_t read_node_as_double(const rapidjson::Value& node, const std::string& member_name);
+
+    /*!
+     * \brief Tries to find a member by name in RapidJSON Node and then read it as double.
+     * \throws eows::parse_error When could not read or process as double
+     * \param node - RapidJSON node
+     * \return Value double
+     */
+    int64_t read_node_as_double(const rapidjson::Value& node);
 
     /**
      * \brief It transforms a string into lowercase
@@ -77,10 +118,11 @@ namespace eows
     /*!
      * \brief It generates a unique path (temporary) in system.
      *
-     * \param path_prefix - Prefix to append in order to generate custom path
+     * It uses app_settings temporary data directory as prefix.
+     *
      * \return A Temp file name
      */
-    std::string generate_unique_path(const std::string& path_prefix = "/tmp/");
+    std::string generate_unique_path(const std::string& extension = "");
 
     /**
      * \brief It applies lower case on given map keys and return a new map with these values

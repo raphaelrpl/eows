@@ -55,15 +55,10 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
 void
 eows::core::initialize()
 {
-// Find out the log file name
+// Find out the log file name and temporary data directory
   const rapidjson::Document& doc = app_settings::instance().get();
 
-  rapidjson::Value::ConstMemberIterator jlog_file = doc.FindMember("log_file");
-
-  if((jlog_file == doc.MemberEnd()) || (!jlog_file->value.IsString()))
-    throw eows::parse_error("Please check key 'log_file' in file: \"" EOWS_CONFIG_FILE "\".");
-
-  const std::string log_file_name = jlog_file->value.GetString();
+  const std::string log_file_name = read_node_as_string(doc, "log_file");
   
 // Prepare log format
   boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
@@ -84,6 +79,19 @@ eows::core::initialize()
                            boost::log::keywords::channel = channel_name,
                            boost::log::keywords::filter = (channel == channel_name)
                           );
+
+  // Default temporary directory
+  std::string temp_data_dir("/tmp/");
+
+  rapidjson::Value::ConstMemberIterator temp_data_it = doc.FindMember("tmp_data_dir");
+
+  if (temp_data_it != doc.MemberEnd() && temp_data_it->value.IsString())
+    temp_data_dir = read_node_as_string(temp_data_it->value);
+  // Setting temporary data directory
+  app_settings::instance().set_tmp_data_dir(temp_data_dir);
+
+  boost::format debug_msg("Using temporary data directory: %1%");
+  EOWS_LOG_INFO((debug_msg % app_settings::instance().get_tmp_data_dir()).str());
 
   EOWS_LOG_INFO("EOWS core runtime initialized!");
 }
@@ -246,11 +254,49 @@ const std::string eows::core::read_node_as_string(const rapidjson::Value& node, 
 {
   rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
   // TODO: auto format function in common
-  if((jit == node.MemberEnd()) || (!jit->value.IsString()))
+  if((jit == node.MemberEnd()))
     throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
-  return jit->value.GetString();
+  return read_node_as_string(jit->value);
 }
 
+const std::string eows::core::read_node_as_string(const rapidjson::Value& node)
+{
+  if (!node.IsString())
+    throw eows::parse_error("Could not read JSON node as string");
+  return node.GetString();
+}
+
+int64_t eows::core::read_node_as_int64(const rapidjson::Value& node, const std::string& member_name)
+{
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
+  // TODO: auto format function in common
+  if((jit == node.MemberEnd()))
+    throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
+  return read_node_as_int64(jit->value);
+}
+
+int64_t eows::core::read_node_as_int64(const rapidjson::Value& node)
+{
+  if (!node.IsInt64())
+    throw eows::parse_error("Could not read JSON node as int64_t");
+  return node.GetInt64();
+}
+
+int64_t eows::core::read_node_as_double(const rapidjson::Value& node, const std::string& member_name)
+{
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
+
+  if(jit == node.MemberEnd())
+      throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
+  return read_node_as_double(jit->value);
+}
+
+int64_t eows::core::read_node_as_double(const rapidjson::Value& node)
+{
+  if (!node.IsNumber())
+    throw eows::parse_error("Could not read JSON node as number");
+  return node.GetDouble();
+}
 
 std::multimap<std::string, std::string> eows::core::lowerify(const std::multimap<std::string, std::string>& given)
 {
@@ -273,9 +319,9 @@ std::string eows::core::to_lower(const std::string& str)
   return out;
 }
 
-std::string eows::core::generate_unique_path(const std::string& path_prefix)
+std::string eows::core::generate_unique_path(const std::string& extension)
 {
-  return path_prefix + boost::filesystem::unique_path().string();
+  return app_settings::instance().get_tmp_data_dir() + boost::filesystem::unique_path().string() + extension;
 }
 
 eows::core::content_type_t eows::core::from_string(const std::string& content)

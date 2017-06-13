@@ -49,7 +49,6 @@ eows::ogc::wcs::operations::base_request::base_request(const eows::core::query_s
 
 eows::ogc::wcs::operations::base_request::~base_request()
 {
-
 }
 
 eows::ogc::wcs::operations::get_capabilities_request::get_capabilities_request(const eows::core::query_string_t& query)
@@ -157,16 +156,26 @@ void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows:
       if (found != subsets.end())
         throw eows::ogc::wcs::invalid_axis_error("Duplicated axis " + dimension.name);
 
-      // Retrieve axis min
-      ss >> dimension.min;
+      while(ss >> c && (c != ',' && c != ')'))
+      {
+        dimension.min += c;
+        validate_subset(ss);
+      }
 
-      ss >> c;
-      if (c != ',')
+      if (c == ')')
+        dimension.max = eows::ogc::wcs::core::subset_t::no_value;
+      else if (c == ',')
+      {
+        validate_subset(ss);
+        // Retrieve axis max
+        while(ss >> c && c != ')')
+        {
+          dimension.max += c;
+          validate_subset(ss);
+        }
+      }
+      else
         throw eows::ogc::wcs::invalid_axis_error("Invalid axis ");
-
-      validate_subset(ss);
-      // Retrieve axis max
-      ss >> dimension.max;
 
       subsets.push_back(dimension);
 

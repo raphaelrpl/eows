@@ -86,31 +86,32 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    * \brief It generates a SciDB Query AFL to retrieve GetCoverage
    * \param array - Current geoarray
    * \param dimensions - Client subsets dimensions
+   * \param attributes - Client rangesubset attributes
    * \return A SciDB AFL query
    */
   std::string generate_afl(const eows::geoarray::geoarray_t& array,
-                           const std::vector<eows::geoarray::dimension_t> dimensions);
+                           const std::vector<eows::geoarray::dimension_t> dimensions,
+                           const std::vector<geoarray::attribute_t>& attributes);
 
   /*!
    * \brief It reprojects a dimension in lat long mode to Grid scale mode in order to retrieve correct array values
    *
-   * \param array - Geo array with dimensions
    * \param srid - SRID to convert
    * \param x - Value of X to reproject
    * \param y - Value of Y to reproject
    */
-  void reproject(const eows::geoarray::geoarray_t& array, const std::size_t& srid, double& x, double& y);
+  void reproject(const std::size_t& srid, double& x, double& y);
 
   /*!
    * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
    * if latitude/longitude reprojected intersects with geoarray. Throws exception when it does not intersects.
    *
-   * \param array - Geo array with meta information
+   * \param srid - SRID to cast
    * \param latitude - Latitude value
    * \param longitude - Longitude value
    * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
    */
-  void validate(const eows::geoarray::geoarray_t& array, double& latitude, double& longitude);
+  void validate(const std::size_t& srid, const eows::geoarray::spatial_extent_t& extent, double& latitude, double& longitude);
 
   /*!
    * \brief It retrieves all subsets given by client. Once listed, it performs a subset validation for each one to provide a
@@ -136,12 +137,14 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    * \param array_attributes - SciDB Geo Array Attributes
    * \param used_extent - Array extent used for retrieving SciDB data
    * \param dimensions_query - Dimensions used to fetch query
+   * \param attributes_query - Client Attributes used to fetch query
    */
   void process_as_document(const eows::geoarray::geoarray_t& array,
                            boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                            const ::scidb::Attributes& array_attributes,
                            const eows::geoarray::spatial_extent_t& used_extent,
-                           const std::vector<geoarray::dimension_t> dimensions_query);
+                           const std::vector<geoarray::dimension_t> dimensions_query,
+                           const std::vector<geoarray::attribute_t>& attributes_query);
 
   /*!
    * \brief It prepares Query result as GeoTIFF image.
@@ -153,7 +156,9 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   void process_as_tiff(boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                        const eows::geoarray::geoarray_t& array,
                        const ::scidb::Attributes& attributes,
-                       const std::vector<eows::geoarray::dimension_t> dimensions);
+                       const std::vector<eows::geoarray::dimension_t> dimensions,
+                       const geoarray::spatial_extent_t& used_extent,
+                       const std::vector<geoarray::attribute_t>& used_attributes);
 
   //!< Represents WCS client arguments given. TODO: Use it as smart-pointer instead a const value
   const eows::ogc::wcs::operations::get_coverage_request request;
@@ -165,8 +170,7 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   std::string output;
 };
 
-void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoarray::geoarray_t& array,
-                                                               const std::size_t& srid,
+void eows::ogc::wcs::operations::get_coverage::impl::reproject(const std::size_t& srid,
                                                                double& x,
                                                                double& y)
 {
@@ -189,19 +193,19 @@ void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoar
     t_srs_idx.insert(std::make_pair(request.input_crs, std::move(srs)));
   }
 
-  eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(array.i_meta.srid);
+  eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(srid);
 
   if(it_srid_target != t_srs_idx.end())
     dst_srs = it_srid_target->second.get();
   else
   {
-    const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(array.i_meta.srid);
+    const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(srid);
 
     std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(dst_desc.proj4_txt));
 
     dst_srs = srs.get();
 
-    t_srs_idx.insert(std::make_pair(array.i_meta.srid, std::move(srs)));
+    t_srs_idx.insert(std::make_pair(srid, std::move(srs)));
   }
 
   eows::proj4::transform(*src_srs, *dst_srs, x, y);
@@ -210,7 +214,9 @@ void eows::ogc::wcs::operations::get_coverage::impl::reproject(const eows::geoar
 void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                                                                      const eows::geoarray::geoarray_t& array,
                                                                      const ::scidb::Attributes& attributes,
-                                                                     const std::vector<eows::geoarray::dimension_t> dimensions)
+                                                                     const std::vector<eows::geoarray::dimension_t> dimensions,
+                                                                     const eows::geoarray::spatial_extent_t& used_extent,
+                                                                     const std::vector<geoarray::attribute_t>& used_attributes)
 {
   const eows::geoarray::dimension_t& dimension_x = dimensions[0];
   const eows::geoarray::dimension_t& dimension_y = dimensions[1];
@@ -218,35 +224,31 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   const int x = dimension_x.max_idx - dimension_x.min_idx + 1;
   const int y = dimension_y.max_idx - dimension_y.min_idx + 1;
 
-  const std::string tmp_file_path = eows::core::generate_unique_path("/tmp/") + ".tiff";
+  const std::string tmp_file_path = eows::core::generate_unique_path(".tiff");
 
   // TODO: Get array limits (from scidb query or input parameters?)
   eows::gdal::raster file;
 
   std::vector<eows::gdal::property> properties;
-  // Preparing bands
-  while(!cell_it->end())
-  {
-    for(std::size_t index = 0; index < attributes.size(); ++index)
-    {
-      const ::scidb::AttributeDesc& attribute = attributes[index];
-      const ::scidb::TypeId& data_type = attribute.getType();
-      if (data_type == ::scidb::TID_INT16)
-        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int16));
-      else if (data_type == ::scidb::TID_UINT16)
-        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint16));
-      else if (data_type == ::scidb::TID_INT8)
-        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int8));
-      else if (data_type == ::scidb::TID_UINT8)
-        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint8));
-      else if (data_type == ::scidb::TID_INT32)
-        properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int32));
-      else
-        throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " + data_type);
-    }
 
-    break;
+  for(const eows::geoarray::attribute_t& attribute: used_attributes)
+  {
+    const std::size_t index = cell_it->attribute_pos(attribute.name);
+    if (attribute.datatype == eows::geoarray::datatype_t::int16_dt)
+      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int16));
+    else if (attribute.datatype == eows::geoarray::datatype_t::uint16_dt)
+      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint16));
+    else if (attribute.datatype == eows::geoarray::datatype_t::int8_dt)
+      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int8));
+    else if (attribute.datatype == eows::geoarray::datatype_t::uint8_dt)
+      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::uint8));
+    else if (attribute.datatype == eows::geoarray::datatype_t::int32_dt)
+      properties.push_back(eows::gdal::property(index, eows::gdal::datatype::int32));
+    else
+      throw eows::ogc::wcs::no_such_field_error("Invalid attribute type, got " +
+                                                eows::geoarray::datatype_t::to_string(attribute.datatype));
   }
+
   // Creating dataset
   file.create(tmp_file_path, x, y, properties);
 
@@ -287,10 +289,10 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
   file.set_metadata(gdal::raster::metadata::y_resolution, std::to_string(array.spatial_resolution.y));
 
   // Array gtransform
-  file.transform(array.spatial_extent.xmin,
-                 array.spatial_extent.ymin,
-                 array.spatial_extent.xmax,
-                 array.spatial_extent.ymax,
+  file.transform(used_extent.xmin,
+                 used_extent.ymin,
+                 used_extent.xmax,
+                 used_extent.ymax,
                  array.spatial_resolution.x,
                  array.spatial_resolution.y);
   // Retrieving Projection. CHECK: It may throw exception when not found.
@@ -310,7 +312,8 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
 }
 
 std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const eows::geoarray::geoarray_t& array,
-                                                                         const std::vector<eows::geoarray::dimension_t> dimensions)
+                                                                         const std::vector<eows::geoarray::dimension_t> dimensions,
+                                                                         const std::vector<eows::geoarray::attribute_t>& attributes)
 {
   // Defining helpers for AFL Query generation
   std::string min_values;
@@ -333,9 +336,7 @@ std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const e
   // attributes_afl
   std::string attributes_afl;
 
-  // Retrieve client attributes or array defaults
-  std::vector<eows::geoarray::attribute_t> attributes = retrieve_attributes(array);
-
+  // Generating project attributes
   for(auto& attribute: attributes)
     attributes_afl += attribute.name + ",";
 
@@ -347,16 +348,17 @@ std::string eows::ogc::wcs::operations::get_coverage::impl::generate_afl(const e
   return query_str;
 }
 
-void eows::ogc::wcs::operations::get_coverage::impl::validate(const eows::geoarray::geoarray_t& array,
+void eows::ogc::wcs::operations::get_coverage::impl::validate(const std::size_t& srid,
+                                                              const eows::geoarray::spatial_extent_t& extent,
                                                               double& latitude,
                                                               double& longitude)
 {
   // Performs re-projection of values if the SRID are different
-  if (request.input_crs != array.srid)
-    reproject(array, request.input_crs, latitude, longitude);
+  if (request.input_crs != srid)
+    reproject(srid, latitude, longitude);
 
   // Validate Limits
-  if (!array.spatial_extent.intersects(latitude, longitude))
+  if (!extent.intersects(longitude, latitude))
     throw eows::ogc::wcs::invalid_axis_error("Values does not intersects");
 }
 
@@ -369,7 +371,12 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
   // Appending defaults values in order
   output.push_back(grid_array.geo_array->dimensions.x);
   output.push_back(grid_array.geo_array->dimensions.y);
-  output.push_back(grid_array.geo_array->dimensions.t);
+  // Setting default time as max
+  geoarray::dimension_t default_time_dimension = grid_array.geo_array->dimensions.t;
+  default_time_dimension.min_idx = default_time_dimension.max_idx;
+  output.push_back(default_time_dimension);
+
+  geoarray::spatial_extent_t ext = grid_array.geo_array->spatial_extent;
 
   // If WCS client gives subset limits, use them
   if (request.subsets.size() > 0)
@@ -377,53 +384,77 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
     // Now, we offer coverage 3 dimensions. In this case, we formed harded-code with this value to process GetCoverage. TODO: change it
     for(const eows::ogc::wcs::core::subset_t& client_subset: request.subsets)
     {
-      double latitude = client_subset.min;
-      double longitude = client_subset.max;
       // Col_id
-      if(client_subset.name == grid_array.geo_array->dimensions.x.name)
+      if(client_subset.name == grid_array.geo_array->dimensions.x.alias)
       {
-        validate(*(grid_array.geo_array), latitude, longitude);
+        double min = std::stod(client_subset.min);
+        double max;
 
-        extent.xmin = latitude;
-        extent.xmax = longitude;
+        if (client_subset.max == wcs::core::subset_t::no_value)
+          max = min;
+        else
+          max= std::stod(client_subset.max);
 
-        eows::geoarray::dimension_t d;
-        d.name = client_subset.name;
-        d.min_idx = grid_array.col(latitude);
-        d.max_idx = grid_array.col(longitude);
-        output[0] = d;
+        ext.xmin = min;
+        ext.xmax = max;
       }
       // Row ID
-      else if(client_subset.name == grid_array.geo_array->dimensions.y.name)
+      else if(client_subset.name == grid_array.geo_array->dimensions.y.alias)
       {
-        validate(*(grid_array.geo_array), latitude, longitude);
+        double min = std::stod(client_subset.min);
+        double max;
 
-        extent.ymin = latitude;
-        extent.ymax = longitude;
+        if (client_subset.max == wcs::core::subset_t::no_value)
+          max = min;
+        else
+          max= std::stod(client_subset.max);
 
-        eows::geoarray::dimension_t d;
-        d.name = client_subset.name;
-        d.min_idx = grid_array.row(latitude);
-        d.max_idx = grid_array.row(longitude);
-        output[1] = d;
+        ext.ymin = min;
+        ext.ymax = max;
       }
       // Time ID
-      else if(client_subset.name == grid_array.geo_array->dimensions.t.name)
+      else if(client_subset.name == grid_array.geo_array->dimensions.t.alias)
       {
-        if (client_subset.min < grid_array.geo_array->dimensions.t.min_idx ||
-            client_subset.max > grid_array.geo_array->dimensions.t.max_idx)
-          throw eows::ogc::wcs::invalid_axis_error("Time axis does not intersects. " + client_subset.name);
+        try
+        {
+          eows::geoarray::dimension_t time_dimension;
+          time_dimension.name = client_subset.name;
+          int64_t min = grid_array.geo_array->timeline.index(client_subset.min);
+          int64_t max;
+//          if (client_subset.max == wcs::core::subset_t::no_value)
+//            max = grid_array.geo_array->dimensions.t.max_idx;
+//          else
+            max = grid_array.geo_array->timeline.index(client_subset.min);
 
-        eows::geoarray::dimension_t time_dimension;
-        time_dimension.name = client_subset.name;
-        time_dimension.min_idx = client_subset.min;
-        time_dimension.max_idx = client_subset.max;
-        output[2] = time_dimension;
+          if (min < grid_array.geo_array->dimensions.t.min_idx ||
+              max > grid_array.geo_array->dimensions.t.max_idx)
+            throw eows::ogc::wcs::invalid_axis_error("Time axis does not intersects. " + client_subset.name);
+
+          time_dimension.min_idx = min;
+          time_dimension.max_idx = max;
+          output[2] = time_dimension;
+        }
+        catch(const std::out_of_range& err)
+        {
+          throw eows::ogc::wcs::invalid_axis_error(std::string("Invalid time range ") + err.what());
+        }
       }
       else
         throw eows::ogc::wcs::invalid_axis_error("No axis found. " + client_subset.name);
     } // end for
   } // end if subsets.size()
+
+  validate(grid_array.geo_array->srid, grid_array.geo_array->i_meta.spatial_extent, ext.ymin, ext.xmin);
+  validate(grid_array.geo_array->srid, grid_array.geo_array->i_meta.spatial_extent, ext.ymin, ext.xmax);
+  output[0].min_idx = grid_array.col(ext.xmin);
+  output[0].max_idx = grid_array.col(ext.xmax);
+  output[1].min_idx = grid_array.row(ext.ymin);
+  output[1].max_idx = grid_array.row(ext.ymax);
+
+  extent.xmin = ext.xmin;
+  extent.xmax = ext.xmax;
+  extent.ymin = ext.ymin;
+  extent.ymax = ext.ymax;
 
   return output;
 }
@@ -432,7 +463,8 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
                                                                          boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                                                                          const ::scidb::Attributes& array_attributes,
                                                                          const eows::geoarray::spatial_extent_t& used_extent,
-                                                                         const std::vector<eows::geoarray::dimension_t> dimensions_query)
+                                                                         const std::vector<eows::geoarray::dimension_t> dimensions_query,
+                                                                         const std::vector<eows::geoarray::attribute_t>& attributes_query)
 {
   // Defining output stream where SciDB will be stored (GML format)
   std::ostringstream ss;
@@ -457,10 +489,14 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
 
       if (type_id == ::scidb::TID_INT16)
         ss << cell_it->get_int16(attr_scidb.getName());
+      if (type_id == ::scidb::TID_UINT16)
+        ss << cell_it->get_uint16(attr_scidb.getName());
       else if (type_id == ::scidb::TID_UINT8)
         ss << cell_it->get_uint8(attr_scidb.getName());
       else if (type_id == ::scidb::TID_INT8)
         ss << std::to_string(cell_it->get_int8(attr_scidb.getName()));
+      else if (type_id == ::scidb::TID_INT32)
+        ss << cell_it->get_int32(attr_scidb.getName());
 
       // TODO: Remove this check. It should append and remove last char on finish attr
       if (attr_pos + 1 < attributes_size)
@@ -513,7 +549,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_document(const e
   range_set->append_node(data_block);
 
   // Preparing rangetype
-  eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, retrieve_attributes(array));
+  eows::ogc::wcs::core::make_coverage_range_type(&xml_doc, wcs_document, attributes_query);
 
   rapidxml::print(std::back_inserter(output), xml_doc, 0);
 }
@@ -578,10 +614,13 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     // Array containing client limits sent in WCS request that will be used to build SciDB AFL query
     std::vector<eows::geoarray::dimension_t> dimensions_to_query = pimpl_->retrieve_subsets(grid_array, used_extent);
 
-    // Get Query AFL
-    std::string query_str = pimpl_->generate_afl(array, dimensions_to_query);
+    // Retrieve client attributes or array defaults
+    std::vector<eows::geoarray::attribute_t> attributes_to_query = pimpl_->retrieve_attributes(array);
 
-    EOWS_LOG_INFO(query_str);
+    // Get Query AFL
+    std::string query_str = pimpl_->generate_afl(array, dimensions_to_query, attributes_to_query);
+
+    EOWS_LOG_DEBUG(query_str);
 
     // Open SciDB connection
     eows::scidb::connection conn = eows::scidb::connection_pool::instance().get(array.cluster_id);
@@ -608,10 +647,10 @@ void eows::ogc::wcs::operations::get_coverage::execute()
     switch(pimpl_->request.format)
     {
       case eows::core::APPLICATION_XML:
-        pimpl_->process_as_document(array, std::move(cell_it), array_attributes, used_extent, dimensions_to_query);
+        pimpl_->process_as_document(array, std::move(cell_it), array_attributes, used_extent, dimensions_to_query, attributes_to_query);
         break;
       case eows::core::IMAGE_TIFF:
-        pimpl_->process_as_tiff(std::move(cell_it), array, array_attributes, dimensions_to_query);
+        pimpl_->process_as_tiff(std::move(cell_it), array, array_attributes, dimensions_to_query, used_extent, attributes_to_query);
         break;
       default:
         throw eows::ogc::not_implemented_error("Format not supported", "NotSupported");

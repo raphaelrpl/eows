@@ -64,33 +64,17 @@ eows::ogc::wms::read(const rapidjson::Value& jservice, service_t& service)
   if(!jservice.IsObject())
     throw eows::parse_error("Key 'Service' must be a valid JSON object.");
 
-  rapidjson::Value::ConstMemberIterator jit = jservice.FindMember("Title");
+  service.title = eows::core::read_node_as_string(jservice, "Title");
+  service.abstract = eows::core::read_node_as_string(jservice, "Abstract");
 
-  if((jit == jservice.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("Please, check the key 'Service/Title' in JSON document.");
-
-  service.title = jit->value.GetString();
-
-  jit = jservice.FindMember("Abstract");
-
-  if((jit == jservice.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("Please, check the key 'Service/Abstract' in JSON document.");
-
-  service.abstract = jit->value.GetString();
-
-  jit = jservice.FindMember("KeywordList");
+  rapidjson::Value::ConstMemberIterator jit = jservice.FindMember("KeywordList");
 
   if((jit == jservice.MemberEnd()) || (!jit->value.IsArray()))
     throw eows::parse_error("Please, check the key 'Service/KeywordList' in JSON document.");
 
   eows::core::copy_string_array(jit->value, std::back_inserter(service.keyword_list));
 
-  jit = jservice.FindMember("OnlineResource");
-
-  if((jit == jservice.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("Please, check the key 'Service/OnlineResource' in JSON document.");
-
-  service.online_resource.href = jit->value.GetString();
+  service.online_resource.href = eows::core::read_node_as_string(jservice, "OnlineResource");
 
   service.provider = eows::ogc::ows::manager::instance().provider();
 
