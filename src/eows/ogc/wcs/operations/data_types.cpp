@@ -142,7 +142,7 @@ void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows:
 
       // Retrieve axis name
       char c;
-      while(ss >> c && c != '(')
+      while(ss >> c && (c != '(' && c != ','))
       {
         dimension.name += c;
         validate_subset(ss);
@@ -155,6 +155,16 @@ void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows:
 
       if (found != subsets.end())
         throw eows::ogc::wcs::invalid_axis_error("Duplicated axis " + dimension.name);
+
+      // Checking if client informed SRS in axis
+      if (c == ',')
+      {
+        while(ss >> c && c != '(')
+        {
+          dimension.srid += c;
+          validate_subset(ss);
+        }
+      }
 
       while(ss >> c && (c != ',' && c != ')'))
       {

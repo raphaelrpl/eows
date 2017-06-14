@@ -97,6 +97,12 @@ void eows::gdal::raster::close()
     GDALClose(static_cast<GDALDatasetH>(dataset_));
     dataset_ = nullptr;
   }
+
+  if (metadata_ != nullptr)
+  {
+    CSLDestroy(metadata_);
+    metadata_ = nullptr;
+  }
 }
 
 eows::gdal::band* eows::gdal::raster::get_band(const std::size_t& id) const
