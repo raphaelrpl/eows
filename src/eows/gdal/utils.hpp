@@ -111,6 +111,21 @@ namespace eows
     void set_int32(int index, void* buffer, double* value);
 
     /*!
+     * \brief Reads an uint32 type from buffer
+     * \param index - Buffer index
+     * \param buffer - Buffer
+     * \param value - Variable to store value
+     */
+    void get_uint32(int index, void* buffer, double* value);
+    /*!
+     * \brief It sets an uint32 value to buffer
+     * \param index - Buffer index
+     * \param buffer - Buffer
+     * \param value - Value to append
+     */
+    void set_uint32(int index, void* buffer, double* value);
+
+    /*!
      * \brief It retrieve real size of a datatype in bytes
      * \param dt Datatype
      * \return Size in bytes of a datatype

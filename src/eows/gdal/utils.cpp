@@ -69,6 +69,11 @@ void eows::gdal::get_uint8(int index, void* buffer, double* value)
   *value = static_cast<double>(static_cast<uint8_t*>(buffer)[index]);
 }
 
+void eows::gdal::get_uint32(int index, void* buffer, double* value)
+{
+  *value = static_cast<double>(static_cast<uint32_t*>(buffer)[index]);
+}
+
 void eows::gdal::set_uint8(int index, void* buffer, double* value)
 {
   static_cast<uint8_t*>(buffer)[index] = static_cast<uint8_t>(*value);
@@ -92,4 +97,9 @@ void eows::gdal::set_uint16(int index, void* buffer, double* value)
 void eows::gdal::set_int32(int index, void* buffer, double* value)
 {
   static_cast<int32_t*>(buffer)[index] = static_cast<int32_t>(*value);
+}
+
+void eows::gdal::set_uint32(int index, void* buffer, double* value)
+{
+  static_cast<uint32_t*>(buffer)[index] = static_cast<uint32_t>(*value);
 }

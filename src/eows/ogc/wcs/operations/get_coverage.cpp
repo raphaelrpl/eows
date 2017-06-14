@@ -71,7 +71,6 @@
 // Boost
 #include <boost/shared_ptr.hpp>
 
-
 thread_local eows::proj4::spatial_ref_map t_srs_idx;
 
 // struct Impl implementation
@@ -106,10 +105,12 @@ struct eows::ogc::wcs::operations::get_coverage::impl
    * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
    * if latitude/longitude reprojected intersects with geoarray. Throws exception when it does not intersects.
    *
+   * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
+   * \throws std::runtime_error When could not reproject coordinate
+   *
    * \param srid - SRID to cast
    * \param latitude - Latitude value
    * \param longitude - Longitude value
-   * \throws eows::ogc::wcs::invalid_axis_error When there is any axis invalid and dont intersects
    */
   void validate(const std::size_t& srid, const eows::geoarray::spatial_extent_t& extent, double& latitude, double& longitude);
 
@@ -238,7 +239,6 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
 
   // Creating dataset
   file.create(tmp_file_path, x, y, properties);
-
   // fill
   while(!cell_it->end())
   {
@@ -257,7 +257,7 @@ void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shar
       else if (data_type == ::scidb::TID_UINT8)
         band->set_value(x, y, cell_it->get_uint8(name));
       else if (data_type == ::scidb::TID_INT16)
-        band->set_value(x, y, cell_it->get_uint16(name));
+        band->set_value(x, y, cell_it->get_int16(name));
       else if (data_type == ::scidb::TID_UINT16)
         band->set_value(x, y, cell_it->get_uint16(name));
       else if (data_type == ::scidb::TID_INT32)

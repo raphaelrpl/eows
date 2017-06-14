@@ -64,6 +64,10 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
       getter_ = eows::gdal::get_int32;
       setter_ = eows::gdal::set_int32;
       break;
+    case GDT_UInt32:
+      getter_ = eows::gdal::get_uint32;
+      setter_ = eows::gdal::set_uint32;
+      break;
     default: // GDT_Unknown
       getter_ = eows::gdal::get_int8;
       setter_ = eows::gdal::set_int8;
@@ -100,7 +104,6 @@ void eows::gdal::band::get_value(const std::size_t& x, const std::size_t& y, dou
 void eows::gdal::band::set_value(const std::size_t& x, const std::size_t& y, double v)
 {
   current_i_ = place_buffer(x, y);
-
   setter_(current_i_, buffer_, &v);
 }
 
