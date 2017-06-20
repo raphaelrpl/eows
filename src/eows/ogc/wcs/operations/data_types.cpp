@@ -95,7 +95,7 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
   if (it == query.end())
     format = eows::core::APPLICATION_XML;
   else
-    format = eows::core::from_string(it->second); // It may throw exception (format non-supported)
+    format = eows::core::from_string(it->second);
 
   // InputCRS
   it = query.find("inputcrs");
@@ -142,7 +142,7 @@ void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows:
 
       // Retrieve axis name
       char c;
-      while(ss >> c && c != '(')
+      while(ss >> c && (c != '(' && c != ','))
       {
         dimension.name += c;
         validate_subset(ss);
@@ -155,6 +155,16 @@ void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows:
 
       if (found != subsets.end())
         throw eows::ogc::wcs::invalid_axis_error("Duplicated axis " + dimension.name);
+
+      // Checking if client informed SRS in axis
+      if (c == ',')
+      {
+        while(ss >> c && c != '(')
+        {
+          dimension.srid += c;
+          validate_subset(ss);
+        }
+      }
 
       while(ss >> c && (c != ',' && c != ')'))
       {
@@ -175,7 +185,7 @@ void eows::ogc::wcs::operations::get_coverage_request::digest_subset(const eows:
         }
       }
       else
-        throw eows::ogc::wcs::invalid_axis_error("Invalid axis ");
+        throw eows::ogc::wcs::invalid_axis_error("Invalid axis while parsing " + dimension.name);
 
       subsets.push_back(dimension);
 

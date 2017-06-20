@@ -1,5 +1,33 @@
+/*
+  Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
+
+  This file is part of Earth Observation Web Services (EOWS).
+
+  EOWS is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 3 as
+  published by the Free Software Foundation.
+
+  EOWS is distributed  "AS-IS" in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY OF ANY KIND; without even the implied warranty
+  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with EOWS. See LICENSE. If not, write to
+  e-sensing team at <esensing-team@dpi.inpe.br>.
+ */
+
+/*!
+  \file eows/gdal/utils.cpp
+
+  \brief Implementation of EOWS GDAL utility
+
+  \author Raphael Willian da Costa
+ */
+
 #include "utils.hpp"
 #include "../core/logger.hpp"
+#include "../geoarray/data_types.hpp"
 
 #include <gdal_priv.h>
 
@@ -11,27 +39,9 @@ void eows::gdal::initialize()
   EOWS_LOG_INFO("EOWS Gdal initialized.");
 }
 
-int eows::gdal::pixel_size(eows::gdal::datatype dt)
+int eows::gdal::pixel_size(int dt)
 {
-  if (dt == datatype::int8)
-    return sizeof(char) * 8;
-
-  if (dt == datatype::uint8)
-    return sizeof(unsigned char);
-
-  if (dt == datatype::int16)
-    return sizeof(int16_t);
-
-  if (dt == datatype::int32)
-    return sizeof(int32_t);
-
-  if (dt == datatype::uint16)
-    return sizeof(uint16_t);
-
-  if (dt == datatype::uint32)
-    return sizeof(uint32_t);
-
-  return 1;
+  return eows::geoarray::datatype_t::bytes(dt);
 }
 
 void eows::gdal::get_int8(int index, void* buffer, double* value)
@@ -59,6 +69,11 @@ void eows::gdal::get_uint8(int index, void* buffer, double* value)
   *value = static_cast<double>(static_cast<uint8_t*>(buffer)[index]);
 }
 
+void eows::gdal::get_uint32(int index, void* buffer, double* value)
+{
+  *value = static_cast<double>(static_cast<uint32_t*>(buffer)[index]);
+}
+
 void eows::gdal::set_uint8(int index, void* buffer, double* value)
 {
   static_cast<uint8_t*>(buffer)[index] = static_cast<uint8_t>(*value);
@@ -82,4 +97,9 @@ void eows::gdal::set_uint16(int index, void* buffer, double* value)
 void eows::gdal::set_int32(int index, void* buffer, double* value)
 {
   static_cast<int32_t*>(buffer)[index] = static_cast<int32_t>(*value);
+}
+
+void eows::gdal::set_uint32(int index, void* buffer, double* value)
+{
+  static_cast<uint32_t*>(buffer)[index] = static_cast<uint32_t>(*value);
 }

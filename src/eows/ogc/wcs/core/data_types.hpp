@@ -77,7 +77,7 @@ namespace eows
         {
           static const std::string no_value; //!< Const flag to determine no value in specific axis
           std::string name; //!< Axis name
-          std::size_t srid; //!< Projection SRID (TODO: Implement it)
+          std::string srid; //!< Projection SRID (TODO: Implement it)
           std::string  min; //!< Axis minimum value
           std::string  max; //!< Axis maximum value
         };

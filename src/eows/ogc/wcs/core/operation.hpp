@@ -45,9 +45,7 @@ namespace eows
         class operation
         {
           public:
-            operation()
-            {
-            }
+            operation() = default;
 
             virtual ~operation()
             {

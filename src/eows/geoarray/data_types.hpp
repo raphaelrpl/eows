@@ -125,6 +125,35 @@ namespace eows
         }
       }
 
+      static inline int bytes(int dt)
+      {
+        switch(dt)
+        {
+          case eows::geoarray::datatype_t::int8_dt:
+            return sizeof(char) * 8;
+          case eows::geoarray::datatype_t::uint8_dt:
+            return sizeof(unsigned char);
+          case eows::geoarray::datatype_t::int16_dt:
+            return sizeof(int16_t);
+          case eows::geoarray::datatype_t::int32_dt:
+            return sizeof(int32_t);
+          case eows::geoarray::datatype_t::uint16_dt:
+            return sizeof(uint16_t);
+          case eows::geoarray::datatype_t::uint32_dt:
+            return sizeof(uint32_t);
+          case eows::geoarray::datatype_t::int64_dt:
+            return sizeof(int64_t);
+          case eows::geoarray::datatype_t::uint64_dt:
+            return sizeof(uint64_t);
+          case eows::geoarray::datatype_t::float_dt:
+            return sizeof(float);
+          case eows::geoarray::datatype_t::double_dt:
+            return sizeof(double);
+          default:
+            return 0;
+        }
+      }
+
       //! Convert a data type in its string description to its numeric code.
       static inline int from_string(const std::string& data_type_name)
       {

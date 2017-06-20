@@ -198,8 +198,6 @@ void eows::ogc::wcs::operations::describe_coverage::execute()
   }
 
   rapidxml::print(std::back_inserter(pimpl_->xml_representation), xml_doc, 0);
-
-  EOWS_LOG_DEBUG(pimpl_->xml_representation);
 }
 
 const char*eows::ogc::wcs::operations::describe_coverage::content_type() const

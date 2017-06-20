@@ -18,7 +18,7 @@
  */
 
 /*!
-  \file eows/gdal/band.hpp
+  \file eows/gdal/band.cpp
 
   \brief Implementation of Raster band
 
@@ -64,6 +64,10 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
       getter_ = eows::gdal::get_int32;
       setter_ = eows::gdal::set_int32;
       break;
+    case GDT_UInt32:
+      getter_ = eows::gdal::get_uint32;
+      setter_ = eows::gdal::set_uint32;
+      break;
     default: // GDT_Unknown
       getter_ = eows::gdal::get_int8;
       setter_ = eows::gdal::set_int8;
@@ -71,9 +75,6 @@ eows::gdal::band::band(eows::gdal::raster* parent, const std::size_t& id, GDALRa
 
   // TODO: Remove it.
   update_buffer_ = true;
-
-//  x_ = 0;//std::numeric_limits<int>::max();
-//  y_ = 0;//std::numeric_limits<int>::max();
 }
 
 eows::gdal::band::~band()
@@ -103,7 +104,6 @@ void eows::gdal::band::get_value(const std::size_t& x, const std::size_t& y, dou
 void eows::gdal::band::set_value(const std::size_t& x, const std::size_t& y, double v)
 {
   current_i_ = place_buffer(x, y);
-
   setter_(current_i_, buffer_, &v);
 }
 
@@ -127,12 +127,8 @@ eows::gdal::property* eows::gdal::band::make_property(GDALRasterBand* gdalband, 
 
   std::unique_ptr<property> property_ptr(new property(index, property::from_gdal_datatype(gdalband->GetRasterDataType())));
 
-//  gdalband->GetBlockSize(&property_ptr->width, &property_ptr->height);
   property_ptr->width = gdalband->GetXSize();
   property_ptr->height = gdalband->GetYSize();
-
-//  property_ptr->block_x= (gdalband->GetXSize() + property_ptr->width - 1) / property_ptr->width;
-//  property_ptr->block_y = (gdalband->GetYSize() + property_ptr->height - 1) / property_ptr->height;
 
   return property_ptr.release();
 }
@@ -158,17 +154,3 @@ int eows::gdal::band::place_buffer(int col, int row)
 
   return (current_col_ + current_row_ * property_->width);
 }
-
-//void eows::gdal::band::read(std::size_t col, std::size_t row)
-//{
-//  if (update_buffer_)
-//  {
-//    write(col, row);
-//    x_ = col;
-//    y_ = row;
-//  }
-
-//  CPLErr flag = gdal_->ReadBlock(col, row, buffer_);
-//  if (flag != CE_None)
-//    EOWS_LOG_ERROR("Could not read dataset block " + std::to_string(col) + " - " + "row");
-//}
