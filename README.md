@@ -5,11 +5,12 @@
 The following services are under development:
 - **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtss.md).
 
-- **Web Time Series Service (WTSCS):** a web service for the classification of time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
+- **Web Time Series Processing Service (WTSPS):** a web service that performs time series processing, including remote sensing imagery classification. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
 
-- **Spatio-Temporal Web Map Service (WMS):** a web map service for visualizing remote sensing imagery data as dynamic maps (space + time) stored as 3D arrays in SciDB. (**under development for version 0.6.0**)
+- **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.6.0**)
 
-- **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.7.0**)
+- **Spatio-Temporal Web Map Service (WMS):** a web map service for visualizing remote sensing imagery data as dynamic maps (space + time) stored as 3D arrays in SciDB. (**under development for version 0.7.0**)
+
 
 Subscribe to the mailing list: https://groups.google.com/d/forum/eows.
 
