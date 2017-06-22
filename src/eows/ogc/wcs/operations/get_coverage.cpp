@@ -48,7 +48,7 @@
 #include "../../../scidb/scoped_query.hpp"
 
 // EOWS Proj4
-#include "../../../proj4/srs.hpp"
+#include "../../../proj4/converter.hpp"
 
 // EOWS GDAL
 #include "../../../gdal/band.hpp"
@@ -72,8 +72,6 @@
 #include <boost/shared_ptr.hpp>
 
 
-thread_local eows::proj4::spatial_ref_map t_srs_idx;
-
 // struct Impl implementation
 struct eows::ogc::wcs::operations::get_coverage::impl
 {
@@ -92,15 +90,6 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   std::string generate_afl(const eows::geoarray::geoarray_t& array,
                            const std::vector<eows::geoarray::dimension_t> dimensions,
                            const std::vector<geoarray::attribute_t>& attributes);
-
-  /*!
-   * \brief It reprojects a dimension in lat long mode to Grid scale mode in order to retrieve correct array values
-   *
-   * \param srid - SRID to convert
-   * \param x - Value of X to reproject
-   * \param y - Value of Y to reproject
-   */
-  void reproject(const std::size_t& srid, double& x, double& y);
 
   /*!
    * \brief It performs subset reprojection if client gives a SRID different from Geoarray native. After that, it checks
@@ -168,47 +157,6 @@ struct eows::ogc::wcs::operations::get_coverage::impl
   //!< Represents WCS GetCoverage output in GML format.
   std::string output;
 };
-
-void eows::ogc::wcs::operations::get_coverage::impl::reproject(const std::size_t& srid,
-                                                               double& x,
-                                                               double& y)
-{
-  eows::proj4::spatial_reference* src_srs = nullptr;
-  eows::proj4::spatial_reference* dst_srs = nullptr;
-
-  // First of all, we must reproject client subsets to an compatible array
-  eows::proj4::spatial_ref_map::const_iterator it = t_srs_idx.find(request.input_crs);
-
-  // If it already indexed
-  if(it != t_srs_idx.end())
-    src_srs = it->second.get();
-  else
-  {
-    // Retrieving GeoArray SRS (dst)
-    const eows::proj4::srs_description_t& srs_desc = eows::proj4::srs_manager::instance().get(request.input_crs);
-    std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(srs_desc.proj4_txt));
-
-    src_srs = srs.get();
-    t_srs_idx.insert(std::make_pair(request.input_crs, std::move(srs)));
-  }
-
-  eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(srid);
-
-  if(it_srid_target != t_srs_idx.end())
-    dst_srs = it_srid_target->second.get();
-  else
-  {
-    const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(srid);
-
-    std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(dst_desc.proj4_txt));
-
-    dst_srs = srs.get();
-
-    t_srs_idx.insert(std::make_pair(srid, std::move(srs)));
-  }
-
-  eows::proj4::transform(*src_srs, *dst_srs, x, y);
-}
 
 void eows::ogc::wcs::operations::get_coverage::impl::process_as_tiff(boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                                                                      const eows::geoarray::geoarray_t& array,
@@ -339,7 +287,12 @@ void eows::ogc::wcs::operations::get_coverage::impl::validate(const std::size_t&
 {
   // Performs re-projection of values if the SRID are different
   if (request.input_crs != srid)
-    reproject(srid, latitude, longitude);
+  {
+    eows::proj4::converter conv;
+    conv.set_source_srid(request.input_crs);
+    conv.set_target_srid(srid);
+    conv.convert(longitude, latitude);
+  }
 
   // Validate Limits
   if (!extent.intersects(longitude, latitude))
@@ -357,7 +310,8 @@ eows::ogc::wcs::operations::get_coverage::impl::retrieve_subsets(const eows::geo
   output.push_back(grid_array.geo_array->dimensions.y);
   // Setting default time as max
   geoarray::dimension_t default_time_dimension = grid_array.geo_array->dimensions.t;
-  default_time_dimension.min_idx = default_time_dimension.max_idx;
+//  default_time_dimension.min_idx = default_time_dimension.max_idx;
+    default_time_dimension.max_idx = default_time_dimension.min_idx;
   output.push_back(default_time_dimension);
 
   geoarray::spatial_extent_t ext = grid_array.geo_array->spatial_extent;
