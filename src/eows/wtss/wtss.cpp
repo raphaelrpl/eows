@@ -34,11 +34,11 @@
 #include "../core/utils.hpp"
 #include "../geoarray/geoarray_manager.hpp"
 #include "../geoarray/utils.hpp"
-#include "../proj4/srs.hpp"
 #include "../scidb/connection.hpp"
 #include "../scidb/connection_pool.hpp"
 #include "../scidb/cell_iterator.hpp"
 #include "../scidb/scoped_query.hpp"
+#include "../proj4/converter.hpp"
 
 // Boost
 #include <boost/algorithm/string/classification.hpp>
@@ -53,9 +53,6 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-
-// a specific index of spatial_reference objects defined per thread.
-thread_local eows::proj4::spatial_ref_map t_srs_idx;
 
 static void
 return_exception(const char* msg, eows::core::http_response& res);
@@ -578,51 +575,17 @@ eows::wtss::find_location(const double& longitude,
   cell.x = longitude;
   cell.y = latitude;
 
-  eows::proj4::spatial_reference* src_srs = nullptr;
-  eows::proj4::spatial_reference* dst_srs = nullptr;
+  // Defining converter handler
+  eows::proj4::converter converter;
+  converter.set_source_srid(4326);
+  converter.set_target_srid(geo_array->i_meta.srid);
 
 // do we need to make coordinate transformation?
   if(geo_array->i_meta.srid != 4326)
   {
-// try to find a handle for the source SRS or prepare a new one
-    eows::proj4::spatial_ref_map::const_iterator it_srid_4326 = t_srs_idx.find(4326);
-
-    if(it_srid_4326 != t_srs_idx.end())
-    {
-      src_srs = it_srid_4326->second.get();
-    }
-    else
-    {
-      const eows::proj4::srs_description_t& srs_desc = eows::proj4::srs_manager::instance().get(4326);
-
-      std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(srs_desc.proj4_txt));
-
-      src_srs = srs.get();
-
-      t_srs_idx.insert(std::make_pair(4326, std::move(srs)));
-    }
-
-// try to find a handle for the target SRS or prepare a new one
-    eows::proj4::spatial_ref_map::const_iterator it_srid_target = t_srs_idx.find(geo_array->i_meta.srid);
-
-    if(it_srid_target != t_srs_idx.end())
-    {
-      dst_srs = it_srid_target->second.get();
-    }
-    else
-    {
-      const eows::proj4::srs_description_t& dst_desc = eows::proj4::srs_manager::instance().get(geo_array->i_meta.srid);
-
-      std::unique_ptr<eows::proj4::spatial_reference> srs(new eows::proj4::spatial_reference(dst_desc.proj4_txt));
-
-      dst_srs = srs.get();
-
-      t_srs_idx.insert(std::make_pair(geo_array->i_meta.srid, std::move(srs)));
-    }
-
-// ok! we have both SRS handles.
-// let's perform the coordinate transformation
-    eows::proj4::transform(*src_srs, *dst_srs, cell.x, cell.y);
+    // ok! we have both SRS handles.
+    // let's perform the coordinate transformation
+    converter.convert(cell.x, cell.y);
   }
 
 // is the queried coordinate in array projection inside the real array extent?
@@ -660,7 +623,7 @@ eows::wtss::find_location(const double& longitude,
 
 // do we need to make the inverse coordinate transformation?
   if(geo_array->i_meta.srid != 4326)
-    eows::proj4::transform(*dst_srs, *src_srs, cell.center_lon, cell.center_lat);
+    converter.convert(cell.center_lon, cell.center_lat);
 
   return cell;
 }

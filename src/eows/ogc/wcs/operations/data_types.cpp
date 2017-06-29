@@ -108,6 +108,14 @@ eows::ogc::wcs::operations::get_coverage_request::get_coverage_request(const eow
   else
     input_crs = 4326;
 
+  it = query.find("outputcrs");
+  if (it != query.end())
+  {
+    std::stringstream stream;
+    stream << it->second;
+    stream >> output_crs;
+  }
+
   // Process Subsets
   digest_subset(query);
 
