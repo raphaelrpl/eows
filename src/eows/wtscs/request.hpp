@@ -49,15 +49,20 @@ namespace eows
          */
     struct twdtw_input_parameters : base_input_parameters
     {
-      string cv_name;
-      vector<string> attributes;
-      vector<double> roi;
-      string start_date;
-      string end_date;
-      string by;
-      double overlap;
+      string coverage;
+      double scale_factor;
+      vector<string> bands;
+      vector<int> roi;
+      string dist_method;
       double alpha;
       double beta;
+      double theta;
+      string interval;
+      double span;
+      string keep;
+      double overlap;
+      string start_date;
+      string end_date;
     };
 
     /*! \brief Binomial structure algorithm-input parameters.
@@ -67,10 +72,10 @@ namespace eows
     class request
     {
       string algorithm;
-      unique_ptr<base_input_parameters> input_parameters;
       string UUID;
       string status;
     public:
+      unique_ptr<base_input_parameters> input_parameters;
       request* pNext;
       request();
       /*! \brief Parse Request.
@@ -81,7 +86,9 @@ namespace eows
       void set_UUID(string);
       string get_status();
       void check_parameters();
-      string unique_identifier();
+      void write_setting();
+      string write_afl(eows::wtscs::twdtw_input_parameters*);
+
     };
 
   } // end namespace wtscs

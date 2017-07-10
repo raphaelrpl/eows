@@ -43,15 +43,62 @@
 
 using namespace std;
 
+string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data)
+{
+  //TODO: write afl
+  string afl = "time iquery -aq \"set no fetch; store(redimension(apply(stream(cast(apply(project(between(";
+
+  afl.append(data->coverage);
+  for(vector<int>::iterator it = data->roi.begin() ; it != data->roi.end(); ++it)
+  {
+    afl.append(", ");
+    afl.append(to_string(*it));
+  }
+
+  afl.append(")");
+
+  for(vector<string>::iterator it = data->bands.begin() ; it != data->bands.end(); ++it)
+  {
+    afl.append(", ");
+    afl.append(*it);
+  }
+
+  afl.append("), colid, double(col_id), rowid, double(row_id), timeid, double(time_id)),<");
+
+  for(vector<string>::iterator it = data->bands.begin() ; it != data->bands.end(); ++it)
+  {
+    afl.append(*it);
+    afl.append(":int32, ");
+  }
+
+
+  afl.append("), i32col_id, int32(col_id), i32row_id, int32(row_id), i32time_id, int32(time_id)), i32col_id, i32row_id, i32time_id");
+
+  afl.append("), \'Rscript /net/esensing-001/disks/d9/scidb15_12/scripts/test_twdtw/");
+  afl.append(UUID);
+  afl.append("_patterns.json");
+
+  afl.append(" scale_factor bands alfa beta theta overlap\', \'format=df\',");
+  cout << afl;
+  cout << endl;
+
+}
+
 eows::wtscs::request::request()
 {
   pNext = NULL;
-  status = "Undefined";
+  status = "Rejected";
 }
+
+void eows::wtscs::request::write_setting()
+{
+  //TODO: write files
+}
+
 
 string eows::wtscs::request::get_status()
 {
-return status;
+  return status;
 }
 
 void eows::wtscs::request::check_parameters()
@@ -112,13 +159,17 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
     {
       if(string(itr->name.GetString()) == "coverage")
       {
-        pParameters->cv_name = itr->value.GetString();
+        pParameters->coverage = itr->value.GetString();
       }
-      if(string(itr->name.GetString()) == "attributes")
+      if(string(itr->name.GetString()) == "scale_factor")
+      {
+        pParameters->scale_factor = itr->value.GetDouble();
+      }
+      if(string(itr->name.GetString()) == "bands")
       {
         assert(itr->value.IsArray());
         for (rapidjson::SizeType i = 0; i < itr->value.Size(); i++)
-          pParameters->attributes.push_back(string(itr->value[i].GetString()));
+          pParameters->bands.push_back(string(itr->value[i].GetString()));
       }
       if(string(itr->name.GetString()) == "roi")
       {
@@ -130,18 +181,22 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
 
           const rapidjson::Value &array = i->value;
 
+          // TODO: You must treat the dates to extract the indices
           int data = array.Size();
-          assert(array[0].IsDouble());
-          pParameters->roi.push_back(array[0].GetDouble());
+          assert((array[0]).IsInt());
+          pParameters->roi.push_back((array[0]).GetInt());
 
-          assert(array[1].IsDouble());
-          pParameters->roi.push_back(array[1].GetDouble());
+          assert((array[1]).IsInt());
+          pParameters->roi.push_back((array[1]).GetInt());
 
-          assert(array[2].IsDouble());
-          pParameters->roi.push_back(array[2].GetDouble());
+          pParameters->roi.push_back(0);
 
-          assert(array[3].IsDouble());
-          pParameters->roi.push_back(array[3].GetDouble());
+          assert((array[2]).IsInt());
+          pParameters->roi.push_back((array[2]).GetInt());
+
+          assert((array[3]).IsInt());
+          pParameters->roi.push_back((array[3]).GetInt());
+          pParameters->roi.push_back(255);
         }
       }
       if(string(itr->name.GetString()) == "patterns")
@@ -158,8 +213,6 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
         rapidjson::Writer<rapidjson::StringBuffer>writer(buffer);
         d2.Accept(writer);
         const char *json = buffer.GetString();
-        // TODO: Read the correct directory to save file.
-//        string stOpen = eows::wtscs::dir;
         dir.append(UUID);
         dir.append("_patterns.json");
         stream.open(dir);
@@ -169,21 +222,9 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
         if(!stream)
           throw eows::parse_error("Write patterns.json failed.");
       }
-      if(string(itr->name.GetString()) == "start_date")
+      if(string(itr->name.GetString()) == "dist.method")
       {
-        pParameters->start_date = itr->value.GetString();
-      }
-      if(string(itr->name.GetString()) == "end_date")
-      {
-        pParameters->end_date = itr->value.GetString();
-      }
-      if(string(itr->name.GetString()) == "by")
-      {
-        pParameters->by = itr->value.GetString();
-      }
-      if(string(itr->name.GetString()) == "overlap")
-      {
-        pParameters->overlap = itr->value.GetDouble();
+        pParameters->dist_method = itr->value.GetString();
       }
       if(string(itr->name.GetString()) == "alpha")
       {
@@ -192,6 +233,34 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
       if(string(itr->name.GetString()) == "beta")
       {
         pParameters->beta = itr->value.GetDouble();
+      }
+      if(string(itr->name.GetString()) == "theta")
+      {
+        pParameters->theta = itr->value.GetDouble();
+      }
+      if(string(itr->name.GetString()) == "interval")
+      {
+        pParameters->interval = itr->value.GetString();
+      }
+      if(string(itr->name.GetString()) == "span")
+      {
+        pParameters->span = itr->value.GetDouble();
+      }
+      if(string(itr->name.GetString()) == "keep")
+      {
+        pParameters->keep = itr->value.GetString();
+      }
+      if(string(itr->name.GetString()) == "overlap")
+      {
+        pParameters->overlap = itr->value.GetDouble();
+      }
+      if(string(itr->name.GetString()) == "start_date")
+      {
+        pParameters->start_date = itr->value.GetString();
+      }
+      if(string(itr->name.GetString()) == "end_date")
+      {
+        pParameters->end_date = itr->value.GetString();
       }
     }
   }
