@@ -667,7 +667,7 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
     auto attr_type = attr.getType();
 
 // TODO: remover o valor constante 2 abaixo pela coluna temporal!
-    fill_time_series(values, cell_it, attr.getType(), 2, attr_name, vparameters.time_interval.first);
+    fill_time_series(values, cell_it, attr.getType(), 2, attr_name, -(vparameters.time_interval.first));
 
     writer.StartObject();
 
