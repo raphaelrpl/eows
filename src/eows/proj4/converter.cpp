@@ -67,7 +67,7 @@ inline void eows::proj4::converter::impl::set_srs(eows::proj4::spatial_reference
     src_srs = srs.get();
     t_srs_idx.insert(std::make_pair(srid, std::move(srs)));
   }
-
+  // Setting found projections
   srs = src_srs;
   target_srid = srid;
 }

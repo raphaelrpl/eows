@@ -119,7 +119,9 @@ namespace eows
     void fill_time_series(std::vector<double>& values,
                           boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                           const ::scidb::TypeId& id,
-                          const std::string& attr_name);
+                          int64_t time_idx,
+                          const std::string& attr_name,
+                          int64_t offset);
 
   }  // end namespace wtss
 }    // end namespace eows
@@ -582,11 +584,7 @@ eows::wtss::find_location(const double& longitude,
 
 // do we need to make coordinate transformation?
   if(geo_array->i_meta.srid != 4326)
-  {
-    // ok! we have both SRS handles.
-    // let's perform the coordinate transformation
     converter.convert(cell.x, cell.y);
-  }
 
 // is the queried coordinate in array projection inside the real array extent?
   if(!geo_array->i_meta.spatial_extent.intersects(cell.x, cell.y))
@@ -604,22 +602,6 @@ eows::wtss::find_location(const double& longitude,
   cell.center_y = g.y(cell.row);
   cell.center_lon = cell.center_x;
   cell.center_lat = cell.center_y;
-
-  //double dcol = (cell.x - geo_array->i_meta.spatial_extent.xmin) / geo_array->i_meta.spatial_resolution.x;
-  //double drow = (geo_array->i_meta.spatial_extent.ymax - cell.y) / geo_array->i_meta.spatial_resolution.y;
-
-  //cell.col = std::round(dcol) + geo_array->dimensions.x.min_idx;
-  //cell.row = std::round(drow) + geo_array->dimensions.y.min_idx;
-
-  //double half_res_x = geo_array->i_meta.spatial_resolution.x / 2.0;
-  //double half_res_y = geo_array->i_meta.spatial_resolution.y / 2.0;
-
-// compute the center of the pixel
-  //cell.center_x = (static_cast<double>(cell.col) * geo_array->i_meta.spatial_resolution.x) + half_res_x + geo_array->i_meta.spatial_extent.xmin;
-  //cell.center_y = geo_array->i_meta.spatial_extent.ymax - (static_cast<double>(cell.row) * geo_array->i_meta.spatial_resolution.y) - half_res_y;
-
-  //cell.center_lon = cell.center_x;
-  //cell.center_lat = cell.center_y;
 
 // do we need to make the inverse coordinate transformation?
   if(geo_array->i_meta.srid != 4326)
@@ -685,7 +667,7 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
     auto attr_type = attr.getType();
 
 // TODO: remover o valor constante 2 abaixo pela coluna temporal!
-    fill_time_series(values, cell_it, attr.getType(), attr_name);
+    fill_time_series(values, cell_it, attr.getType(), 2, attr_name, vparameters.time_interval.first);
 
     writer.StartObject();
 
@@ -705,25 +687,30 @@ void
 eows::wtss::fill_time_series(std::vector<double>& values,
                              boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                              const ::scidb::TypeId& id,
-                             const std::string& attr_name)
+                             int64_t time_idx,
+                             const std::string& attr_name,
+                             int64_t offset)
 {
   assert(cell_it);
 
   // TODO: Should pass a functor to read data to avoid conditional checks for type?
   while(!cell_it->end())
   {
+    const ::scidb::Coordinates& coords = cell_it->get_position();
+    const ::scidb::Coordinate cell_idx = coords[time_idx] + offset;
+
     if (id == ::scidb::TID_INT8)
-      values.push_back(cell_it->get_int8(attr_name));
+      values[cell_idx] = cell_it->get_int8(attr_name);
     else if(id == ::scidb::TID_UINT8)
-      values.push_back(cell_it->get_uint8(attr_name));
+      values[cell_idx] = cell_it->get_uint8(attr_name);
     else if(id == ::scidb::TID_INT16)
-      values.push_back(cell_it->get_int16(attr_name));
+      values[cell_idx] = cell_it->get_int16(attr_name);
     else if(id == ::scidb::TID_UINT16)
-      values.push_back(cell_it->get_uint16(attr_name));
+      values[cell_idx] = cell_it->get_uint16(attr_name);
     else if(id == ::scidb::TID_INT32)
-      values.push_back(cell_it->get_int32(attr_name));
+      values[cell_idx] = cell_it->get_int32(attr_name);
     else if(id == ::scidb::TID_INT32)
-      values.push_back(cell_it->get_int32(attr_name));
+      values[cell_idx] = cell_it->get_int32(attr_name);
     else
       throw std::runtime_error("Could not fill values vector with iterator items: data type not supported.");
 
