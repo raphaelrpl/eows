@@ -37,7 +37,6 @@ namespace eows
       \exception std::exception ...
      */
     void initialize();
-
   }  // end namespace scidb
 }    // end namespace eows
 

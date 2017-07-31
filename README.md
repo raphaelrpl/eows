@@ -5,11 +5,12 @@
 The following services are under development:
 - **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtss.md).
 
-- **Web Time Series Service (WTSCS):** a web service for the classification of time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
+- **Web Time Series Processing Service (WTSPS):** a web service that performs time series processing, including remote sensing imagery classification. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
 
-- **Spatio-Temporal Web Map Service (WMS):** a web map service for visualizing remote sensing imagery data as dynamic maps (space + time) stored as 3D arrays in SciDB. (**under development for version 0.6.0**)
+- **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.6.0**)
 
-- **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.7.0**)
+- **Spatio-Temporal Web Map Service (WMS):** a web map service for visualizing remote sensing imagery data as dynamic maps (space + time) stored as 3D arrays in SciDB. (**under development for version 0.7.0**)
+
 
 Subscribe to the mailing list: https://groups.google.com/d/forum/eows.
 
@@ -28,6 +29,7 @@ $ git clone http://github.com/eows/eows ~/eows/codebase
 EOWS is built on top of the following libraries:
 - [SciDB C++ API](http://www.paradigm4.com/): the SciDB development libraries and header files must be installed. For instance, in SciDB 15.12 the ```libscidbclient.so``` can be found at ```/opt/scidb/15.12/lib``` and the header files are located at ```/opt/scidb/15.12/include```.
 - [Boost Libraries](http://www.boost.org): we recommend to use the same version used and installed by SciDB (1.54.0). In general, it is installed under a folder such as ```/opt/scidb/15.12/3rdparty/boost```.
+- [GDAL](http://www.gdal.org): Geospatial Data Abstraction Library. Version 2.13 or above is required.
 - [Proj.4](http://proj4.org): Cartographic projection library. Version 4.8.0 or above is required.
 - [RapidJSON](https://github.com/miloyip/rapidjson): a fast JSON parser for C++. Version 1.1.0 is required.
 - [Crow](https://github.com/ipkn/crow): a micro web framework in C++. Version. 
@@ -57,13 +59,13 @@ cmake version 3.7.2
 
 **2.** We are goin to install the third-party libraries into the folder ```~/eows/3rdparty```
 
-**3.** Download the third-party libraries package we have prepared [eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz](http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz) to the following folder:
+**3.** Download the third-party libraries package we have prepared [eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz](http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz) to the following folder:
 ```bash
 $ mkdir -p ~/eows/3rdparty-src
 
 $ cd ~/eows/3rdparty-src
 
-$ wget http://www.dpi.inpe.br/eows/3rdparty/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz
+$ wget http://www.dpi.inpe.br/eows/3rdparty/eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz
 ```
 
 **4.** Install the third-party libraries with the help of a bash script ```install-3rdparty-linux-ubuntu-14.04.sh``` under the ```bash``` folder, in the source code directory:

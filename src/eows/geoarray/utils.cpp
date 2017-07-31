@@ -27,8 +27,8 @@
 
 // EOWS
 #include "utils.hpp"
+#include "defines.hpp"
 #include "../core/app_settings.hpp"
-#include "../core/defines.hpp"
 #include "../core/logger.hpp"
 #include "../core/utils.hpp"
 #include "exception.hpp"
@@ -43,37 +43,15 @@ eows::geoarray::read_geo_array(const rapidjson::Value& jgeo_array)
 {
   geoarray_t geo_array;
 
-  rapidjson::Value::ConstMemberIterator jit = jgeo_array.FindMember("name");
-
-  if((jit == jgeo_array.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  geo_array.name = jit->value.GetString();
+  geo_array.name = eows::core::read_node_as_string(jgeo_array, "name");
 
   EOWS_LOG_INFO("Preparing metadata about GeoArray: '" + geo_array.name + "'...");
 
-  jit = jgeo_array.FindMember("cluster_id");
+  geo_array.cluster_id = eows::core::read_node_as_string(jgeo_array, "cluster_id");
+  geo_array.description = eows::core::read_node_as_string(jgeo_array, "description");
+  geo_array.detail = eows::core::read_node_as_string(jgeo_array, "detail");
 
-  if((jit == jgeo_array.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  geo_array.cluster_id = jit->value.GetString();
-
-  jit = jgeo_array.FindMember("description");
-
-  if((jit == jgeo_array.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  geo_array.description = jit->value.GetString();
-
-  jit = jgeo_array.FindMember("detail");
-
-  if((jit == jgeo_array.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  geo_array.detail = jit->value.GetString();
-
-  jit = jgeo_array.FindMember("dimensions");
+  rapidjson::Value::ConstMemberIterator jit = jgeo_array.FindMember("dimensions");
 
   if(jit == jgeo_array.MemberEnd())
     throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
@@ -152,48 +130,20 @@ eows::geoarray::read_attribute(const rapidjson::Value& jattribute)
     throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
   
   attribute_t attr;
-  
-  rapidjson::Value::ConstMemberIterator jit = jattribute.FindMember("name");
 
-  if((jit == jattribute.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
+  attr.name = eows::core::read_node_as_string(jattribute, "name");
+  attr.description = eows::core::read_node_as_string(jattribute, "description");
+  attr.datatype = datatype_t::from_string(eows::core::read_node_as_string(jattribute, "datatype"));
   
-  attr.name = jit->value.GetString();
-  
-  jit = jattribute.FindMember("description");
-
-  if((jit == jattribute.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  attr.description = jit->value.GetString();
-  
-  jit = jattribute.FindMember("datatype");
-
-  if((jit == jattribute.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  attr.datatype = datatype_t::from_string(jit->value.GetString());
-  
-  jit = jattribute.FindMember("valid_range");
+  rapidjson::Value::ConstMemberIterator jit = jattribute.FindMember("valid_range");
 
   if(jit == jattribute.MemberEnd())
     throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
   
   attr.valid_range = read_valid_range(jit->value);
-  
-  jit = jattribute.FindMember("scale_factor");
 
-  if((jit == jattribute.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  attr.scale_factor = jit->value.GetDouble();
-  
-  jit = jattribute.FindMember("missing_value");
-
-  if((jit == jattribute.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  attr.missing_value = jit->value.GetDouble();
+  attr.scale_factor = eows::core::read_node_as_double(jattribute, "scale_factor");
+  attr.missing_value = eows::core::read_node_as_double(jattribute, "missing_value");;
   
   return attr;
 }
@@ -237,28 +187,12 @@ eows::geoarray::read_dimension(const rapidjson::Value& jdimension)
     throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
   
   dimension_t dim;
-  
-  rapidjson::Value::ConstMemberIterator jit = jdimension.FindMember("name");
 
-  if((jit == jdimension.MemberEnd()) || (!jit->value.IsString()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  dim.name = jit->value.GetString();
-  
-  jit = jdimension.FindMember("min_idx");
+  dim.name = eows::core::read_node_as_string(jdimension, "name");
+  dim.alias = eows::core::read_node_as_string(jdimension, "alias");
+  dim.min_idx = eows::core::read_node_as_int64(jdimension, "min_idx");
+  dim.max_idx = eows::core::read_node_as_int64(jdimension, "max_idx");
 
-  if((jit == jdimension.MemberEnd()) || (!jit->value.IsInt64()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  dim.min_idx = jit->value.GetInt64();
-  
-  jit = jdimension.FindMember("max_idx");
-
-  if((jit == jdimension.MemberEnd()) || (!jit->value.IsInt64()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  dim.max_idx = jit->value.GetInt64();
-  
   return dim;
 }
 
@@ -270,33 +204,10 @@ eows::geoarray::read_spatial_extent(const rapidjson::Value& jspatial_extent)
 
   spatial_extent_t ext;
 
-  rapidjson::Value::ConstMemberIterator jit = jspatial_extent.FindMember("xmin");
-
-  if((jit == jspatial_extent.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  ext.xmin = jit->value.GetDouble();
-
-  jit = jspatial_extent.FindMember("ymin");
-
-  if((jit == jspatial_extent.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  ext.ymin = jit->value.GetDouble();
-
-  jit = jspatial_extent.FindMember("xmax");
-
-  if((jit == jspatial_extent.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  ext.xmax = jit->value.GetDouble();
-
-  jit = jspatial_extent.FindMember("ymax");
-
-  if((jit == jspatial_extent.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  ext.ymax = jit->value.GetDouble();
+  ext.xmin = eows::core::read_node_as_double(jspatial_extent, "xmin");
+  ext.ymin = eows::core::read_node_as_double(jspatial_extent, "ymin");
+  ext.xmax = eows::core::read_node_as_double(jspatial_extent, "xmax");
+  ext.ymax = eows::core::read_node_as_double(jspatial_extent, "ymax");
 
   return ext;
 }
@@ -306,23 +217,12 @@ eows::geoarray::read_valid_range(const rapidjson::Value& jvalid_range)
 {
   if(!jvalid_range.IsObject())
     throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  rapidjson::Value::ConstMemberIterator jit = jvalid_range.FindMember("min");
 
-  if((jit == jvalid_range.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
   numeric_range_t nr;
   
-  nr.min_val = jit->value.GetDouble();
-  
-  jit = jvalid_range.FindMember("max");
+  nr.min_val = eows::core::read_node_as_double(jvalid_range, "min");
+  nr.max_val = eows::core::read_node_as_double(jvalid_range, "max");
 
-  if((jit == jvalid_range.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-  
-  nr.max_val = jit->value.GetDouble();
-  
   return nr;
 }
 
@@ -335,14 +235,7 @@ eows::geoarray::read_timeline(const rapidjson::Value& jtimeline, const dimension
   std::vector<std::string> timeline;
   
   for(rapidjson::SizeType i = 0; i < jtimeline.Size(); ++i)
-  {
-    if(!jtimeline[i].IsString())
-      throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-    
-    std::string tp = jtimeline[i].GetString();
-    
-    timeline.push_back(tp);
-  }
+    timeline.push_back(eows::core::read_node_as_string(jtimeline[i]));
   
   return timeline_t(timeline, t);
 }
@@ -355,19 +248,8 @@ eows::geoarray::read_resolution(const rapidjson::Value& jresolution)
 
   spatial_resolution_t res;
 
-  rapidjson::Value::ConstMemberIterator jit = jresolution.FindMember("x");
-
-  if((jit == jresolution.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  res.x = jit->value.GetDouble();
-
-  jit = jresolution.FindMember("y");
-
-  if((jit == jresolution.MemberEnd()) || (!jit->value.IsNumber()))
-    throw eows::parse_error("File '" EOWS_GEOARRAYS_FILE "' is not valid.");
-
-  res.y = jit->value.GetDouble();
+  res.x = eows::core::read_node_as_double(jresolution, "x");
+  res.y = eows::core::read_node_as_double(jresolution, "y");
 
   return res;
 }
@@ -420,7 +302,7 @@ static void load_geoarrays()
   const rapidjson::Value& jarrays = doc["arrays"];
   
   if(!jarrays.IsArray())
-    throw eows::parse_error("Key 'arrays' in file '" EOWS_CONFIG_FILE "' must be a valid JSON array of objects.");
+    throw eows::parse_error("Key 'arrays' in file '" EOWS_GEOARRAYS_FILE "' must be a valid JSON array of objects.");
 
   for(rapidjson::SizeType i = 0; i < jarrays.Size(); ++i)
   {

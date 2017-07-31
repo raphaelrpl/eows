@@ -55,15 +55,10 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
 void
 eows::core::initialize()
 {
-// Find out the log file name
+// Find out the log file name and temporary data directory
   const rapidjson::Document& doc = app_settings::instance().get();
 
-  rapidjson::Value::ConstMemberIterator jlog_file = doc.FindMember("log_file");
-
-  if((jlog_file == doc.MemberEnd()) || (!jlog_file->value.IsString()))
-    throw eows::parse_error("Please check key 'log_file' in file: \"" EOWS_CONFIG_FILE "\".");
-
-  const std::string log_file_name = jlog_file->value.GetString();
+  const std::string log_file_name = read_node_as_string(doc, "log_file");
   
 // Prepare log format
   boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
@@ -84,6 +79,19 @@ eows::core::initialize()
                            boost::log::keywords::channel = channel_name,
                            boost::log::keywords::filter = (channel == channel_name)
                           );
+
+  // Default temporary directory
+  std::string temp_data_dir("/tmp/");
+
+  rapidjson::Value::ConstMemberIterator temp_data_it = doc.FindMember("tmp_data_dir");
+
+  if (temp_data_it != doc.MemberEnd() && temp_data_it->value.IsString())
+    temp_data_dir = read_node_as_string(temp_data_it->value);
+  // Setting temporary data directory
+  app_settings::instance().set_tmp_data_dir(temp_data_dir);
+
+  boost::format debug_msg("Using temporary data directory: %1%");
+  EOWS_LOG_INFO((debug_msg % app_settings::instance().get_tmp_data_dir()).str());
 
   EOWS_LOG_INFO("EOWS core runtime initialized!");
 }
@@ -112,6 +120,7 @@ eows::core::split_path_and_query_str(const std::string& str)
 
 static const char application_json_[] = "application/json",
                   application_xml_[] = "application/xml",
+                  application_gml_xml[] = "application/gml+xml",
                   image_gif_[] = "image/gif",
                   image_jpeg_[] = "image/jpeg",
                   image_png_[] = "image/png",
@@ -120,7 +129,7 @@ static const char application_json_[] = "application/json",
                   text_plain_[] = "text/plain",
                   text_xml_[] = "text/xml",
                   text_html_[] = "text/html",
-                  unknown_[] = "unknown";
+                  unknown_[] = "application/octet-stream";
 
 const char*
 eows::core::to_str(content_type_t content_type)
@@ -245,15 +254,53 @@ const std::string eows::core::read_node_as_string(const rapidjson::Value& node, 
 {
   rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
   // TODO: auto format function in common
-  if((jit == node.MemberEnd()) || (!jit->value.IsString()))
+  if((jit == node.MemberEnd()))
     throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
-  return jit->value.GetString();
+  return read_node_as_string(jit->value);
 }
 
-
-std::map<std::string, std::string> eows::core::lowerify(const std::map<std::string, std::string>& given)
+const std::string eows::core::read_node_as_string(const rapidjson::Value& node)
 {
-  std::map<std::string, std::string> out;
+  if (!node.IsString())
+    throw eows::parse_error("Could not read JSON node as string");
+  return node.GetString();
+}
+
+int64_t eows::core::read_node_as_int64(const rapidjson::Value& node, const std::string& member_name)
+{
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
+  // TODO: auto format function in common
+  if((jit == node.MemberEnd()))
+    throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
+  return read_node_as_int64(jit->value);
+}
+
+int64_t eows::core::read_node_as_int64(const rapidjson::Value& node)
+{
+  if (!node.IsInt64())
+    throw eows::parse_error("Could not read JSON node as int64_t");
+  return node.GetInt64();
+}
+
+int64_t eows::core::read_node_as_double(const rapidjson::Value& node, const std::string& member_name)
+{
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
+
+  if(jit == node.MemberEnd())
+      throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
+  return read_node_as_double(jit->value);
+}
+
+int64_t eows::core::read_node_as_double(const rapidjson::Value& node)
+{
+  if (!node.IsNumber())
+    throw eows::parse_error("Could not read JSON node as number");
+  return node.GetDouble();
+}
+
+std::multimap<std::string, std::string> eows::core::lowerify(const std::multimap<std::string, std::string>& given)
+{
+  std::multimap<std::string, std::string> out;
 
   for(auto& it: given)
   {
@@ -270,4 +317,56 @@ std::string eows::core::to_lower(const std::string& str)
   std::transform(str.begin(), str.end(), out.begin(), ::tolower);
 
   return out;
+}
+
+std::string eows::core::generate_unique_path(const std::string& extension)
+{
+  return app_settings::instance().get_tmp_data_dir() + boost::filesystem::unique_path().string() + extension;
+}
+
+eows::core::content_type_t eows::core::from_string(const std::string& content)
+{
+  if (content == application_xml_ ||
+      content == application_gml_xml)
+    return APPLICATION_XML;
+  if (content == application_json_)
+    return APPLICATION_JSON;
+  if (content == image_gif_)
+    return IMAGE_GIF;
+  if (content == image_jpeg_)
+    return IMAGE_JPEG;
+  if (content == image_png_)
+    return IMAGE_PNG;
+  if (content == image_tiff_)
+    return IMAGE_TIFF;
+  if (content == image_x_tiff_)
+    return IMAGE_X_TIFF;
+  if (content == text_html_)
+    return TEXT_HTML;
+  if (content == text_plain_)
+    return TEXT_PLAIN;
+  if (content == text_xml_)
+    return TEXT_XML;
+  return APPLICATION_OCTET_STREAM; // Default/unknown/no extension format
+}
+
+std::string eows::core::decode(const std::string& encoded_string)
+{
+  std::string output;
+
+  int tmp;
+  for(std::size_t i = 0; i < encoded_string.size(); ++i)
+  {
+    if (encoded_string[i] == '%')
+    {
+      std::string t = encoded_string.substr(i + 1, 2);
+      std::stringstream ss(t);
+      ss >> std::hex >> tmp;
+      output += tmp;
+      i = i + 2;
+    }
+    else
+      output += encoded_string[i];
+  }
+  return output;
 }

@@ -1,5 +1,5 @@
 {
-  "log_file": "../../eows/log/eows_%Y-%m-%d_%H-%M-%S.%N.log",
+  "log_file": "@EOWS_USER_HOME@/eows/log/eows_%Y-%m-%d_%H-%M-%S.%N.log",
   "http_server": "crow",
   "scidb_clusters": [
     {
@@ -19,5 +19,6 @@
     "listen_address": "127.0.0.1",
     "listening_port": 7654,
     "threads": 16
-  }
+  },
+  "tmp_data_dir": "@EOWS_USER_HOME@/eows-tmp-data/"
 }

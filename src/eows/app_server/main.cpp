@@ -53,6 +53,10 @@
 #include "../proj4/utils.hpp"
 #endif
 
+#ifdef EOWS_GDAL2_ENABLED
+#include "../gdal/utils.hpp"
+#endif
+
 #ifdef EOWS_GEOARRAY_ENABLED
 #include "../geoarray/utils.hpp"
 #endif
@@ -171,6 +175,10 @@ int main(int argc, char *argv[])
 
 #ifdef EOWS_PROJ4_ENABLED
     eows::proj4::initialize();
+#endif
+
+#ifdef EOWS_GDAL2_ENABLED
+    eows::gdal::initialize();
 #endif
 
 #ifdef EOWS_SCIDB_ENABLED

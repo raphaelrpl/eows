@@ -33,12 +33,14 @@
 #include "../core/service_operations_manager.hpp"
 
 void eows::echo::handler::do_get(const eows::core::http_request& req,
-                                      eows::core::http_response& res)
+                                 eows::core::http_response& res)
 {
   eows::core::query_string_t qstr(req.query_string());
 
-  std::string return_msg = qstr.empty() ? std::string("\"Hello from Earth Observation Web Services\"")
-                                        : qstr.at("message");
+  eows::core::query_string_t::const_iterator it = qstr.find("message");
+
+  std::string return_msg = (it != qstr.end()) ? it->second
+                                              : std::string("\"Hello from Earth Observation Web Services\"");
 
   res.set_status(eows::core::http_response::OK);
   

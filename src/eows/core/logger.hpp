@@ -18,7 +18,7 @@
  */
 
 /*!
-  \file eows/core/app_settings.hpp
+  \file eows/core/logger.hpp
 
   \brief A singleton that stores the application settings.
 

@@ -37,10 +37,10 @@ project(eows)
 # Variables for the system versioning
 #
 set(EOWS_VERSION_MAJOR 0)
-set(EOWS_VERSION_MINOR 4)
+set(EOWS_VERSION_MINOR 5)
 set(EOWS_VERSION_PATCH 0)
 set(EOWS_VERSION_STATUS "alpha1")
-set(EOWS_VERSION_NUMBER "0x000400")
+set(EOWS_VERSION_NUMBER "0x000500")
 
 if(EOWS_VERSION_STATUS)
     set(EOWS_VERSION_STRING "${EOWS_VERSION_MAJOR}.${EOWS_VERSION_MINOR}.${EOWS_VERSION_PATCH}-${EOWS_VERSION_STATUS}")
@@ -218,6 +218,15 @@ else()
     message(STATUS "EOWS: could not find GD Library. Building without it!")
 endif()
 
+find_package(GDAL QUIET)
+
+if(GDAL_FOUND)
+    message(STATUS "EOWS: GDAL2 Library found")
+    include_directories(${GDAL_INCLUDE_DIR})
+else()
+    message(STATUS "EOWS: Could not find GDAL Library. Building without it")
+endif()
+
 #
 # Build options.
 #
@@ -226,6 +235,8 @@ CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CROW_ENABLED "Build http-server ON top of Crow 
 CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CPPNETLIB_ENABLED "Build http-server OFF top of C++ Network Library?" ON "cppnetlib_FOUND" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_PROJ4_ENABLED "Build Proj.4 Support?" ON "Proj4_FOUND" OFF)
+
+CMAKE_DEPENDENT_OPTION(EOWS_GDAL2_ENABLED "Build GDAL2 Support?" ON "GDAL_FOUND" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_SCIDB_ENABLED "Build SciDB runtime support for EOWS?" ON "SciDB_FOUND" OFF)
 
@@ -241,7 +252,7 @@ CMAKE_DEPENDENT_OPTION(EOWS_OGC_OWS_ENABLED "Build OGC OWS support?" OFF "EOWS_G
 
 CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WTSS_ENABLED "Build WTSS service?" ON "EOWS_GEOARRAY_ENABLED" OFF)
 
-CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WCS_ENABLED "Build OGC WCS service?" OFF "RAPIDXML_FOUND;EOWS_OGC_OWS_ENABLED" OFF)
+CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WCS_ENABLED "Build OGC WCS service?" OFF "RAPIDXML_FOUND;EOWS_OGC_OWS_ENABLED;EOWS_GDAL2_ENABLED" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WMS_ENABLED "Build OGC WMS service?" OFF "LibGD_FOUND;EOWS_OGC_OWS_ENABLED" OFF)
 
@@ -260,6 +271,13 @@ if(WIN32 AND NOT CYGWIN)
 else()
   set(EOWS_INSTALL_CMAKE_DIR lib/cmake/eows-${EOWS_VERSION_STRING})
 endif()
+
+# Detecting User home directory to create EOWS log execution
+IF(UNIX)
+  set(EOWS_USER_HOME "$ENV{HOME}")
+ELSE()
+  set(EOWS_USER_HOME "$ENV{USERPROFILE}")
+ENDIF()
 
 #
 # Make relative paths absolute: needed to redistribute CMake files
@@ -283,6 +301,9 @@ configure_file(${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/build_config.hpp.in
 
 configure_file(${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/version.hpp.in
                ${PROJECT_BINARY_DIR}/eows_version.hpp @ONLY)
+
+configure_file(${EOWS_ABSOLUTE_ROOT_DIR}/share/eows/config/eows.json.in
+               ${EOWS_ABSOLUTE_ROOT_DIR}/share/eows/config/eows.json @ONLY)
 
 install(FILES ${PROJECT_BINARY_DIR}/build_config.hpp
               ${PROJECT_BINARY_DIR}/eows_version.hpp
@@ -314,6 +335,11 @@ endif()
 if(EOWS_PROJ4_ENABLED)
   add_definitions(-DEOWS_PROJ4_ENABLED)
   add_subdirectory(proj4)
+endif()
+
+if(EOWS_GDAL2_ENABLED)
+  add_definitions(-DEOWS_GDAL2_ENABLED)
+  add_subdirectory(gdal2)
 endif()
 
 if(EOWS_SCIDB_ENABLED)

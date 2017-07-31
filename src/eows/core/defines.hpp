@@ -30,14 +30,4 @@
 
 #define  EOWS_CONFIG_FILE "share/eows/config/eows.json"
 
-#define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
-
-#define  EOWS_SRS_FILE "share/eows/config/srs.json"
-
-#define  EOWS_OWS_FILE "share/eows/config/ows.json"
-
-#define  EOWS_WMS_FILE "share/eows/config/wms.json"
-
-#define  EOWS_WCS_FILE "share/eows/config/wcs.json"
-
-#endif // __EOWS_CORE_LOGGER_HPP__
+#endif // __EOWS_CORE_DEFINES_HPP__

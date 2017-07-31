@@ -35,7 +35,7 @@
       }
     ],
     "ServiceMetadata": {
-      "formatSupported": ["application/gml+xml"]
+      "formatSupported": ["application/gml+xml", "image/tiff"]
     }
   }
 }
