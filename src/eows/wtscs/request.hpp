@@ -55,10 +55,10 @@ namespace eows
       vector<int> roi;
       string dist_method;
       double alpha;
-      double beta;
+      int beta;
       double theta;
       string interval;
-      double span;
+      int span;
       string keep;
       double overlap;
       string start_date;
@@ -88,6 +88,9 @@ namespace eows
       void check_parameters();
       void write_setting();
       string write_afl(eows::wtscs::twdtw_input_parameters*);
+      string get_scidb_schema(string);
+      string get_timeline(string);
+      string get_UUID();
 
     };
 

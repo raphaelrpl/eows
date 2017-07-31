@@ -43,27 +43,38 @@
 
 using namespace std;
 
+string eows::wtscs::request::get_UUID()
+{
+  return UUID;
+}
+
 string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data)
 {
   //TODO: write afl
-  string afl = "time iquery -aq \"set no fetch; store(redimension(apply(stream(cast(apply(project(between(";
+  string afl = "time iquery -aq \"set no fetch; store(redimension(apply(stream(cast(apply(project(";
 
+  ////// apply operator
+  //////// project operator
+  ////////// between operator
+  afl.append("between(");
   afl.append(data->coverage);
   for(vector<int>::iterator it = data->roi.begin() ; it != data->roi.end(); ++it)
   {
     afl.append(", ");
     afl.append(to_string(*it));
   }
-
   afl.append(")");
+  ////////// end between operator
 
   for(vector<string>::iterator it = data->bands.begin() ; it != data->bands.end(); ++it)
   {
     afl.append(", ");
     afl.append(*it);
   }
+  afl.append(")");
+  //////// end project operator
 
-  afl.append("), colid, double(col_id), rowid, double(row_id), timeid, double(time_id)),<");
+  afl.append(", colid, double(col_id), rowid, double(row_id), timeid, double(time_id)),<");
 
   for(vector<string>::iterator it = data->bands.begin() ; it != data->bands.end(); ++it)
   {
@@ -71,17 +82,82 @@ string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data
     afl.append(":int32, ");
   }
 
-
-  afl.append("), i32col_id, int32(col_id), i32row_id, int32(row_id), i32time_id, int32(time_id)), i32col_id, i32row_id, i32time_id");
-
-  afl.append("), \'Rscript /net/esensing-001/disks/d9/scidb15_12/scripts/test_twdtw/");
+  afl.append("colid:double, rowid:double, timeid:double>");
+  string attributes = get_scidb_schema(data->coverage);
+  afl.append(attributes);
+  afl.append("), \'Rscript /net/esensing-001/disks/d9/scidb15_12/scripts/test_twdtw/sits_scidb_streaming.R ");
+  afl.append("patterns_json=/net/esensing-001/disks/d9/scidb15_12/scripts/test_twdtw/");
   afl.append(UUID);
-  afl.append("_patterns.json");
+  afl.append("_patterns.json ");
+  afl.append("scale_factor=");
+  afl.append(to_string(data->scale_factor));
+  afl.append(" dist_method=");
+  afl.append(data->dist_method);
+  afl.append(" bands=");
+  vector<string>::iterator it = data->bands.begin();
+  afl.append(*it);
+  ++it;
+  for(; it != data->bands.end(); ++it)
+  {
+    afl.append(",");
+    afl.append(*it);
+  }
+  afl.append(" alpha=");
+  afl.append(to_string(data->alpha));
+  afl.append(" beta=");
+  afl.append(to_string(data->beta));
+  afl.append(" theta=");
+  afl.append(to_string(data->theta));
+  afl.append(" interval=");
+  // Find and replace content in string
+  data->interval.replace(data->interval.find(" "), 1, ",");
+  afl.append(data->interval);
+  afl.append(" span=");
+  afl.append(to_string(data->span));
+  afl.append(" keep=");
+  afl.append(data->keep);
+  afl.append(" overlap=");
+  afl.append(to_string(data->overlap));
+  afl.append(" start_date=");
+  afl.append(data->start_date);
+  afl.append(" end_date=");
+  afl.append(data->end_date);
+  afl.append(" dates=");
+  string dates = get_timeline(data->coverage);
+  afl.append(dates);
+  afl.append("', \'format=df\', \'types=double,double,double,int32,int32,int32,double\',");
+  afl.append("\'names=colid,rowid,timeid,from,to,label,distance\'), ");
+  afl.append("col_id, int64(colid), row_id, int64(rowid), time_id, int64(timeid)), <from:int32, to:int32, label:int32, distance:double>");
+  afl.append("[col_id = 3500:3500, 40,  0, row_id = 3500:3500, 40, 0, time_id = 1:*, 16, 0]), ");
+  afl.append(UUID);
+  afl.append(")\"");
 
-  afl.append(" scale_factor bands alfa beta theta overlap\', \'format=df\',");
-  cout << afl;
-  cout << endl;
+  return afl;
+}
 
+string eows::wtscs::request::get_timeline(string coverage)
+{
+  //TODO: Get timeline from geo_arrays.json file
+
+  string timeline;
+  timeline.append("2013-04-27,2013-05-13,2013-05-29,2013-06-14,2013-06-30,2013-07-16,2013-08-01,2013-08-17,2013-09-02,2013-09-18,2013-10-04,");
+  timeline.append("2013-10-20,2013-11-05,2013-11-21,2013-12-07,2013-12-23,2014-01-08,2014-01-24,2014-02-09,2014-02-25,2014-03-13,2014-03-29,");
+  timeline.append("2014-04-14,2014-04-30,2014-05-16,2014-06-01,2014-06-17,2014-07-03,2014-07-19,2014-08-04,2014-08-20,2014-09-05,2014-09-21,");
+  timeline.append("2014-10-07,2014-10-23,2014-11-08,2014-11-24,2014-12-10,2014-12-26,2015-01-11,2015-01-27,2015-02-12,2015-02-28,2015-03-16,");
+  timeline.append("2015-04-01,2015-04-17,2015-05-03,2015-05-19,2015-06-04,2015-06-20,2015-07-06,2015-07-22,2015-08-07,2015-08-23,2015-09-08,");
+  timeline.append("2015-09-24,2015-10-10,2015-10-26,2015-11-11,2015-11-27,2015-12-13,2015-12-29,2016-01-14,2016-01-30,2016-02-15,2016-03-02,");
+  timeline.append("2016-03-18,2016-04-03,2016-04-19,2016-05-05,2016-05-21,2016-06-06,2016-06-22,2016-07-08,2016-07-24,2016-08-09,2016-08-25,");
+  timeline.append("2016-09-10,2016-09-26,2016-10-12,2016-10-28,2016-11-13,2016-11-29,2016-12-15,2016-12-31,2017-01-16,2017-02-01,2017-02-17,");
+  timeline.append("2017-03-05,2017-03-21,2017-04-06,2017-04-22,2017-05-08");
+  return timeline;
+}
+
+string eows::wtscs::request::get_scidb_schema(string coverage)
+{
+  //TODO: Get scidb schema. Ex. iquery -aq "show(mod13q1)"
+  string attributes = "[col_id = 0:7299, 100, 0, row_id = 0:7299, 100, 0, time_id = 0:92, 93, 0]";
+
+  return attributes;
 }
 
 eows::wtscs::request::request()
@@ -196,7 +272,7 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
 
           assert((array[3]).IsInt());
           pParameters->roi.push_back((array[3]).GetInt());
-          pParameters->roi.push_back(255);
+          pParameters->roi.push_back(92);
         }
       }
       if(string(itr->name.GetString()) == "patterns")
@@ -232,7 +308,7 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
       }
       if(string(itr->name.GetString()) == "beta")
       {
-        pParameters->beta = itr->value.GetDouble();
+        pParameters->beta = itr->value.GetInt();
       }
       if(string(itr->name.GetString()) == "theta")
       {
@@ -244,7 +320,7 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
       }
       if(string(itr->name.GetString()) == "span")
       {
-        pParameters->span = itr->value.GetDouble();
+        pParameters->span = itr->value.GetInt();
       }
       if(string(itr->name.GetString()) == "keep")
       {
