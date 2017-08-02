@@ -116,7 +116,7 @@ namespace eows
 
       \exception eows::outof_bounds_error If the number of values found is less than or greater than the number o expected time-series values.
     */
-    void fill_time_series(std::vector<double>& values,
+    void fill_time_series(std::vector<double>& values, const std::size_t nvalues,
                           boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                           const ::scidb::TypeId& id,
                           int64_t time_idx,
@@ -582,7 +582,7 @@ eows::wtss::find_location(const double& longitude,
   converter.set_source_srid(4326);
   converter.set_target_srid(geo_array->i_meta.srid);
 
-// do we need to make coordinate transformation?
+// do we need to make coordinate 'transformation'?
   if(geo_array->i_meta.srid != 4326)
     converter.convert(cell.x, cell.y);
 
@@ -667,7 +667,7 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
     auto attr_type = attr.getType();
 
 // TODO: remover o valor constante 2 abaixo pela coluna temporal!
-    fill_time_series(values, cell_it, attr.getType(), 2, attr_name, -(vparameters.time_interval.first));
+    fill_time_series(values, ntime_pts, std::move(cell_it), attr.getType(), 2, attr_name, -(vparameters.time_interval.first));
 
     writer.StartObject();
 
@@ -685,6 +685,7 @@ eows::wtss::compute_time_series(const timeseries_request_parameters& parameters,
 
 void
 eows::wtss::fill_time_series(std::vector<double>& values,
+                             const std::size_t nvalues,
                              boost::shared_ptr<eows::scidb::cell_iterator> cell_it,
                              const ::scidb::TypeId& id,
                              int64_t time_idx,
@@ -693,9 +694,12 @@ eows::wtss::fill_time_series(std::vector<double>& values,
 {
   assert(cell_it);
 
+  std::size_t npts = 0;
+
   // TODO: Should pass a functor to read data to avoid conditional checks for type?
   while(!cell_it->end())
   {
+    ++npts;
     const ::scidb::Coordinates& coords = cell_it->get_position();
     const ::scidb::Coordinate cell_idx = coords[time_idx] + offset;
 
@@ -716,4 +720,7 @@ eows::wtss::fill_time_series(std::vector<double>& values,
 
     cell_it->next();
   }
+
+  if(npts != nvalues) \
+    throw std::out_of_range("Invalid timeseries range: missing some values.");
 }
