@@ -8,7 +8,9 @@ add_library(eows_wcs SHARED ${EOWS_HDR_FILES} ${EOWS_SRC_FILES})
 
 target_link_libraries(eows_wcs    eows_core
                                   eows_geoarray
+                                  eows_proj4
                                   eows_scidb
+                                  eows_gdal2
                                   ${Boost_SYSTEM_LIBRARY}
                                   ${Boost_DATE_TIME_LIBRARY}
                                   ${Boost_CHRONO_LIBRARY}

@@ -4,6 +4,9 @@
 // EOWS ogc ows
 #include "../../ows/data_types.hpp"
 
+// EOWS GeoArray
+#include "../../../geoarray/data_types.hpp"
+
 // STL
 #include <string>
 #include <vector>
@@ -65,6 +68,24 @@ namespace eows
           operation_metadata_t operation_metadata;
           service_metadata_t service_metadata;
           content_t content;
+        };
+
+        /*!
+         * \brief Represents a WCS subset given by client
+         */
+        struct subset_t
+        {
+          static const std::string no_value; //!< Const flag to determine no value in specific axis
+          std::string name; //!< Axis name
+          std::string srid; //!< Projection SRID (TODO: Implement it)
+          std::string  min; //!< Axis minimum value
+          std::string  max; //!< Axis maximum value
+        };
+
+        struct range_subset_t
+        {
+          std::string raw;
+          std::vector<std::string> attributes;
         };
       }
     }

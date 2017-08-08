@@ -51,6 +51,10 @@ namespace eows
 
             ~get_coverage();
 
+            /*!
+             * \brief It performs a GetCoverage operations, retrieving data from SciDB and modelling from output format.
+             * \throws eows::ogc::ogc_error -
+             */
             void execute() override;
             const char* content_type() const override;
             const std::string& to_string() const override;

@@ -31,6 +31,9 @@
 // EOWS
 #include "../../geoarray/data_types.hpp"
 
+// EOWS OWS (contact)
+#include "../ows/data_types.hpp"
+
 // STL
 #include <memory>
 #include <string>
@@ -49,39 +52,13 @@ namespace eows
         std::string href;
       };
 
-      struct contact_person_primary_t
-      {
-        std::string contact_person;
-        std::string contact_organization;
-      };
-
-      struct contact_address_t
-      {
-        std::string address_type;
-        std::string address;
-        std::string city;
-        std::string state_or_province;
-        std::string post_code;
-        std::string country;
-      };
-
-      struct contact_information_t
-      {
-        contact_person_primary_t contact_person_primary;
-        std::string contact_position;
-        contact_address_t contact_address;
-        std::string contact_voice_telephone;
-        std::string contact_facsimile_telephone;
-        std::string contact_electronic_mail_address;
-      };
-
       struct service_t
       {
         std::string title;
         std::string abstract;
         std::vector<std::string> keyword_list;
         online_resource_t online_resource;
-        contact_information_t contact_information;
+        ows::provider_t provider;
         uint32_t layer_limit;
         uint32_t max_width;
         uint32_t max_height;

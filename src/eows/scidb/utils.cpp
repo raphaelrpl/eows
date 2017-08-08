@@ -126,4 +126,3 @@ void eows::scidb::initialize()
   
   EOWS_LOG_INFO("SciDB runtime module initialized!");
 }
-

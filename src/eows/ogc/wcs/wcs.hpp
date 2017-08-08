@@ -39,9 +39,9 @@ namespace eows
     {
       //! Return a 'Hello from Earth Observation Web Services' or the message sent by the client.
       /*!
-        http://localhost:7654/echo
+        http://localhost:7654/wcs
 
-        http://localhost:7654/echo?message="something to test"
+        http://localhost:7654/wcs?version=2.0.1&service=WCS&request=GetCapabilities
        */
       class handler : public eows::core::web_service_handler
       {

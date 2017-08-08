@@ -1,3 +1,6 @@
+# EOWS temp
+share/eows/config/eows.json
+
 # Compiled Object files
 *.slo
 *.lo
@@ -42,3 +45,6 @@
 
 # Chronos specific files
 *.chronos
+
+# Git
+*.orig

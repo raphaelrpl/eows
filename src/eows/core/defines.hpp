@@ -46,4 +46,5 @@
 
 #define  EOWS_WTSCS_NAME "WTSCS"
 
-#endif // __EOWS_CORE_LOGGER_HPP__
+#endif // __EOWS_CORE_DEFINES_HPP__
+

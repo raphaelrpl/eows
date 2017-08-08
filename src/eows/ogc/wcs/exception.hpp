@@ -23,6 +23,7 @@
   \brief Specific exception types for OGC WCS Runtime module.
 
   \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
 #ifndef __EOWS_OGC_WCS_EXCEPTION_HPP__
@@ -38,10 +39,45 @@ namespace eows
   {
     namespace wcs
     {
-      struct no_such_coverage_error : public virtual ogc_error
+      struct wcs_error : public ogc_error
+      {
+        wcs_error(const std::string& s, const std::string& l)
+          : ogc_error(s, l)
+        {
+        }
+
+        virtual ~wcs_error() = default;
+      };
+
+      /*!
+       * \brief Represents an error for coverage(s) not found
+       */
+      struct no_such_coverage_error : public virtual wcs_error
       {
         no_such_coverage_error(const std::string& s)
-          : ogc_error(s, "NoSuchCoverage")
+          : wcs_error(s, "NoSuchCoverage")
+        {
+        }
+      };
+
+      /*!
+       * \brief Represents a Axis error. Used while client requesting an invalid axis name or value on subset model
+       */
+      struct invalid_axis_error : public virtual wcs_error
+      {
+        invalid_axis_error(const std::string& s)
+          : wcs_error(s, "InvalidAxisLabel")
+        {
+        }
+      };
+
+      /*!
+       * \brief Represents an invalid field while client requesting rangesubset values.
+       */
+      struct no_such_field_error : public virtual wcs_error
+      {
+        no_such_field_error(const std::string& s)
+          : wcs_error(s, "NoSuchField")
         {
         }
       };
