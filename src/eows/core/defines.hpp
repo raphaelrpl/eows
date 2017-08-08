@@ -40,4 +40,10 @@
 
 #define  EOWS_WCS_FILE "share/eows/config/wcs.json"
 
+#define  EOWS_WTSCS_DIR "/home/scidb/shared/scidb15_12/scripts/test_twdtw/"
+
+#define  EOWS_WTSCS_RSCRIPT "sits_scidb_streaming_example_v3.R"
+
+#define  EOWS_WTSCS_NAME "WTSCS"
+
 #endif // __EOWS_CORE_LOGGER_HPP__

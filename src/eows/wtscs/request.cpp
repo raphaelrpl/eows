@@ -24,6 +24,7 @@
 #include "../core/logger.hpp"
 #include "../core/service_operations_manager.hpp"
 #include "../core/utils.hpp"
+#include "../core/defines.hpp"
 #include "../geoarray/data_types.hpp"
 #include "../geoarray/geoarray_manager.hpp"
 
@@ -85,8 +86,13 @@ string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data
   afl.append("colid:double, rowid:double, timeid:double>");
   string attributes = get_scidb_schema(data->coverage);
   afl.append(attributes);
-  afl.append("), \'Rscript /net/esensing-001/disks/d9/scidb15_12/scripts/test_twdtw/sits_scidb_streaming.R ");
-  afl.append("patterns_json=/net/esensing-001/disks/d9/scidb15_12/scripts/test_twdtw/");
+  string const_dir = EOWS_WTSCS_DIR;
+  string const_script =  EOWS_WTSCS_RSCRIPT;
+  afl.append("), \'Rscript ");
+  afl.append(const_dir);
+  afl.append(const_script);
+  afl.append(" patterns_json=");
+  afl.append(const_dir);
   afl.append(UUID);
   afl.append("_patterns.json ");
   afl.append("scale_factor=");
@@ -128,7 +134,8 @@ string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data
   afl.append("', \'format=df\', \'types=double,double,double,int32,int32,int32,double\',");
   afl.append("\'names=colid,rowid,timeid,from,to,label,distance\'), ");
   afl.append("col_id, int64(colid), row_id, int64(rowid), time_id, int64(timeid)), <from:int32, to:int32, label:int32, distance:double>");
-  afl.append("[col_id = 3500:3500, 40,  0, row_id = 3500:3500, 40, 0, time_id = 1:*, 16, 0]), ");
+  afl.append(attributes);
+  afl.append("), ");
   afl.append(UUID);
   afl.append(")\"");
 
@@ -140,22 +147,48 @@ string eows::wtscs::request::get_timeline(string coverage)
   //TODO: Get timeline from geo_arrays.json file
 
   string timeline;
-  timeline.append("2013-04-27,2013-05-13,2013-05-29,2013-06-14,2013-06-30,2013-07-16,2013-08-01,2013-08-17,2013-09-02,2013-09-18,2013-10-04,");
-  timeline.append("2013-10-20,2013-11-05,2013-11-21,2013-12-07,2013-12-23,2014-01-08,2014-01-24,2014-02-09,2014-02-25,2014-03-13,2014-03-29,");
-  timeline.append("2014-04-14,2014-04-30,2014-05-16,2014-06-01,2014-06-17,2014-07-03,2014-07-19,2014-08-04,2014-08-20,2014-09-05,2014-09-21,");
-  timeline.append("2014-10-07,2014-10-23,2014-11-08,2014-11-24,2014-12-10,2014-12-26,2015-01-11,2015-01-27,2015-02-12,2015-02-28,2015-03-16,");
-  timeline.append("2015-04-01,2015-04-17,2015-05-03,2015-05-19,2015-06-04,2015-06-20,2015-07-06,2015-07-22,2015-08-07,2015-08-23,2015-09-08,");
-  timeline.append("2015-09-24,2015-10-10,2015-10-26,2015-11-11,2015-11-27,2015-12-13,2015-12-29,2016-01-14,2016-01-30,2016-02-15,2016-03-02,");
-  timeline.append("2016-03-18,2016-04-03,2016-04-19,2016-05-05,2016-05-21,2016-06-06,2016-06-22,2016-07-08,2016-07-24,2016-08-09,2016-08-25,");
-  timeline.append("2016-09-10,2016-09-26,2016-10-12,2016-10-28,2016-11-13,2016-11-29,2016-12-15,2016-12-31,2017-01-16,2017-02-01,2017-02-17,");
-  timeline.append("2017-03-05,2017-03-21,2017-04-06,2017-04-22,2017-05-08");
-  return timeline;
+  timeline.append("2000-02-18,2000-03-05,2000-03-21,2000-04-06,2000-04-22,2000-05-08,2000-05-24,2000-06-09,2000-06-25,2000-07-11,2000-07-27,");
+  timeline.append("2000-08-12,2000-08-28,2000-09-13,2000-09-29,2000-10-15,2000-10-31,2000-11-16,2000-12-02,2000-12-18,");
+  timeline.append("2001-01-01,2001-01-17,2001-02-02,2001-02-18,2001-03-06,2001-03-22,2001-04-07,2001-04-23,2001-05-09,2001-05-25,2001-06-10,2001-06-26,2001-07-12,2001-07-28,");
+  timeline.append("2001-08-13,2001-08-29,2001-09-14,2001-09-30,2001-10-16,2001-11-01,2001-11-17,2001-12-03,2001-12-19,");
+  timeline.append("2002-01-01,2002-01-17,2002-02-02,2002-02-18,2002-03-06,2002-03-22,2002-04-07,2002-04-23,2002-05-09,2002-05-25,2002-06-10,2002-06-26,2002-07-12,2002-07-28,");
+  timeline.append("2002-08-13,2002-08-29,2002-09-14,2002-09-30,2002-10-16,2002-11-01,2002-11-17,2002-12-03,2002-12-19,");
+  timeline.append("2003-01-01,2003-01-17,2003-02-02,2003-02-18,2003-03-06,2003-03-22,2003-04-07,2003-04-23,2003-05-09,2003-05-25,2003-06-10,2003-06-26,2003-07-12,2003-07-28,");
+  timeline.append("2003-08-13,2003-08-29,2003-09-14,2003-09-30,2003-10-16,2003-11-01,2003-11-17,2003-12-03,2003-12-19,");
+  timeline.append("2004-01-01,2004-01-17,2004-02-02,2004-02-18,2004-03-05,2004-03-21,2004-04-06,2004-04-22,2004-05-08,2004-05-24,2004-06-09,2004-06-25,2004-07-11,2004-07-27,");
+  timeline.append("2004-08-12,2004-08-28,2004-09-13,2004-09-29,2004-10-15,2004-10-31,2004-11-16,2004-12-02,2004-12-18,");
+  timeline.append("2005-01-01,2005-01-17,2005-02-02,2005-02-18,2005-03-06,2005-03-22,2005-04-07,2005-04-23,2005-05-09,2005-05-25,2005-06-10,2005-06-26,2005-07-12,2005-07-28,");
+  timeline.append("2005-08-13,2005-08-29,2005-09-14,2005-09-30,2005-10-16,2005-11-01,2005-11-17,2005-12-03,2005-12-19,");
+  timeline.append("2006-01-01,2006-01-17,2006-02-02,2006-02-18,2006-03-06,2006-03-22,2006-04-07,2006-04-23,2006-05-09,2006-05-25,2006-06-10,2006-06-26,2006-07-12,2006-07-28,");
+  timeline.append("2006-08-13,2006-08-29,2006-09-14,2006-09-30,2006-10-16,2006-11-01,2006-11-17,2006-12-03,2006-12-19,");
+  timeline.append("2007-01-01,2007-01-17,2007-02-02,2007-02-18,2007-03-06,2007-03-22,2007-04-07,2007-04-23,2007-05-09,2007-05-25,2007-06-10,2007-06-26,2007-07-12,2007-07-28,");
+  timeline.append("2007-08-13,2007-08-29,2007-09-14,2007-09-30,2007-10-16,2007-11-01,2007-11-17,2007-12-03,2007-12-19,");
+  timeline.append("2008-01-01,2008-01-17,2008-02-02,2008-02-18,2008-03-05,2008-03-21,2008-04-06,2008-04-22,2008-05-08,2008-05-24,2008-06-09,2008-06-25,2008-07-11,2008-07-27,");
+  timeline.append("2008-08-12,2008-08-28,2008-09-13,2008-09-29,2008-10-15,2008-10-31,2008-11-16,2008-12-02,2008-12-18,");
+  timeline.append("2009-01-01,2009-01-17,2009-02-02,2009-02-18,2009-03-06,2009-03-22,2009-04-07,2009-04-23,2009-05-09,2009-05-25,2009-06-10,2009-06-26,2009-07-12,2009-07-28,");
+  timeline.append("2009-08-13,2009-08-29,2009-09-14,2009-09-30,2009-10-16,2009-11-01,2009-11-17,2009-12-03,2009-12-19,");
+  timeline.append("2010-01-01,2010-01-17,2010-02-02,2010-02-18,2010-03-06,2010-03-22,2010-04-07,2010-04-23,2010-05-09,2010-05-25,2010-06-10,2010-06-26,2010-07-12,2010-07-28,");
+  timeline.append("2010-08-13,2010-08-29,2010-09-14,2010-09-30,2010-10-16,2010-11-01,2010-11-17,2010-12-03,2010-12-19,");
+  timeline.append("2011-01-01,2011-01-17,2011-02-02,2011-02-18,2011-03-06,2011-03-22,2011-04-07,2011-04-23,2011-05-09,2011-05-25,2011-06-10,2011-06-26,2011-07-12,2011-07-28,");
+  timeline.append("2011-08-13,2011-08-29,2011-09-14,2011-09-30,2011-10-16,2011-11-01,2011-11-17,2011-12-03,2011-12-19,");
+  timeline.append("2012-01-01,2012-01-17,2012-02-02,2012-02-18,2012-03-05,2012-03-21,2012-04-06,2012-04-22,2012-05-08,2012-05-24,2012-06-09,2012-06-25,2012-07-11,2012-07-27,");
+  timeline.append("2012-08-12,2012-08-28,2012-09-13,2012-09-29,2012-10-15,2012-10-31,2012-11-16,2012-12-02,2012-12-18,");
+  timeline.append("2013-01-01,2013-01-17,2013-02-02,2013-02-18,2013-03-06,2013-03-22,2013-04-07,2013-04-23,2013-05-09,2013-05-25,2013-06-10,2013-06-26,2013-07-12,2013-07-28,");
+  timeline.append("2013-08-13,2013-08-29,2013-09-14,2013-09-30,2013-10-16,2013-11-01,2013-11-17,2013-12-03,2013-12-19,");
+  timeline.append("2014-01-01,2014-01-17,2014-02-02,2014-02-18,2014-03-06,2014-03-22,2014-04-07,2014-04-23,2014-05-09,2014-05-25,2014-06-10,2014-06-26,2014-07-12,2014-07-28,");
+  timeline.append("2014-08-13,2014-08-29,2014-09-14,2014-09-30,2014-10-16,2014-11-01,2014-11-17,2014-12-03,2014-12-19,");
+  timeline.append("2015-01-01,2015-01-17,2015-02-02,2015-02-18,2015-03-06,2015-03-22,2015-04-07,2015-04-23,2015-05-09,2015-05-25,2015-06-10,2015-06-26,2015-07-12,2015-07-28,");
+  timeline.append("2015-08-13,2015-08-29,2015-09-14,2015-09-30,2015-10-16,2015-11-01,2015-11-17,2015-12-03,2015-12-19,");
+  timeline.append("2016-01-01,2016-01-17,2016-02-02,2016-02-18,2016-03-05,2016-03-21,2016-04-06,2016-04-22,2016-05-08,2016-05-24,2016-06-09,2016-06-25,2016-07-11,2016-07-27,");
+  timeline.append("2016-08-12,2016-08-28,2016-09-13,2016-09-29,2016-10-15,2016-10-31,2016-11-16,2016-12-02,2016-12-18,");
+  timeline.append("2017-01-01,2017-01-17,2017-02-02,2017-02-18");
+return timeline;
 }
 
 string eows::wtscs::request::get_scidb_schema(string coverage)
 {
-  //TODO: Get scidb schema. Ex. iquery -aq "show(mod13q1)"
-  string attributes = "[col_id = 0:7299, 100, 0, row_id = 0:7299, 100, 0, time_id = 0:92, 93, 0]";
+  //TODO: Get scidb schema. Ex. iquery -aq "show(mod13q1_512)"
+  string attributes = "[col_id=0:172799,40,0,row_id=0:86399,40,0,time_id=0:511,512,0]";
 
   return attributes;
 }
@@ -188,7 +221,6 @@ void eows::wtscs::request::set_UUID(string nService)
   // Generate the UUID identifier to create the AFL syntax.
 
   boost::uuids::uuid u = boost::uuids::random_generator()();
-  int d = u.size();
   stringstream s;
   s << u;
   string mys = s.str();
@@ -198,7 +230,7 @@ void eows::wtscs::request::set_UUID(string nService)
   UUID = mys;
 }
 
-void eows::wtscs::request::set_parameters(const char *request, string dir)
+void eows::wtscs::request::set_parameters(const char *request)
 {
   rapidjson::Document doc;
 
@@ -258,7 +290,6 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
           const rapidjson::Value &array = i->value;
 
           // TODO: You must treat the dates to extract the indices
-          int data = array.Size();
           assert((array[0]).IsInt());
           pParameters->roi.push_back((array[0]).GetInt());
 
@@ -272,7 +303,7 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
 
           assert((array[3]).IsInt());
           pParameters->roi.push_back((array[3]).GetInt());
-          pParameters->roi.push_back(92);
+          pParameters->roi.push_back(391);
         }
       }
       if(string(itr->name.GetString()) == "patterns")
@@ -289,6 +320,7 @@ void eows::wtscs::request::set_parameters(const char *request, string dir)
         rapidjson::Writer<rapidjson::StringBuffer>writer(buffer);
         d2.Accept(writer);
         const char *json = buffer.GetString();
+        string dir = EOWS_WTSCS_DIR;
         dir.append(UUID);
         dir.append("_patterns.json");
         stream.open(dir);

@@ -17,6 +17,16 @@
   e-sensing team at <esensing-team@dpi.inpe.br>.
  */
 
+/*! \file eows/wtscs/request.hpp
+ *
+ *  \brief Static structure and behavior of the Web Time Series Classification Service.
+ *
+ *  Web Time Series Classification Service, or WTSCS for short, is a web service for classification of time series data from remote sensing imagery.
+ *
+ *  \author Eduardo Llapa Rodriguez
+ *  \author Gilberto Ribeiro de Queiroz
+ */
+
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
@@ -82,7 +92,7 @@ namespace eows
        *
        *  The request is parsed into Document Object Model (DOM).
        */
-      void set_parameters(const char *, string);
+      void set_parameters(const char *);
       void set_UUID(string);
       string get_status();
       void check_parameters();

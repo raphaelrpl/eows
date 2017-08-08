@@ -27,10 +27,12 @@
 #include "../core/utils.hpp"
 #include "../geoarray/data_types.hpp"
 #include "../geoarray/geoarray_manager.hpp"
+#include "../core/defines.hpp"
 //#include "../exception.hpp"
 
 //// C++ Standard Library
 //#include <memory>
+#include <iostream>
 
 
 // Boost
@@ -44,10 +46,6 @@
 #include <cstdlib>
 
 using namespace std;
-
-string scidb_shared_directory;
-string config_directory;
-string name_service;
 
 eows::wtscs::request* pRequestList;
 static void return_exception(const char* msg, eows::core::http_response& res);
@@ -87,17 +85,30 @@ void eows::wtscs::list_algorithms_handler::do_get(const eows::core::http_request
   res.write(buff.GetString(), buff.GetSize());
 }
 
-void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
+void eows::wtscs::describe_algorithm_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  // TODO: See how to implement the describe_algorithm_handler methods!.
+
+  string return_msg("\"describe_algorithm_handler\"");
+
+  res.set_status(eows::core::http_response::OK);
+
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
+  res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+  res.write(return_msg.c_str(), return_msg.size());
+}
+
+void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& req,
                                             eows::core::http_response& res)
 {
 
-  // Parsing the request into a Document.
-  request* oRequest = new request;
-
   try
   {
-    oRequest->set_UUID(name_service);
-    oRequest->set_parameters(req.content(), scidb_shared_directory);
+    // Parsing the request into a Document.
+    request* oRequest = new request;
+
+    oRequest->set_UUID(EOWS_WTSCS_NAME);
+    oRequest->set_parameters(req.content());
 
     oRequest->check_parameters();
     if((oRequest->get_status()).compare("Scheduled") == 0)
@@ -113,15 +124,15 @@ void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
       pPrevPosition->pNext = oRequest;
 
       // TODO: Save the request list on disk (wtscs_request_list.json)
-      // You will use the config_directory string
+      // You will use the EOWS_WTSCS_DIR string
 
       // Write afl
       string afl = oRequest->write_afl(dynamic_cast<eows::wtscs::twdtw_input_parameters*>(oRequest->input_parameters.get()));
 
 
-      cout << afl;
-      cout << endl;
-      // system(afl);
+      // cout << afl;
+      // cout << endl;
+      system(afl.c_str());
 
       // It Sends the AFL request.
       // The answer is a URL wrapping the request UUID identifier.
@@ -145,6 +156,7 @@ void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
 
       res.write(buff.GetString(), buff.GetSize());
     }
+    delete oRequest;
   }
   catch(const exception& e)
   {
@@ -152,18 +164,28 @@ void eows::wtscs::classify_handler::do_post(const eows::core::http_request& req,
   }
   catch(...)
   {
-    return_exception("Unexpected error in WTSCS classify operation.", res);
+    return_exception("Unexpected error in WTSCS run_process operation.", res);
   }
+}
+
+void eows::wtscs::cancel_process_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  // TODO: See how to implement the cancel_process_handler methods!.
+
+  string return_msg("\"cancel_process_handler\"");
+
+  res.set_status(eows::core::http_response::OK);
+
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
+  res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+  res.write(return_msg.c_str(), return_msg.size());
 }
 
 void eows::wtscs::open_request_list()
 {
-  scidb_shared_directory = "/home/edullapa/mydevel/eows/scidb/";
-  config_directory = "/home/edullapa/mydevel/eows/codebase/share/eows/config/";
-  name_service = "WTSCS";
-
   pRequestList = new request;
-
+  // TODO: Load the request list file (wtscs_request_list.json)
+  // You will use the EOWS_WTSCS_DIR string to find the json file
 
   EOWS_LOG_INFO("request file was analized!");
 }
@@ -181,8 +203,14 @@ void eows::wtscs::initialize()
   unique_ptr<list_algorithms_handler> la_h(new list_algorithms_handler);
   eows::core::service_operations_manager::instance().insert("/wtscs/list_algorithms", move(la_h));
 
-  unique_ptr<classify_handler> c_h(new classify_handler);
-  eows::core::service_operations_manager::instance().insert("/wtscs/classify", move(c_h));
+  unique_ptr<describe_algorithm_handler> da_h(new describe_algorithm_handler);
+  eows::core::service_operations_manager::instance().insert("/wtscs/describe_algorithm", move(da_h));
+
+  unique_ptr<run_process_handler> rp_h(new run_process_handler);
+  eows::core::service_operations_manager::instance().insert("/wtscs/run_process", move(rp_h));
+
+  unique_ptr<cancel_process_handler> cp_h(new cancel_process_handler);
+  eows::core::service_operations_manager::instance().insert("/wtscs/cancel_process", move(cp_h));
 
   EOWS_LOG_INFO("WTSCS service initialized!");
 }

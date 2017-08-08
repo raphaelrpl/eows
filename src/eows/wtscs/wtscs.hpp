@@ -19,7 +19,7 @@
 
 /*! \file eows/wtscs/wtscs.hpp
  *
- *  \brief Web Time Series Classification Service.
+ *  \brief Web Time Series Classification Service Interface.
  *
  *  Web Time Series Classification Service, or WTSCS for short, is a web service for classification of time series data from remote sensing imagery.
  *
@@ -52,14 +52,14 @@ namespace eows
      *  1) Scheduled - The request is submitted.
      *  2) In progress - The request is currently in progress.
      *  3) Completed - The request has been completed.It  will be accompanied by the links to the resulting images.
+     *  4) Cancelled - The request has been cancelled.
      *  Example sentence would be: http://localhost:7654/wtscs/status?UUID=123456687
      */
     class status_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
 
-      void do_get(const eows::core::http_request& req,
-                  eows::core::http_response& res);
+      void do_get(const eows::core::http_request& req, eows::core::http_response& res);
     };
 
     /*! \brief List the Algorithms Provided by the Service.
@@ -75,17 +75,45 @@ namespace eows
       void do_get(const eows::core::http_request& req, eows::core::http_response& res);
     };
 
-    /*! \brief Operator Used to Perform Classification Algorithms.
+
+    /*! \brief Describe the Algorithm Provided by the Client.
      *
-     *  This operator classifies time series data through a certain classification algorithm.
-     *  You must assign an available classification algorithm and its parameters required.
-     *  Example sentence would be: http://localhost:7654/wtscs/classify
+     *  this is an informal specification to define exactly what the program needs to execute.
+     *  Example sentence would be: http://localhost:7654/wtscs/describe_algorithm?algorithm=TWDTW
      */
-    class classify_handler : public eows::core::web_service_handler
+    class describe_algorithm_handler : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+
+      void do_get(const eows::core::http_request& req, eows::core::http_response& res);
+    };
+
+    /*! \brief Operator Used to Run Process.
+     *
+     *  This operator processes time series data through a certain algorithm.
+     *  You must assign an available processing algorithm and the parameters required.
+     *  Example sentence would be: http://localhost:7654/wtscs/run_process
+     */
+
+    class run_process_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
 
       void do_post(const eows::core::http_request& req, eows::core::http_response& res);
+    };
+
+    /*! \brief Operator Used to Cancel Process.
+     *
+     *  This operator is used to cancel processes.
+     *  you must inform the UUID of the process.
+     *  Example sentence would be: http://localhost:7654/wtscs/cancel_process?UUID=123456687
+     */
+    class cancel_process_handler : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request& req, eows::core::http_response& res);
     };
 
     /*! \brief Service Features.
