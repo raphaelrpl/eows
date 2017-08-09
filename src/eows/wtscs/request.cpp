@@ -52,7 +52,7 @@ string eows::wtscs::request::get_UUID()
 string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data)
 {
   //TODO: write afl
-  string afl = "time iquery -aq \"set no fetch; store(redimension(apply(stream(cast(apply(project(";
+  string afl = "/usr/bin/time -p /opt/scidb/15.12/bin/iquery -aq \"set no fetch; store(redimension(apply(stream(cast(apply(project(";
 
   ////// apply operator
   //////// project operator

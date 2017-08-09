@@ -113,25 +113,11 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
     oRequest->check_parameters();
     if((oRequest->get_status()).compare("Scheduled") == 0)
     {
-      eows::wtscs::request* pTempPosition = pRequestList;
-      eows::wtscs::request* pPrevPosition = pTempPosition;
-      pTempPosition = pTempPosition->pNext;
-      while(pTempPosition)
-      {
-        pPrevPosition = pTempPosition;
-        pTempPosition = pTempPosition->pNext;
-      }
-      pPrevPosition->pNext = oRequest;
-
       // TODO: Save the request list on disk (wtscs_request_list.json)
       // You will use the EOWS_WTSCS_DIR string
 
       // Write afl
       string afl = oRequest->write_afl(dynamic_cast<eows::wtscs::twdtw_input_parameters*>(oRequest->input_parameters.get()));
-
-
-      // cout << afl;
-      // cout << endl;
       system(afl.c_str());
 
       // It Sends the AFL request.
@@ -156,7 +142,7 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
 
       res.write(buff.GetString(), buff.GetSize());
     }
-    delete oRequest;
+     delete oRequest;
   }
   catch(const exception& e)
   {
@@ -183,7 +169,6 @@ void eows::wtscs::cancel_process_handler::do_get(const eows::core::http_request&
 
 void eows::wtscs::open_request_list()
 {
-  pRequestList = new request;
   // TODO: Load the request list file (wtscs_request_list.json)
   // You will use the EOWS_WTSCS_DIR string to find the json file
 

@@ -30,16 +30,6 @@
 
 #define  EOWS_CONFIG_FILE "share/eows/config/eows.json"
 
-#define  EOWS_GEOARRAYS_FILE "share/eows/config/geo_arrays.json"
-
-#define  EOWS_SRS_FILE "share/eows/config/srs.json"
-
-#define  EOWS_OWS_FILE "share/eows/config/ows.json"
-
-#define  EOWS_WMS_FILE "share/eows/config/wms.json"
-
-#define  EOWS_WCS_FILE "share/eows/config/wcs.json"
-
 #define  EOWS_WTSCS_DIR "/home/scidb/shared/scidb15_12/scripts/test_twdtw/"
 
 #define  EOWS_WTSCS_RSCRIPT "sits_scidb_streaming_example_v3.R"
