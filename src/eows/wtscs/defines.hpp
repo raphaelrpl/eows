@@ -18,17 +18,20 @@
  */
 
 /*!
-  \file eows/core/defines.hpp
+  \file eows/wtscs/defines.hpp
 
-  \brief Defines for EOWS.
+  \brief Defines for WTSCS.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Eduardo Llapa Rodriguez
  */
 
-#ifndef __EOWS_CORE_DEFINES_HPP__
-#define __EOWS_CORE_DEFINES_HPP__
+#ifndef __EOWS_WTSCS_DEFINES_HPP__
+#define __EOWS_WTSCS_DEFINES_HPP__
 
-#define  EOWS_CONFIG_FILE "share/eows/config/eows.json"
+#define  EOWS_WTSCS_DIR "/home/scidb/shared/scidb15_12/scripts/test_twdtw/"
 
-#endif // __EOWS_CORE_DEFINES_HPP__
+#define  EOWS_WTSCS_RSCRIPT "sits_scidb_streaming_example_v3.R"
 
+#define  EOWS_WTSCS_NAME "WTSCS"
+
+#endif // __EOWS_WTSCS_DEFINES_HPP__

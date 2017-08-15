@@ -18,13 +18,13 @@
  */
 
 #include "request.hpp"
+#include "defines.hpp"
 
 #include "../core/http_response.hpp"
 #include "../core/http_request.hpp"
 #include "../core/logger.hpp"
 #include "../core/service_operations_manager.hpp"
 #include "../core/utils.hpp"
-#include "../core/defines.hpp"
 #include "../geoarray/data_types.hpp"
 #include "../geoarray/geoarray_manager.hpp"
 

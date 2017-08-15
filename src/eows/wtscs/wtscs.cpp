@@ -19,6 +19,7 @@
 
 // EOWS
 #include "wtscs.hpp"
+#include "defines.hpp"
 #include "request.hpp"
 #include "../core/http_response.hpp"
 #include "../core/http_request.hpp"
@@ -27,7 +28,6 @@
 #include "../core/utils.hpp"
 #include "../geoarray/data_types.hpp"
 #include "../geoarray/geoarray_manager.hpp"
-#include "../core/defines.hpp"
 //#include "../exception.hpp"
 
 //// C++ Standard Library
