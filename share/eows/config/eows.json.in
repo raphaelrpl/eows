@@ -20,9 +20,9 @@
     "listening_port": 7654,
     "threads": 16,
     "ssl": {
-      "enabled": true,
-      "certificate": "/home/raphael/mydevel/eows/data/ssl/server.crt",
-      "key": "/home/raphael/mydevel/eows/data/ssl/server.key"
+      "enabled": false,
+      "certificate": "",
+      "key": ""
     }
   },
   "tmp_data_dir": "@EOWS_USER_HOME@/eows-tmp-data/"
