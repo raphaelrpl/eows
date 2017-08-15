@@ -1,3 +1,5 @@
+add_definitions(-DCROW_ENABLE_SSL)
+
 file(GLOB EOWS_SRC_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/http/crow/*.cpp)
 file(GLOB EOWS_HDR_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/http/crow/*.hpp)
 
