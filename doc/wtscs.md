@@ -30,20 +30,28 @@ Response:
 Via HTTP Post:
 ```json
 {
-    "algorithm": "TWDTW_R",
-    "input_parameters": {
-        "coverage": "mod13q1",
-        "attributes": ["ndvi"],
-        "roi": {
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [ [-10.0, -10.0], [10.0, -10.0], [10.0, 10.0], [-10.0, -10.0] ]
-                ]
-            }
-        },
-        "patterns": ...,
-    }
+	"algorithm": "TWDTW",
+	"input_parameters": {
+		"coverage": "mod13q1_512",
+		"scale_factor": 0.0001,
+		"bands": ["ndvi", "evi", "nir"],
+		"roi": {
+			"bbox": [60120, 48622, 60564, 49049]
+		},
+		"patterns": [{
+			"patterns": "patterns"
+		}],
+		"dist.method": "euclidean",
+		"alpha": -0.1,
+		"beta": 100,
+		"theta": 0.5,
+		"interval": "12 month",
+		"span": 250,
+		"keep": "FALSE",
+		"overlap": 0.5,
+		"start_date": "2000-09-01",
+		"end_date": "2017-08-31"
+	}
 }
 ```
 
