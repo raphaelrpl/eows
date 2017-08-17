@@ -80,6 +80,9 @@ struct crow_info_t
   std::string listen_address;
   uint16_t listening_port;
   uint16_t threads;
+  bool ssl_enabled = false;
+  std::string ssl_certificate;
+  std::string ssl_key;
 };
       
 static crow_info_t load_config()
@@ -116,7 +119,22 @@ static crow_info_t load_config()
     throw eows::parse_error("Please check key 'threads' in file 'crow.json'.");
 
   app_cfg.threads = static_cast<uint16_t>(jthreads->value.GetUint());
-        
+
+  rapidjson::Value::ConstMemberIterator ssl_it = jcrow.FindMember("ssl");
+
+  // If Found
+  if (ssl_it != jcrow.MemberEnd())
+  {
+    rapidjson::Value::ConstMemberIterator ssl_enabled_it = ssl_it->value.FindMember("enabled");
+
+    if ((ssl_enabled_it != ssl_it->value.MemberEnd()) && (ssl_enabled_it->value.GetBool()))
+    {
+      app_cfg.ssl_certificate = eows::core::read_node_as_string(ssl_it->value, "certificate");
+      app_cfg.ssl_key = eows::core::read_node_as_string(ssl_it->value, "key");
+      app_cfg.ssl_enabled = true;
+    }
+  }
+
   return app_cfg;
 }
 
@@ -135,6 +153,12 @@ eows::http::crow::http_server::run()
 
   ::crow::logger::setLogLevel(::crow::LogLevel::INFO);
   ::crow::logger::setHandler(&lh);
+
+  if (cfg_info.ssl_enabled)
+  {
+    EOWS_LOG_INFO("Configuring HTTPS server...");
+    app.ssl_file(cfg_info.ssl_certificate, cfg_info.ssl_key);
+  }
   
   app.bindaddr(cfg_info.listen_address)
      .port(cfg_info.listening_port)

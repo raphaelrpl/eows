@@ -18,7 +18,12 @@
   "crow": {
     "listen_address": "127.0.0.1",
     "listening_port": 7654,
-    "threads": 16
+    "threads": 16,
+    "ssl": {
+      "enabled": false,
+      "certificate": "",
+      "key": ""
+    }
   },
   "tmp_data_dir": "@EOWS_USER_HOME@/eows-tmp-data/"
 }
