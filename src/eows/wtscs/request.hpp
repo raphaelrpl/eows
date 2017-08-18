@@ -99,7 +99,7 @@ namespace eows
       void write_setting();
       string write_afl(eows::wtscs::twdtw_input_parameters*);
       string get_scidb_schema(string);
-      string get_timeline(string);
+      string get_timeline(string, string, string);
       string get_UUID();
 
     };
