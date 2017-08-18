@@ -30,6 +30,9 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
+#include <string>
+#include <cstdlib>
 
 // Boost
 #include <boost/format.hpp>
@@ -163,8 +166,32 @@ string eows::wtscs::request::get_timeline(string coverage, string start_date, st
 
 string eows::wtscs::request::get_scidb_schema(string coverage)
 {
-  //TODO: Get scidb schema. Ex. iquery -aq "show(mod13q1_512)"
-  string attributes = "[col_id=0:172799,40,0,row_id=0:86399,40,0,time_id=0:511,512,0]";
+  FILE* fp;
+  char file_type[500];
+  string scidb_scheme, attributes;
+  string afl_query;
+
+  afl_query.append("/opt/scidb/15.12/bin/iquery -aq \"show(");
+  afl_query.append(coverage);
+  afl_query.append(")\"");
+
+  fp = popen(afl_query.c_str(), "r");
+
+//  if(fp == NULL)
+//  {
+//    printf("Failed to run command \n");
+//  }
+
+  while(fgets(file_type, sizeof(file_type), fp) != NULL)
+  {
+    scidb_scheme.append(file_type);
+  }
+
+  pclose(fp);
+
+  size_t pos  = scidb_scheme.find("[");
+  size_t len = scidb_scheme.find("]") - pos + 1;
+  attributes.append(scidb_scheme.substr(pos, len));
 
   return attributes;
 }
