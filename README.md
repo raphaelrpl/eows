@@ -3,13 +3,13 @@
 **Earth Observation Web Services (EOWS)** is a free and open source platform for the development of web services that must handle massive Earth Observation data.
 
 The following services are under development:
-- **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtss.md).
-
-- **Web Time Series Processing Service (WTSPS):** a web service that performs time series processing, including remote sensing imagery classification. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
+- **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/e-sensing/eows/blob/master/doc/wtss.md).
 
 - **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.6.0**)
 
 - **Spatio-Temporal Web Map Service (WMS):** a web map service for visualizing remote sensing imagery data as dynamic maps (space + time) stored as 3D arrays in SciDB. (**under development for version 0.7.0**)
+
+- **Web Time Series Processing Service (WTSPS):** a web service that performs time series processing, including remote sensing imagery classification. [Read more about it](https://github.com/e-sensing/eows/blob/master/doc/wtsps.md). (**under development for version 0.8.0**)
 
 
 Subscribe to the mailing list: https://groups.google.com/d/forum/eows.
@@ -20,7 +20,7 @@ Subscribe to the mailing list: https://groups.google.com/d/forum/eows.
 If you want the latest code from the master branch of the project, you can follow these instructions for cloning the project repository:
 ```bash
 $ mkdir -p ~/eows/codebase
-$ git clone http://github.com/eows/eows ~/eows/codebase
+$ git clone http://github.com/e-sensing/eows ~/eows/codebase
 ```
 
 
