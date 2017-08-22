@@ -111,7 +111,7 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
     oRequest->set_parameters(req.content());
 
     oRequest->check_parameters();
-    if((oRequest->get_status()).compare("Scheduled") == 0)
+    if((oRequest->get_status(oRequest->get_UUID())).compare("Scheduled") == 0)
     {
       // TODO: Save the request list on disk (wtscs_request_list.json)
       // You will use the EOWS_WTSCS_DIR string

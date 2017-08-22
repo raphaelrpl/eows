@@ -33,6 +33,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <cstdio>
 
 // Boost
 #include <boost/format.hpp>
@@ -46,6 +47,32 @@
 #include <rapidjson/writer.h>
 
 using namespace std;
+
+string eows::wtscs::request::get_status(string UUID)
+{
+  //TODO: get_status
+  return "Scheduled";
+}
+
+void eows::wtscs::request::set_status(string UUID, string status)
+{
+  FILE* pFile;
+  string log_file;
+  log_file.append(EOWS_WTSCS_DIR);
+  log_file.append(UUID);
+  log_file.append("_log.json");
+
+  pFile = fopen(log_file.c_str(), "w+");
+  if(pFile != NULL)
+  {
+    fputs("{ \"status\": \"", pFile);
+    fputs(status.c_str(), pFile);
+    fputs("\" }", pFile);
+    fclose(pFile);
+  }
+
+  return;
+}
 
 string eows::wtscs::request::get_UUID()
 {
@@ -198,8 +225,7 @@ string eows::wtscs::request::get_scidb_schema(string coverage)
 
 eows::wtscs::request::request()
 {
-  pNext = NULL;
-  status = "Rejected";
+  eows::wtscs::request::set_status(UUID, "Rejected");
 }
 
 void eows::wtscs::request::write_setting()
@@ -207,16 +233,10 @@ void eows::wtscs::request::write_setting()
   //TODO: write files
 }
 
-
-string eows::wtscs::request::get_status()
-{
-  return status;
-}
-
 void eows::wtscs::request::check_parameters()
 {
   // TODO: Check parameters and change status to Scheduled
-  status = "Scheduled";
+  eows::wtscs::request::set_status(UUID, "Scheduled");
 }
 
 void eows::wtscs::request::set_UUID(string nService)
