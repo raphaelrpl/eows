@@ -85,7 +85,6 @@ namespace eows
       string UUID;
     public:
       unique_ptr<base_input_parameters> input_parameters;
-      request();
       /*! \brief Parse Request.
        *
        *  The request is parsed into Document Object Model (DOM).

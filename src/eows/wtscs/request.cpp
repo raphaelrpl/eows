@@ -51,7 +51,26 @@ using namespace std;
 string eows::wtscs::request::get_status(string UUID)
 {
   //TODO: get_status
-  return "Scheduled";
+  FILE* pFile;
+  char buffer[30];
+
+  string log_file;
+  log_file.append(EOWS_WTSCS_DIR);
+  log_file.append(UUID);
+  log_file.append("_log.json");
+
+  pFile = fopen(log_file.c_str(), "r");
+  if(pFile != NULL)
+  {
+    fgets(buffer, 100, pFile); // != NULL
+    fclose(pFile);
+  }
+  string data;
+  data.append(buffer);
+  size_t pos = 13;
+  size_t len = data.find("\" ") - pos;
+
+  return data.substr(pos, len);
 }
 
 void eows::wtscs::request::set_status(string UUID, string status)
@@ -223,11 +242,6 @@ string eows::wtscs::request::get_scidb_schema(string coverage)
   return attributes;
 }
 
-eows::wtscs::request::request()
-{
-  eows::wtscs::request::set_status(UUID, "Rejected");
-}
-
 void eows::wtscs::request::write_setting()
 {
   //TODO: write files
@@ -251,6 +265,8 @@ void eows::wtscs::request::set_UUID(string nService)
   mys.erase(16,1); mys.erase(20,1);
   mys.insert(0, nService);
   UUID = mys;
+  eows::wtscs::request::set_status(UUID, "Rejected");
+
 }
 
 void eows::wtscs::request::set_parameters(const char *request)
