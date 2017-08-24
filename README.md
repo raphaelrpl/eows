@@ -3,9 +3,9 @@
 **Earth Observation Web Services (EOWS)** is a free and open source platform for the development of web services that must handle massive Earth Observation data.
 
 The following services are under development:
-- **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtss.md).
+- **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/e-sensing/eows/blob/master/doc/wtss.md).
 
-- **Web Time Series Processing Service (WTSPS):** a web service that performs time series processing, including remote sensing imagery classification. [Read more about it](https://github.com/eows/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
+- **Web Time Series Processing Service (WTSPS):** a web service that performs time series processing, including remote sensing imagery classification. [Read more about it](https://github.com/e-sensing/eows/blob/master/doc/wtscs.md). (**under development for version 0.5.0**)
 
 - **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.6.0**)
 
@@ -20,7 +20,7 @@ Subscribe to the mailing list: https://groups.google.com/d/forum/eows.
 If you want the latest code from the master branch of the project, you can follow these instructions for cloning the project repository:
 ```bash
 $ mkdir -p ~/eows/codebase
-$ git clone http://github.com/eows/eows ~/eows/codebase
+$ git clone http://github.com/e-sensing/eows ~/eows/codebase
 ```
 
 
@@ -38,7 +38,7 @@ EOWS is built on top of the following libraries:
 
 For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz.
 
-We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/eows/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package.
+We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/e-sensing/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package.
 
 The note below will explain in depth how to prepare the build environment.
 
