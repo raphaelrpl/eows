@@ -143,3 +143,6 @@ The result of ```time_series``` is a JSON document such as:
 }
 ```
 
+## References
+
+VINHAS, L.; QUEIROZ, G. R.; FERREIRA, K. R.; CÂMARA, G. [Web Services for Big Earth Observation Data](http://urlib.net/8JMKD3MGP3W34P/3N2U9JL). In: BRAZILIAN SYMPOSIUM ON GEOINFORMATICS, 17. (GEOINFO), 2016, Campos do Jordão, SP. Proceedings... 2016.
