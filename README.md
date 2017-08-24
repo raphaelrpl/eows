@@ -38,7 +38,7 @@ EOWS is built on top of the following libraries:
 
 For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz.
 
-We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/eows/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package.
+We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/e-sensing/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package.
 
 The note below will explain in depth how to prepare the build environment.
 

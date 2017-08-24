@@ -83,18 +83,16 @@ namespace eows
     {
       string algorithm;
       string UUID;
-      string status;
     public:
       unique_ptr<base_input_parameters> input_parameters;
-      request* pNext;
-      request();
       /*! \brief Parse Request.
        *
        *  The request is parsed into Document Object Model (DOM).
        */
       void set_parameters(const char *);
       void set_UUID(string);
-      string get_status();
+      string get_status(string);
+      void set_status(string, string);
       void check_parameters();
       void write_setting();
       string write_afl(eows::wtscs::twdtw_input_parameters*);

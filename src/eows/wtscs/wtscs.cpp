@@ -105,26 +105,14 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
   try
   {
     // Parsing the request into a Document.
-    request* oRequest = new request;
+    request oRequest;
 
-    oRequest->set_UUID(EOWS_WTSCS_NAME);
-    oRequest->set_parameters(req.content());
+    oRequest.set_UUID(EOWS_WTSCS_NAME);
+    oRequest.set_parameters(req.content());
 
-    oRequest->check_parameters();
-    if((oRequest->get_status()).compare("Scheduled") == 0)
+    oRequest.check_parameters();
+    if((oRequest.get_status(oRequest.get_UUID())).compare("Scheduled") == 0)
     {
-      // TODO: Save the request list on disk (wtscs_request_list.json)
-      // You will use the EOWS_WTSCS_DIR string
-
-      // Write afl
-      string afl = oRequest->write_afl(dynamic_cast<eows::wtscs::twdtw_input_parameters*>(oRequest->input_parameters.get()));
-      system(afl.c_str());
-
-      // It Sends the AFL request.
-      // The answer is a URL wrapping the request UUID identifier.
-      // Ex. http://localhost:7654/wtscs/status?UUID=123456687
-
-
       // assembly the response
       rapidjson::StringBuffer buff;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buff);
@@ -132,7 +120,7 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
       writer.StartObject();
 
       writer.Key("UUID", static_cast<rapidjson::SizeType>(sizeof("UUID") -1));
-      writer.String((oRequest->get_UUID()).c_str(), static_cast<rapidjson::SizeType>((oRequest->get_UUID()).length()));
+      writer.String((oRequest.get_UUID()).c_str(), static_cast<rapidjson::SizeType>((oRequest.get_UUID()).length()));
       writer.EndObject();
 
       res.set_status(eows::core::http_response::OK);
@@ -141,8 +129,15 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
       res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
       res.write(buff.GetString(), buff.GetSize());
+
+      // Write afl
+      string afl = oRequest.write_afl(dynamic_cast<eows::wtscs::twdtw_input_parameters*>(oRequest.input_parameters.get()));
+      int ok_process = system(afl.c_str());
+      if(ok_process == 0)
+        oRequest.set_status(oRequest.get_UUID(), "Completed");
+      else
+        oRequest.set_status(oRequest.get_UUID(), "Cancelled");
     }
-     delete oRequest;
   }
   catch(const exception& e)
   {
