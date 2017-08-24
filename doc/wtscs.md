@@ -6,8 +6,10 @@ In WTSCS a coverage is a three dimensional array with spatial and temporal dimen
 
 WTSCS is based on the following operations:
 * ```list_algorithms```: ???.
-* ```classify```: ???.
+* ```run_process```: ???.
+* ```cancel_process```: ???.
 * ```status```: ???.
+* ```describe_algorithm```: ???.
 
 
 ## ```list_algorithms```
@@ -20,12 +22,12 @@ http://myserver/wtscs/list_algorithms
 Response:
 ```json
 {
-  "algorithms": [ "TWDTW_R", "TWDTW_SCIDB" ]
+  "algorithms": [ "TWDTW", "TWDTW_SCIDB" ]
 }
 ```
 
 
-## ```classify```
+## ```run_process```
 
 Via HTTP Post:
 ```json
@@ -55,9 +57,9 @@ Via HTTP Post:
 }
 ```
 
-Resposta:
+Response:
 ```json
-{ "status_code": "0AFB88990AFB88990AFB88990AFB8899" }
+{ "UUID": "0AFB88990AFB88990AFB88990AFB8899" }
 ```
 
 patterns:
@@ -95,7 +97,42 @@ patterns:
 },
  ... 
 ]
-
 ```
 
+## ```cancel_process```
+
+Via HTTP Get:
+```
+http://myserver/wtscs/cancel_process?UUID=0AFB88990AFB88990AFB88990AFB8899
+```
+
+Response:
+```json
+{ "cancelled": "TRUE" or "FALSE" }
+```
+
+
 ## ```status```
+
+Via HTTP Get:
+```
+http://myserver/wtscs/status?UUID=0AFB88990AFB88990AFB88990AFB8899
+```
+
+Response:
+```json
+{ "status": "Scheduled" or "In progress" or "Completed" or "Cancelled" }
+```
+
+
+## ```describe_algorithm```
+
+Via HTTP Get:
+```
+http://myserver/wtscs/describe_algorithm?algorithm=TWDTW
+```
+
+Response:
+```json
+{  }
+```
