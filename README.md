@@ -4,7 +4,6 @@
 
 The following services are under development:
 - **Web Time Series Service (WTSS):** a lightweight web service for handling time series data from remote sensing imagery. [Read more about it](https://github.com/e-sensing/eows/blob/master/doc/wtss.md).
-<<<<<<< HEAD
 
 - **Web Coverage Service 2.0 (WCS):** a web coverage service for data exchange with SciDB. (**under development for version 0.6.0**)
 
