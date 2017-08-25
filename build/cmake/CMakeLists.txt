@@ -230,9 +230,9 @@ endif()
 #
 # Build options.
 #
-CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CROW_ENABLED "Build http-server ON top of Crow Library?" ON "Crow_FOUND" OFF)
+CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CROW_ENABLED "Build http-server on top of Crow Library?" ON "Crow_FOUND" OFF)
 
-CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CPPNETLIB_ENABLED "Build http-server OFF top of C++ Network Library?" ON "cppnetlib_FOUND" OFF)
+CMAKE_DEPENDENT_OPTION(EOWS_HTTP_CPPNETLIB_ENABLED "Build http-server on top of C++ Network Library?" OFF "cppnetlib_FOUND" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_PROJ4_ENABLED "Build Proj.4 Support?" ON "Proj4_FOUND" OFF)
 
