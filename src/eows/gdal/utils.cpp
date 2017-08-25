@@ -33,10 +33,11 @@
 
 void eows::gdal::initialize()
 {
-  EOWS_LOG_INFO("Initializing EOWS Gdal...");
+  EOWS_LOG_INFO("Initializing EOWS GDAL...");
+
   GDALAllRegister();
 
-  EOWS_LOG_INFO("EOWS Gdal initialized.");
+  EOWS_LOG_INFO("EOWS GDAL initialized.");
 }
 
 int eows::gdal::pixel_size(int dt)
