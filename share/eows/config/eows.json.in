@@ -25,5 +25,5 @@
       "key": ""
     }
   },
-  "tmp_data_dir": "@EOWS_USER_HOME@/eows-tmp-data/"
+  "tmp_data_dir": "@EOWS_USER_HOME@/eows/tmp/data"
 }
