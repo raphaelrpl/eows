@@ -53,14 +53,38 @@ static void return_exception(const char* msg, eows::core::http_response& res);
 void eows::wtscs::status_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   // TODO: See how to implement the status_handler methods!.
+  try
+  {
+    eows::core::query_string_t qstr(req.query_string());
 
-  string return_msg("\"status_handler\"");
+    eows::core::query_string_t::const_iterator it = qstr.find("UUID");
 
-  res.set_status(eows::core::http_response::OK);
+    if(it == qstr.end())
+      throw std::runtime_error("Error in operation 'status' for WTSCS: missing UUID.");
 
-  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
-  res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-  res.write(return_msg.c_str(), return_msg.size());
+    string UUID_request = it->second;
+    string response;
+    response.append("{ \"status\": \"");
+    request oRequest;
+    response.append(oRequest.get_status(UUID_request));
+    response.append("\" }");
+
+    res.set_status(eows::core::http_response::OK);
+
+    res.add_header(eows::core::http_response::CONTENT_TYPE, "text/plain; charset=utf-8");
+    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+    res.write(response.c_str(), response.size());
+  }
+  catch(const std::exception& e)
+  {
+    return_exception(e.what(), res);
+  }
+  catch(...)
+  {
+    return_exception("Unexpected error in WTSCS status operation.", res);
+  }
+
+  ///////////////////////////////////////////////
 }
 
 void eows::wtscs::list_algorithms_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -132,11 +156,8 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
 
       // Write afl
       string afl = oRequest.write_afl(dynamic_cast<eows::wtscs::twdtw_input_parameters*>(oRequest.input_parameters.get()));
-      int ok_process = system(afl.c_str());
-      if(ok_process == 0)
-        oRequest.set_status(oRequest.get_UUID(), "Completed");
-      else
-        oRequest.set_status(oRequest.get_UUID(), "Cancelled");
+      oRequest.set_status(oRequest.get_UUID(), "In progress");
+      system(afl.c_str());
     }
   }
   catch(const exception& e)

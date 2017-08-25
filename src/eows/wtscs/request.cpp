@@ -186,7 +186,7 @@ string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data
   afl.append(attributes);
   afl.append("), ");
   afl.append(UUID);
-  afl.append(")\"");
+  afl.append(")\" &");
 
   return afl;
 }
