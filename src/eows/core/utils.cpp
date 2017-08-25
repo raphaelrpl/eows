@@ -80,19 +80,41 @@ eows::core::initialize()
                            boost::log::keywords::filter = (channel == channel_name)
                           );
 
-  // Default temporary directory
-  std::string temp_data_dir("/tmp/");
-
   rapidjson::Value::ConstMemberIterator temp_data_it = doc.FindMember("tmp_data_dir");
 
-  if (temp_data_it != doc.MemberEnd() && temp_data_it->value.IsString())
-    temp_data_dir = read_node_as_string(temp_data_it->value);
-  // Setting temporary data directory
+  if(temp_data_it == doc.MemberEnd() || !temp_data_it->value.IsString())
+    throw eows::eows_error("The temporary data dir was not set int '" EOWS_CONFIG_FILE "' configuration file. Please, check the 'tmp_data_dir' key entry");
+
+  std::string temp_data_dir = read_node_as_string(temp_data_it->value);
+
+  if(!boost::filesystem::exists(temp_data_dir))
+  {
+    boost::format msg("The temporary data directory '%1%' does not exist. It will be created.");
+    EOWS_LOG_INFO((msg % temp_data_dir).str());
+
+    if(!boost::filesystem::create_directories(temp_data_dir))
+    {
+      boost::format err_msg("Could not create temporary data directory: '%1%'.");
+      throw eows::eows_error((err_msg % temp_data_dir).str());
+    }
+    else
+    {
+      boost::format msg("Temporary data directory '%1%' created successfully.");
+      EOWS_LOG_INFO((msg % temp_data_dir).str());
+    }
+  }
+  else if(!boost::filesystem::is_directory(temp_data_dir))
+  {
+    boost::format err_msg("The informed temporary data directory '%1%' is not a regular directory.");
+    EOWS_LOG_INFO((err_msg % temp_data_dir).str());
+    throw eows::eows_error((err_msg % temp_data_dir).str());
+  }
+
+// Setting temporary data directory
   app_settings::instance().set_tmp_data_dir(temp_data_dir);
 
-  boost::format debug_msg("Using temporary data directory: %1%");
-  EOWS_LOG_INFO((debug_msg % app_settings::instance().get_tmp_data_dir()).str());
-
+  boost::format msg("Using temporary data directory: %1%.");
+  EOWS_LOG_INFO((msg % temp_data_dir).str());
   EOWS_LOG_INFO("EOWS core runtime initialized!");
 }
 
