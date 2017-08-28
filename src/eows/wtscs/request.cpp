@@ -124,6 +124,20 @@ string eows::wtscs::request::write_afl(eows::wtscs::twdtw_input_parameters* data
   afl.append(")");
   //////// end project operator
 
+  //TODO: Transform this code on method
+  //////////////////
+  pair<std::size_t, std::size_t> time_interval;
+
+  const eows::geoarray::geoarray_t& geo_array = eows::geoarray::geoarray_manager::instance().get(data->coverage);
+  time_interval = geo_array.timeline.find_interval(data->start_date, data->end_date);
+
+  int first_pos = afl.find("-11", 0, 3);
+  afl.replace(first_pos, 3, to_string(time_interval.first));
+  int second_pos = afl.find("-22", first_pos, 3);
+  afl.replace(second_pos, 3, to_string(time_interval.second));
+
+  //////////////////
+
   afl.append(", colid, double(col_id), rowid, double(row_id), timeid, double(time_id)),<");
 
   for(vector<string>::iterator it = data->bands.begin() ; it != data->bands.end(); ++it)
@@ -335,14 +349,14 @@ void eows::wtscs::request::set_parameters(const char *request)
           assert((array[1]).IsInt());
           pParameters->roi.push_back((array[1]).GetInt());
 
-          pParameters->roi.push_back(0);
+          pParameters->roi.push_back(-11);
 
           assert((array[2]).IsInt());
           pParameters->roi.push_back((array[2]).GetInt());
 
           assert((array[3]).IsInt());
           pParameters->roi.push_back((array[3]).GetInt());
-          pParameters->roi.push_back(391);
+          pParameters->roi.push_back(-22);
         }
       }
       if(string(itr->name.GetString()) == "patterns")

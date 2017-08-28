@@ -84,7 +84,6 @@ void eows::wtscs::status_handler::do_get(const eows::core::http_request& req, eo
     return_exception("Unexpected error in WTSCS status operation.", res);
   }
 
-  ///////////////////////////////////////////////
 }
 
 void eows::wtscs::list_algorithms_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -157,6 +156,7 @@ void eows::wtscs::run_process_handler::do_post(const eows::core::http_request& r
       // Write afl
       string afl = oRequest.write_afl(dynamic_cast<eows::wtscs::twdtw_input_parameters*>(oRequest.input_parameters.get()));
       oRequest.set_status(oRequest.get_UUID(), "In progress");
+      cout << afl << endl;
       system(afl.c_str());
     }
   }
