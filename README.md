@@ -36,7 +36,7 @@ EOWS is built on top of the following libraries:
 - [RapidXML](http://rapidxml.sourceforge.net): a fast XML parser. Version 1.13 is required.
 - [LibGD](https://libgd.github.io/): the GD graphics library.
 
-For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.3.0-linux-ubuntu-14.04.tar.gz.
+For convenience we have prepared a ```tar.gz``` package with RapidJSON, RapidXML and Crow libraries. This package is available at: http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz.
 
 We have also prepared a bash script, named [install-3rdparty-linux-ubuntu-14.04.sh](https://github.com/e-sensing/eows/blob/master/bash/install-3rdparty-linux-ubuntu-14.04.sh), for installing Proj.4, LibGD and the libraries distributed in the above ```tar.gz``` package.
 
@@ -65,7 +65,7 @@ $ mkdir -p ~/eows/3rdparty-src
 
 $ cd ~/eows/3rdparty-src
 
-$ wget http://www.dpi.inpe.br/eows/3rdparty/eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz
+$ wget http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz
 ```
 
 **4.** Install the third-party libraries with the help of a bash script ```install-3rdparty-linux-ubuntu-14.04.sh``` under the ```bash``` folder, in the source code directory:
