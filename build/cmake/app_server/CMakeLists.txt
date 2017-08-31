@@ -35,6 +35,10 @@ if(EOWS_GEOCACHE_ENABLED)
   target_link_libraries(eows_app_server eows_geocache)
 endif()
 
+if(EOWS_AUTH_ENABLED)
+  target_link_libraries(eows_app_server eows_auth)
+endif()
+
 if(EOWS_OGC_OWS_ENABLED)
   target_link_libraries(eows_app_server eows_ows)
 endif()

@@ -18,18 +18,26 @@
  */
 
 /*!
-  \file eows/core/http_response.cpp
+  \file eows/auth/exception.hpp
 
-  \brief Base class that models an HTTP response.
+  \brief Specific exception types for Auth Runtime module.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-// EOWS
-#include "http_response.hpp"
+#ifndef __EOWS_AUTH_EXCEPTION_HPP__
+#define __EOWS_AUTH_EXCEPTION_HPP__
 
-const char eows::core::http_response::access_control_allow_origin_[] = "Access-Control-Allow-Origin";
-const char eows::core::http_response::content_length_[] = "Content-Length";
-const char eows::core::http_response::content_type_[] = "Content-Type";
-const char eows::core::http_response::location_[] = "Location";
-const char eows::core::http_response::unknown_[] = "Unknown";
+// EOWS
+#include "../exception.hpp"
+
+namespace eows
+{
+  //! The namespace for the Auth Runtime module of EOWS.
+  namespace auth
+  {
+
+  }  // end namespace core
+}    // end namespace eows
+
+#endif  // __EOWS_AUTH_EXCEPTION_HPP__

@@ -45,6 +45,11 @@
 #include <boost/log/trivial.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+// Boost Base64
+#include <boost/archive/iterators/binary_from_base64.hpp>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/algorithm/string.hpp>
 
 // RapiJSON
 #include <rapidjson/istreamwrapper.h>
@@ -390,5 +395,48 @@ std::string eows::core::decode(const std::string& encoded_string)
     else
       output += encoded_string[i];
   }
+  return output;
+}
+
+void eows::core::response_json(eows::core::http_response& response, http_response::status_t status_code, const std::string& json)
+{
+  response.set_status(status_code);
+  response.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
+  response.write(json.c_str(), json.size());
+}
+
+std::string eows::core::base64_decode(const std::string& encoded_string)
+{
+  using namespace boost::archive::iterators;
+  using It = transform_width<binary_from_base64<std::string::const_iterator>, 8, 6>;
+  return boost::algorithm::trim_right_copy_if(std::string(It(std::begin(encoded_string)),
+                                                          It(std::end(encoded_string))),
+                                                         [](const char c) {
+                                                           return c == '\0';
+  });
+}
+bool eows::core::read_node_as_bool(const rapidjson::Value&node, const std::string&member_name)
+{
+  rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
+  // TODO: auto format function in common
+  if((jit == node.MemberEnd()))
+    throw eows::parse_error("Please, check the key " + member_name + " in JSON document.");
+  return read_node_as_bool(jit->value);
+}
+
+bool eows::core::read_node_as_bool(const rapidjson::Value& node)
+{
+  if (!node.IsBool())
+    throw eows::parse_error("Could not read JSON node as bool");
+  return node.GetBool();
+}
+
+const std::string eows::core::to_str(const eows::core::query_string_t& query_string)
+{
+  std::string output("?");
+  for(const auto it: query_string)
+    output.append(it.first + "=" + it.second + "&");
+  if (output[output.size()-1] == '&')
+    output.pop_back();
   return output;
 }

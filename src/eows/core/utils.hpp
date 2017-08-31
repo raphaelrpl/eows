@@ -30,6 +30,7 @@
 
 // EOWS
 #include "data_types.hpp"
+#include "http_response.hpp"
 
 // STL
 #include <algorithm>
@@ -53,6 +54,22 @@ namespace eows
       \exception std::exception ...
      */
     void initialize();
+
+    const std::string to_str(const query_string_t& query_string);
+
+    /**
+     * \brief Tries to find a member by name in RapidJSON Node and then read it as boolean.
+     * \throws eows::parse_error When could not find member name or process as boolean like
+     * \return Bool value of node
+     */
+    bool read_node_as_bool(const rapidjson::Value& node, const std::string& member_name);
+
+    /*!
+     * \brief Tries to read RapidJSON Node as boolean value.
+     * \throws eows::parse_error When node is not boolean readble
+     * \return bool value of node
+     */
+    bool read_node_as_bool(const rapidjson::Value& node);
 
     /**
      * \brief Tries to find a member by name in RapidJSON Node and then read it as string.
@@ -116,6 +133,13 @@ namespace eows
     std::string decode(const std::string& encoded_string);
 
     /*!
+     * \brief Decodes a string in base64 format
+     * \param encoded_string Encoded b64 string
+     * \return decoded string
+     */
+    std::string base64_decode(const std::string& encoded_string);
+
+    /*!
      * \brief It generates a unique path (temporary) in system.
      *
      * It uses app_settings temporary data directory as prefix.
@@ -123,6 +147,14 @@ namespace eows
      * \return A Temp file name
      */
     std::string generate_unique_path(const std::string& extension = "");
+
+    /*!
+     * \brief Utility for render a json response for HTTP requests
+     * \param response HTTP Response object
+     * \param status_code HTTP status code
+     * \param json JSON message to reply
+     */
+    void response_json(http_response& response, http_response::status_t status_code, const std::string& json);
 
     /**
      * \brief It applies lower case on given map keys and return a new map with these values

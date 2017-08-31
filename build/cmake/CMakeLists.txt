@@ -248,6 +248,8 @@ option(EOWS_APP_SERVER_ENABLED "Build application web server?" ON)
 
 option(EOWS_SERVICE_ECHO_ENABLED "Build echo service?" OFF)
 
+CMAKE_DEPENDENT_OPTION(EOWS_AUTH_ENABLED "Build webserver with authentication support?" ON "EOWS_APP_SERVER_ENABLED;EOWS_WEBSERVER_CROW_ENABLED" OFF)
+
 CMAKE_DEPENDENT_OPTION(EOWS_OGC_OWS_ENABLED "Build OGC OWS support?" OFF "EOWS_GEOARRAY_ENABLED" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WTSS_ENABLED "Build WTSS service?" ON "EOWS_GEOARRAY_ENABLED" OFF)
@@ -322,9 +324,18 @@ install(DIRECTORY ${EOWS_ABSOLUTE_ROOT_DIR}/share/
 #
 add_subdirectory(core)
 
+#
+# Modules definitions
+#
+
 if(EOWS_HTTP_CPPNETLIB_ENABLED)
   add_definitions(-DEOWS_HTTP_CPPNETLIB_ENABLED)
   add_subdirectory(http_cppnetlib)
+endif()
+
+if(EOWS_AUTH_ENABLED)
+  add_definitions(-DEOWS_AUTH_ENABLED)
+  add_subdirectory(auth)
 endif()
 
 if(EOWS_HTTP_CROW_ENABLED)

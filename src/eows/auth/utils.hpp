@@ -18,18 +18,27 @@
  */
 
 /*!
-  \file eows/core/http_response.cpp
+  \file eows/auth/utils.hpp
 
-  \brief Base class that models an HTTP response.
+  \brief Defines utility helpers for auth module
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-// EOWS
-#include "http_response.hpp"
+#ifndef __EOWS_AUTH_UTILS_HPP__
+#define __EOWS_AUTH_UTILS_HPP__
 
-const char eows::core::http_response::access_control_allow_origin_[] = "Access-Control-Allow-Origin";
-const char eows::core::http_response::content_length_[] = "Content-Length";
-const char eows::core::http_response::content_type_[] = "Content-Type";
-const char eows::core::http_response::location_[] = "Location";
-const char eows::core::http_response::unknown_[] = "Unknown";
+namespace eows
+{
+  namespace auth
+  {
+    /*!
+     * \brief Performs Authentication module initialization
+     *
+     * \throws std::runtime_error When could not intialize module
+     */
+    void initialize();
+  }
+}
+
+#endif // __EOWS_AUTH_UTILS_HPP__

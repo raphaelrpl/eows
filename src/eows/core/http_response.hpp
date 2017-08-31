@@ -86,7 +86,8 @@ namespace eows
         {
           ACCESS_CONTROL_ALLOW_ORIGIN,
           CONTENT_LENGTH,
-          CONTENT_TYPE
+          CONTENT_TYPE,
+          LOCATION
         };
 
         //! Constructor.
@@ -140,6 +141,7 @@ namespace eows
         static const char access_control_allow_origin_[];
         static const char content_length_[];
         static const char content_type_[];
+        static const char location_[];
         static const char unknown_[];
       
         static const char * to_str(header_type_t field_name)

@@ -69,6 +69,8 @@ namespace eows
         //! The request content.
         virtual const char* content() const = 0;
 
+        virtual query_string_t data() const = 0;
+
         //! The request content length.
         virtual std::size_t content_length() const = 0;
 

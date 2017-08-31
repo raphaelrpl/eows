@@ -18,18 +18,16 @@
  */
 
 /*!
-  \file eows/core/http_response.cpp
+  \file eows/auth/defines.hpp
 
-  \brief Base class that models an HTTP response.
+  \brief Defines for EOWS.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-// EOWS
-#include "http_response.hpp"
+#ifndef __EOWS_AUTH_DEFINES_HPP__
+#define __EOWS_AUTH_DEFINES_HPP__
 
-const char eows::core::http_response::access_control_allow_origin_[] = "Access-Control-Allow-Origin";
-const char eows::core::http_response::content_length_[] = "Content-Length";
-const char eows::core::http_response::content_type_[] = "Content-Type";
-const char eows::core::http_response::location_[] = "Location";
-const char eows::core::http_response::unknown_[] = "Unknown";
+#define EOWS_AUTH_FILE "share/eows/config/auth.json"
+
+#endif // __EOWS_AUTH_DEFINES_HPP__

@@ -45,6 +45,10 @@
 #include "../http/crow/utils.hpp"
 #endif
 
+#ifdef EOWS_AUTH_ENABLED
+#include "../auth/utils.hpp"
+#endif
+
 #ifdef EOWS_SCIDB_ENABLED
 #include "../scidb/utils.hpp"
 #endif
@@ -192,6 +196,11 @@ int main(int argc, char *argv[])
 #ifdef EOWS_GEOCACHE_ENABLED
     eows::geocache::initialize();
 #endif
+
+#ifdef EOWS_AUTH_ENABLED
+    eows::auth::initialize();
+#endif
+
 
 #ifdef EOWS_OGC_OWS_ENABLED
     eows::ogc::ows::initialize();
