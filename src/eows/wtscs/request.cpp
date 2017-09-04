@@ -60,7 +60,11 @@ string eows::wtscs::request::get_status(string UUID)
   log_file.append("_log.json");
 
   pFile = fopen(log_file.c_str(), "r");
-  if(pFile != NULL)
+  if(pFile == NULL)
+  {
+    return "none";
+  }
+  else
   {
     fgets(buffer, 100, pFile); // != NULL
     fclose(pFile);

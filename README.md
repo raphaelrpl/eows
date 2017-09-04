@@ -65,7 +65,7 @@ $ mkdir -p ~/eows/3rdparty-src
 
 $ cd ~/eows/3rdparty-src
 
-$ wget http://www.dpi.inpe.br/eows/3rdparty/eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz
+$ wget http://www.dpi.inpe.br/foss/eows/eows-3rdparty-0.5.0-linux-ubuntu-14.04.tar.gz
 ```
 
 **4.** Install the third-party libraries with the help of a bash script ```install-3rdparty-linux-ubuntu-14.04.sh``` under the ```bash``` folder, in the source code directory:
