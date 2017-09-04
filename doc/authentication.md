@@ -5,8 +5,12 @@
 The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token to authenticate a request to API endpoint and use it to access protected resources.
 
 - Resource owner (User) - Entity capable of granting access to some portion of their account;
-- Resource Server (API Server) - Server that provides protected resources, capable of accepting and responding request to protect resources using *access_tokens*;
-- Client - Application making protected resource requests on behalf of the resource owner and with its authorization;
+- Resource Server (API Server) - Server that provides protected resources, capable of accepting, validating and responding request to protect resources using *access_tokens*;
+- Client - Application making protected resource requests on behalf of the resource owner and with its authorization:
+  * Public - Represents clients that are cannot maintain the confidentiality of a *client_secret*. In other words, the secret is not used for these apps (Mobile Apps and Javascripts apps).
+
+  * Confidential - Represents clients which have hability to maintain the confidentiality of the *client_secret*. Typically, they are applications that the source code is not accessible to users. (web-apps)
+
 - Authorization Server - Server handler, issuing *access tokens* to the client after successfully authenticating the resource owner. The user approves or denies the request.
 
 The OAuth2 concepts has multiple grant type implementations:
@@ -16,7 +20,7 @@ The OAuth2 concepts has multiple grant type implementations:
 - Resource Owner password Credentials Grant
 - Client Credentials Grant
 
-**You don't need to implement all of these concepts**. In our scenario, both **Authorization code grant** and **Implicit Grant** works properly.
+**You don't need to implement all of these concepts**. In our scenario, both **Authorization code grant** and **Implicit Grant** works properly. We should be able to display them while creating a new application.
 
 The main token type of OAuth2 standard is *Bearer tokens*. 
 
@@ -39,7 +43,7 @@ In other words, when a user authenticates an client application, the authenticat
 
 - **Roles** - Defines which roles (or protected resources) will be provided to access.
 
-## OAuth 1.0
+## Comparison with OAuth 1.0
 
 OAuth 1.0 does not offered a safe way requirements of signing requests with the client ID and secret. OAuth 2 recognizes this difficulty and replaces signatures with requiring HTTPS for all communications between browsers, clients and the API.
 
@@ -99,7 +103,7 @@ The client will redirect the user to authorization server with following paramet
 
 All of these parameters will be validated on authorization server. The server may ask user to log in and approve client work flow. If approved, they will be redirected from authorization server back to client with following parameters:
 
-```json
+```
 {
   "code": string, // With authorization code
   "state": string // With original state parameters sent in request.
@@ -108,7 +112,7 @@ All of these parameters will be validated on authorization server. The server ma
 
 For authorize new functionality, the client will send **POST** request to the authorization server with following parameters:
 
-```json
+```
 {
   "grant_type": "authorization_code", // Fixed to "authorization_code"
   "client_id": string,     // Client Identifier
@@ -122,7 +126,7 @@ For authorize new functionality, the client will send **POST** request to the au
 
 The authorization server will respond:
 
-```json
+```
 {
   "token_type": "Bearer", // Fixed to "Bearer"
   "expires_in": integer,  // Time expiration in seconds
@@ -189,7 +193,7 @@ The client will redirect the user to authorization server with following paramet
 
 All of these parameters will be validated on authorization server. The server may ask user to log in and approve client work flow. If approved, they will be redirected from authorization server back to client with following parameters:
 
-```json
+```
 {
   "token_type": "Bearer",
   "expires_in": integer, // Time expiration
@@ -210,7 +214,7 @@ With this grant type, the user provides their credentials directly to the servic
 ## Configuration
 
 All configurations are defined in `share/eows/config/auth.json`
-```json
+```
 {
   "session_expiration": integer,
   "oauth2_authorize_uri": string,
@@ -228,7 +232,6 @@ Description:
   * **session_expiration** - Defines a session timeout expiration in seconds. Default is a day (86400 seconds).
 
   * **oauth2_authorize_uri** - Defines subaddress of oauth handlers. Usually are "auth" or "authorize".
-    - **Example**: TODO
   
   * **oauth2_logout_uri** - Sub address to logout users from authorization server
 
@@ -266,23 +269,9 @@ Description:
 
 ## Implementation
 
+TODO
+
 ### Scopes (Roles)
-
-We drafted list of scopes that will be available in the future at **e-sensing/eows**:
-
-For each service **WCS**, **WMS**, **WTSS** and **WTSPS**:
-- **ServiceType.all** Grant full access to ServiceType service, execute all operations and manage users inside this context.
-- **ServiceType.operations** Grant full access to execute WCS operations
-- **ServiceType.users** Grant full access to manage users in WCS
-- **ServiceType.users.new** Can add new users to use WCS service
-- **ServiceType.users.remove** Can revoke user access to WCS service
-
-For global dashboard management:
-- **global.users** Manage users such new/edit/remove/move
-- **global.workspace** Manage workspace metadata
-  - **global.workspace.project** 
-- **global.scidb** Manage access to use SciDB directly
-...
 
 ## References
 
@@ -291,5 +280,4 @@ For global dashboard management:
 - **3** - [Digital Ocean - An Introduction to OAuth 2](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2)
 - **4** - [Guide to OAuth2 Grants](https://alexbilbie.com/guide-to-oauth-2-grants/)
 - **5** - [C++ Rest SDK OAuth2 Server - Granada](https://cookinapps.io/2016/06/c++-rest-sdk-oauth-2-0-server/)
-- **6** - 
-- **7**
+- **6** - [OAuth2 Servers](https://www.oauth.com/oauth2-servers/)
