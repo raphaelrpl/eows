@@ -43,6 +43,21 @@ namespace eows
     {
       using eows::core::web_service_handler::web_service_handler;
 
+      /*!
+       * \brief Performs Authorization check
+       *
+       * Tries to check in session for authorization. If found, check role handling.
+       *
+       * Replies:
+       *   - Authorize template : When user is authenticated but role is not allowed yet.
+       *   - Login template     : When parameters are ok but no session found;
+       *   - Error template     : When an error occurred (forbidden, invalid request)
+       *
+       * \note This method won't reply JSON content.
+       *
+       * \param req
+       * \param res
+       */
       void do_get(const eows::core::http_request& req,
                   eows::core::http_response& res);
 

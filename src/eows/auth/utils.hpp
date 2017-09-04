@@ -28,16 +28,23 @@
 #ifndef __EOWS_AUTH_UTILS_HPP__
 #define __EOWS_AUTH_UTILS_HPP__
 
+// STL
+#include <string>
+#include <map>
+
 namespace eows
 {
   namespace auth
   {
+    struct oauth_parameters;
     /*!
      * \brief Performs Authentication module initialization
      *
      * \throws std::runtime_error When could not intialize module
      */
     void initialize();
+
+    void replace(std::string& tpl, const std::multimap<std::string, std::string>& values, const std::string& prefix = "{{", const std::string& postfix = "}}");
   }
 }
 

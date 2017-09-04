@@ -21,6 +21,27 @@ eows::auth::oauth_parameters::oauth_parameters(const eows::core::query_string_t&
   set_property(query_string, "error_description", error_description);
 }
 
+void eows::auth::oauth_parameters::clear()
+{
+  authorize.clear();
+  code.clear();
+  username.clear();
+  password.clear();
+  access_token.clear();
+  expires_in.clear();
+  refresh_token.clear();
+  token_type.clear();
+  grant_type.clear();
+  response_type.clear();
+  client_id.clear();
+  client_secret.clear();
+  redirect_uri.clear();
+  scope.clear();
+  state.clear();
+  error.clear();
+  error_description.clear();
+}
+
 const std::string eows::auth::oauth_parameters::to_json() const
 {
   std::string json;

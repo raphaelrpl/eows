@@ -1,5 +1,7 @@
 #include "routes.hpp"
 #include "manager.hpp"
+#include "data_types.hpp"
+#include "utils.hpp"
 
 // EOWS OAuth
 #include "oauth2/data_types.hpp"
@@ -10,32 +12,61 @@
 #include "../core/http_request.hpp"
 #include "../core/http_response.hpp"
 
+void reply(eows::core::http_response& res, const eows::auth::oauth_parameters& parameters, std::string tpl, eows::core::http_response::status_t status_code)
+{
+  const auto json = parameters.to_json();
+  res.set_status(status_code);
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html; charset=utf-8");
+
+  eows::auth::replace(tpl, parameters.to_query_string());
+
+  res.write(tpl.c_str(), tpl.size());
+}
+
+void forbidden(eows::core::http_response& res, eows::auth::oauth_parameters& parameters)
+{
+  parameters.clear();
+  parameters.error = "access_forbidden";
+  parameters.error_description = "Access restrict";
+
+  reply(res, parameters,
+        eows::auth::manager::instance().error_template(),
+        eows::core::http_response::forbidden);
+}
+
+//void move(eows::core::http_response& res, const std::string& location, eows::auth::oauth_parameters& parameters)
+//{
+//  const auto query_string = eows::core::to_str(parameters.to_query_string());
+
+//  res.add_header(eows::core::http_response::LOCATION, location+query_string);
+//}
+
 void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   oauth_parameters input_params(req.query_string());
+  oauth_parameters oresp;
 
-  eows::core::http_response::status_t status_code;
-
+  // Check required OAuth2 parameters
   if (input_params.error.empty() &&  (input_params.response_type.empty() || input_params.client_id.empty()))
-    status_code = eows::core::http_response::forbidden;
-  else
-  {
-    if (!input_params.scope.empty())
-    {
-      // Check for Authorization roles in session/DB
-      auto s = manager::instance().find_session(req);
+    return forbidden(res, oresp);
 
-      if (s != nullptr)
-      {
-        if (!s->expired() && s->has_role(input_params.scope))
-        {
-          // OK, everything is fine.
-        }
-      }
-    }
-  }
+  // Check for Authorization roles in session/DB
+  auto s = manager::instance().find_session(req);
 
-  res.set_status(status_code);
+  // Make sure session found or parameters valid. Otherwise, reply login page
+  if (s == nullptr || input_params.scope.empty())
+    return reply(res, oresp,
+                 manager::instance().login_template(),
+                 eows::core::http_response::OK);
+
+  // Make sure the specified role is in app
+  if (!s->has_role(input_params.scope))
+    return forbidden(res, oresp);
+
+  // OK, everything is fine
+  return reply(res, oresp,
+               manager::instance().authorize_template(),
+               eows::core::http_response::OK);
 }
 
 void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, eows::core::http_response& res)

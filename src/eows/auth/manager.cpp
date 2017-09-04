@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <fstream>
 
 // RapidJSON
 #include <rapidjson/document.h>
@@ -30,8 +31,34 @@ struct eows::auth::manager::impl
   std::vector<std::unique_ptr<eows::auth::oauth_client>> clients;
   std::vector<std::unique_ptr<eows::auth::session>> sessions;
 
+  std::string authorize_template;
+  std::string login_template;
+  std::string error_template;
+
   bool loaded = false;
+
+  std::string open_file(const std::string& file_path);
+  void load_templates();
 };
+
+inline std::string eows::auth::manager::impl::open_file(const std::string& file_path)
+{
+  boost::filesystem::path template_file(eows::core::app_settings::instance().get_base_dir());
+
+  template_file /= file_path;
+  std::ifstream file(template_file.string(), std::ifstream::in);
+
+  return std::string(std::istreambuf_iterator<char>(file),
+                     std::istreambuf_iterator<char>());
+}
+
+inline void eows::auth::manager::impl::load_templates()
+{
+  // TODO: Throw error if file not found
+  authorize_template = open_file(config.oauth2_message_template_path);
+  login_template = open_file(config.oauth2_login_template_path);
+  error_template = open_file(config.oauth2_error_template_path);
+}
 
 eows::auth::manager::~manager()
 {
@@ -47,6 +74,21 @@ eows::auth::manager&eows::auth::manager::instance()
 const eows::auth::config_t&eows::auth::manager::settings() const
 {
   return pimpl_->config;
+}
+
+const std::string&eows::auth::manager::login_template() const
+{
+  return pimpl_->login_template;
+}
+
+const std::string&eows::auth::manager::authorize_template() const
+{
+  return pimpl_->authorize_template;
+}
+
+const std::string&eows::auth::manager::error_template() const
+{
+  return pimpl_->error_template;
 }
 
 void eows::auth::manager::initialize()
@@ -69,6 +111,8 @@ void eows::auth::manager::initialize()
     pimpl_->config.oauth2_message_template_path = eows::core::read_node_as_string(doc, "oauth2_message_template_path");
     pimpl_->config.oauth2_error_template_path = eows::core::read_node_as_string(doc, "oauth2_error_template_path");
     pimpl_->config.use_refresh_token = eows::core::read_node_as_bool(doc, "use_refresh_token");
+    // Loading HTML Templates
+    pimpl_->load_templates();
 
     rapidjson::Value::ConstMemberIterator it = doc.FindMember("users");
     if (it == doc.MemberEnd())
@@ -132,19 +176,27 @@ eows::auth::session*eows::auth::manager::find_session(const eows::core::http_req
   std::string token;
 
   // Query String
-  {
-    auto query_string = request.query_string();
-    auto it = query_string.find("access_token");
-    if (it != query_string.end())
-      token = it->second;
-  }
-
+  auto query_string = request.query_string();
+  auto it = query_string.find("access_token");
+  if (it != query_string.end())
+    token = it->second;
+  else
   // Body
   {
     auto body = request.data();
     auto it = body.find("access_token");
     if (it != body.end())
       token = it->second;
+    else
+    {
+      // Headers
+      auto headers = request.headers();
+      auto it = headers.find("X-ESENSING-EOWS-TOKEN");
+      if (it != headers.end())
+        token = it->second;
+      else
+      { /* Throw Error */ }
+    }
   }
 
   return find_session(token);

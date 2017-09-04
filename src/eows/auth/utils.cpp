@@ -65,3 +65,20 @@ void eows::auth::initialize()
 
   EOWS_LOG_INFO("EOWS Authentication module loaded.");
 }
+
+void eows::auth::replace(std::string& tpl, const std::multimap<std::string, std::string>& values, const std::string& prefix, const std::string& postfix)
+{
+  std::string tag;
+  std::string v;
+  for (const auto& it : values)
+  {
+    tag.assign(prefix + " " + it.first + " " + postfix);
+    v = it.second;
+    size_t pos = 0;
+    while ((pos = tpl.find(tag, pos)) != std::string::npos)
+    {
+      tpl.replace(pos, tag.size(), v);
+      pos += v.size();
+    }
+  }
+}

@@ -62,6 +62,7 @@ namespace eows
       std::string error;
       std::string error_description;
 
+      void clear();
       const std::string to_json() const;
       const eows::core::query_string_t to_query_string() const;
 

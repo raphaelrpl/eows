@@ -54,6 +54,10 @@ namespace eows
         static manager& instance();
 
         const config_t& settings() const;
+
+        const std::string& login_template() const;
+        const std::string& authorize_template() const;
+        const std::string& error_template() const;
         void initialize();
 
         oauth_client* find_client(const std::string& client_id) const;
@@ -65,7 +69,6 @@ namespace eows
                            const std::string& application_name,
                            const std::vector<std::string>& roles,
                            std::string& secret);
-
       protected:
         manager();
 
