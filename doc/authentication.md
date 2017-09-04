@@ -4,10 +4,10 @@
 
 The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token to authenticate a request to API endpoint and use it to access protected resources.
 
-- Resource owner (User) - Entity capable of granting access to protected resource;
+- Resource owner (User) - Entity capable of granting access to some portion of their account;
 - Resource Server (API Server) - Server that provides protected resources, capable of accepting and responding request to protect resources using *access_tokens*;
 - Client - Application making protected resource requests on behalf of the resource owner and with its authorization;
-- Authorization Server - Server handler, issuing *access tokens* to the client after successfully authenticating the resource owner
+- Authorization Server - Server handler, issuing *access tokens* to the client after successfully authenticating the resource owner. The user approves or denies the request.
 
 The OAuth2 concepts has multiple grant type implementations:
 
@@ -27,9 +27,32 @@ In other words, when a user authenticates an client application, the authenticat
 
 **Note** that *bearer token* should not be passed in page URLS. Instead of that, prefer to pass through HTTP Header (e.g *X-ESENSING-EOWS-TOKEN: BearerTokenHere*)
 
+## Glossary
+
+- **App** - or *client* represents an interface for accessing user resources.
+
+- **Redirect URIs** - The OAuth2 Server will only redirect users to a **registered URI**. Any redirect URI must be protected with TLS (HTTPs support) to prevent *access_token* to be intercepted during request redirect.
+
+- **Client ID** - An unique identifier for an **App**. Client ID is public information and used to build login URL or included into web-page or client requesters.
+
+- **Client Secret** - An unique value for **App** using **Client ID**. The *secret* must be kept confidential.
+
+- **Roles** - Defines which roles (or protected resources) will be provided to access.
+
+## OAuth 1.0
+
+OAuth 1.0 does not offered a safe way requirements of signing requests with the client ID and secret. OAuth 2 recognizes this difficulty and replaces signatures with requiring HTTPS for all communications between browsers, clients and the API.
+
+This spec also requires that the API server has access to the application's ID and secret. In other words, the Authorization server and Resource server are the same application. It is of course breaks the architecture of most large providers where the both are completely separated. 
+
+OAuth 2 supports the separation of the roles of obtaining user authorization and handling API calls. Larger providers needing this scalability are free to implement it as such, and smaller providers can use the same server for both roles if they wish.
+
+
+## Grant Types
+
 ### Authorization code grant
 
-The client will request a code by intermediation of the user. Once with code, the client will be able to request access token to access user's resources.
+The client will request a code by intermediation of the user. Once with code, the client will be able to request access token to access user's resources. This grant type is recommended for apps running on a web server, browser-based and mobile apps.
 
 ```
 +----------+
@@ -46,7 +69,7 @@ The client will request a code by intermediation of the user. Once with code, th
 |  Agent   +----(B)-- User authenticates --->|     Server    |
 |          |                                 |               |
 |          +----(C)-- Authorization Code ---<|               |
-+-|----|---+                                 +---------------+
++----------+                                 +---------------+
   |    |                                         ^      v
  (A)  (C)                                        |      |
   |    |                                         |      |
@@ -74,7 +97,7 @@ The client will redirect the user to authorization server with following paramet
 }
 ```
 
-All of these parameters will be validated on authorization server. The server may ask user to log in and approve client work flow. If approved, they will be redirected from authorization servere back to client with following parameters:
+All of these parameters will be validated on authorization server. The server may ask user to log in and approve client work flow. If approved, they will be redirected from authorization server back to client with following parameters:
 
 ```json
 {
@@ -83,7 +106,7 @@ All of these parameters will be validated on authorization server. The server ma
 }
 ```
 
-For authorize new functionality, the client will send **POST** request to the authorizatin server with following parameters:
+For authorize new functionality, the client will send **POST** request to the authorization server with following parameters:
 
 ```json
 {
@@ -94,6 +117,8 @@ For authorize new functionality, the client will send **POST** request to the au
   "code": string           // Authorization code received from query string
 }
 ```
+
+**Note** that **client_secret** is sent since this request is made from server-side code.
 
 The authorization server will respond:
 
@@ -162,7 +187,7 @@ The client will redirect the user to authorization server with following paramet
 }
 ```
 
-All of these parameters will be validated on authorization server. The server may ask user to log in and approve client work flow. If approved, they will be redirected from authorization servere back to client with following parameters:
+All of these parameters will be validated on authorization server. The server may ask user to log in and approve client work flow. If approved, they will be redirected from authorization server back to client with following parameters:
 
 ```json
 {
@@ -261,6 +286,10 @@ For global dashboard management:
 
 ## References
 
-- **1** - [RFC 6749 - The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
-- **2** - [Digital Ocean - An Introduction to OAuth 2](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2)
-- **3** - [Guide to OAuth2 Grants](https://alexbilbie.com/guide-to-oauth-2-grants/)
+- **1** - [OAuth 2.0](https://oauth.net/2/)
+- **2** - [RFC 6749 - The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
+- **3** - [Digital Ocean - An Introduction to OAuth 2](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2)
+- **4** - [Guide to OAuth2 Grants](https://alexbilbie.com/guide-to-oauth-2-grants/)
+- **5** - [C++ Rest SDK OAuth2 Server - Granada](https://cookinapps.io/2016/06/c++-rest-sdk-oauth-2-0-server/)
+- **6** - 
+- **7**
