@@ -62,19 +62,28 @@ string eows::wtscs::request::get_status(string UUID)
   pFile = fopen(log_file.c_str(), "r");
   if(pFile == NULL)
   {
-    return "none";
+    return "None";
   }
   else
   {
-    fgets(buffer, 100, pFile); // != NULL
+    fgets(buffer, 100, pFile);
     fclose(pFile);
   }
   string data;
   data.append(buffer);
   size_t pos = 13;
   size_t len = data.find("\" ") - pos;
-
-  return data.substr(pos, len);
+  string reply = data.substr(pos, len);
+  size_t found = reply.find("In progress");
+  if(found != string::npos)
+  {
+    reply = find_scidb_query(UUID);
+    return reply;
+  }
+  else
+  {
+    return reply;
+  }
 }
 
 void eows::wtscs::request::set_status(string UUID, string status)
@@ -232,7 +241,7 @@ string eows::wtscs::request::get_scidb_schema(string coverage)
 {
   FILE* fp;
   char file_type[500];
-  string scidb_scheme, attributes;
+  string scidb_schema, attributes;
   string afl_query;
 
   afl_query.append("/opt/scidb/15.12/bin/iquery -aq \"show(");
@@ -248,16 +257,49 @@ string eows::wtscs::request::get_scidb_schema(string coverage)
 
   while(fgets(file_type, sizeof(file_type), fp) != NULL)
   {
-    scidb_scheme.append(file_type);
+    scidb_schema.append(file_type);
   }
 
   pclose(fp);
 
-  size_t pos  = scidb_scheme.find("[");
-  size_t len = scidb_scheme.find("]") - pos + 1;
-  attributes.append(scidb_scheme.substr(pos, len));
+  size_t pos  = scidb_schema.find("[");
+  size_t len = scidb_schema.find("]") - pos + 1;
+  attributes.append(scidb_schema.substr(pos, len));
 
   return attributes;
+}
+
+string eows::wtscs::request::find_scidb_query(string myUUID)
+{
+  FILE* fp;
+  char file_type[100000];
+  string scidb_schema;
+  string afl_query;
+  string my_status;
+
+  afl_query.append("/opt/scidb/15.12/bin/iquery -aq \"list(\'arrays\')\"");
+
+  fp = popen(afl_query.c_str(), "r");
+
+    while(fgets(file_type, sizeof(file_type), fp) != NULL)
+  {
+    scidb_schema.append(file_type);
+  }
+
+  pclose(fp);
+
+  size_t found = scidb_schema.find(myUUID);
+  if(found != string::npos)
+  {
+   my_status.append("Completed");
+    set_status(myUUID, my_status);
+  }
+  else
+  {
+    my_status.append("In progress");
+  }
+
+  return my_status;
 }
 
 void eows::wtscs::request::write_setting()
