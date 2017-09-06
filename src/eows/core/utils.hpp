@@ -57,6 +57,8 @@ namespace eows
 
     const std::string to_str(const query_string_t& query_string);
 
+    std::vector<std::string> split(const std::string& str, char delimiter, std::vector<std::string>& roles);
+
     /**
      * \brief Tries to find a member by name in RapidJSON Node and then read it as boolean.
      * \throws eows::parse_error When could not find member name or process as boolean like
@@ -138,6 +140,8 @@ namespace eows
      * \return decoded string
      */
     std::string base64_decode(const std::string& encoded_string);
+
+    std::string base64_encode(const std::string& raw_string);
 
     /*!
      * \brief It generates a unique path (temporary) in system.

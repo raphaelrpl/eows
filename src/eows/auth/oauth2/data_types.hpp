@@ -79,6 +79,9 @@ namespace eows
       std::vector<std::string> roles;
       std::vector<std::string> redirect_uris;
       std::time_t created_at;
+
+      bool has_redirect_uri(const std::string& uri) const;
+      bool has_role(const std::string& role) const;
     };
 
     struct session
@@ -88,21 +91,13 @@ namespace eows
       std::string user;
       std::vector<std::string> roles;
 
-      bool has_role(const std::string& role_name)
-      {
-        for(const auto& r: roles)
-          if (r == role_name)
-            return true;
-        return false;
-      }
+      bool has_role(const std::string& role_name);
+      bool expired() const;
+    };
 
-      bool expired() const
-      {
-        std::time_t now = std::time(nullptr);
-        long int seconds = (long int)std::difftime(now, update_time);
+    struct oauth_code
+    {
 
-        return seconds > 0;
-      }
     };
   }
 }

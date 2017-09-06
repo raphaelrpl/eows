@@ -33,6 +33,15 @@
 // EOWS Core
 #include "../core/logger.hpp"
 #include "../core/service_operations_manager.hpp"
+#include "../core/utils.hpp"
+
+// STL
+#include <cstring>
+#include <memory>
+
+// OpenSSL
+#include <openssl/aes.h>
+#include <openssl/rand.h>
 
 void register_routes()
 {
@@ -52,6 +61,10 @@ void register_routes()
         "/oauth2/" + config.oauth2_logout_uri,
         std::unique_ptr<eows::auth::oauth2_logout>(new eows::auth::oauth2_logout)
         );
+
+  eows::core::service_operations_manager::instance().insert(
+        "/login",
+        std::unique_ptr<eows::auth::dummy>(new eows::auth::dummy));
 }
 
 void eows::auth::initialize()
@@ -82,3 +95,110 @@ void eows::auth::replace(std::string& tpl, const std::multimap<std::string, std:
     }
   }
 }
+
+std::string eows::auth::encrypt(const std::string& text, std::string password)
+{
+  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
+
+const int text_size = text.size() + 1;
+unsigned char *text_to_encrypt = new unsigned char[text_size]();
+  memcpy(text_to_encrypt,text.c_str(),text.size()+1);
+
+const int key_size = password.size() + 1;
+unsigned char *key = new unsigned char[key_size]();
+
+  memcpy(key,password.c_str(),password.size()+1);
+unsigned char enc_out[256];
+  AES_KEY enc_key;
+  AES_set_encrypt_key(key, 256, &enc_key);
+  AES_encrypt(text_to_encrypt, enc_out, &enc_key);
+
+delete[] text_to_encrypt;
+delete[] key;
+  return std::string(reinterpret_cast<const char*>(enc_out),256);
+//  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
+
+//  const int text_size = text.size() + 1;
+//  std::unique_ptr<unsigned char> text_to_encrypt(new unsigned char[text_size]);
+//  std::memcpy(text_to_encrypt.get(), text.c_str(), text.size() + 1);
+
+//  const int key_size = password.size() + 1;
+//  std::unique_ptr<unsigned char> key(new unsigned char[key_size]);
+
+//  std::memcpy(key.get(), password.c_str(), password.size() + 1);
+//  unsigned char enc_out[256];
+//  AES_KEY enc_key;
+//  AES_set_encrypt_key(key.get(), 256, &enc_key);
+//  AES_encrypt(text_to_encrypt.get(), enc_out, &enc_key);
+
+//  return std::string(reinterpret_cast<const char*>(enc_out),256);
+}
+
+std::string eows::auth::decrypt(const std::string& text, std::string password)
+{
+  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
+
+const int key_size = password.size() + 1;
+unsigned char *key = new unsigned char[key_size]();
+  memcpy(key,password.c_str(),password.size()+1);
+
+  unsigned char dec_out[256];
+  AES_KEY dec_key;
+  AES_set_decrypt_key(key,256,&dec_key);
+
+  unsigned char crypted_text[256];
+  memcpy(crypted_text,text.c_str(),256);
+  AES_decrypt(crypted_text, dec_out, &dec_key);
+
+delete[] key;
+
+  return std::string(reinterpret_cast<const char*>(dec_out));
+//  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
+
+//  const int key_size = password.size() + 1;
+//  std::unique_ptr<unsigned char> key(new unsigned char[key_size]);
+//  std::memcpy(key.get(), password.c_str(), password.size()+1);
+
+//  unsigned char dec_out[256];
+//  AES_KEY dec_key;
+//  AES_set_decrypt_key(key.get(), 256, &dec_key);
+
+//  unsigned char crypted_text[256];
+//  memcpy(crypted_text, text.c_str(), 256);
+//  AES_decrypt(crypted_text, dec_out, &dec_key);
+
+//  return std::string(reinterpret_cast<const char*>(dec_out));
+}
+
+static const std::string default_chars = "abcdefghijklmnaoqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+std::string random_string(size_t len = 15, std::string const &allowed_chars = default_chars)
+{
+  std::mt19937_64 gen { std::random_device()() };
+
+  std::uniform_int_distribution<size_t> dist { 0, allowed_chars.length()-1 };
+
+  std::string ret;
+
+  std::generate_n(std::back_inserter(ret), len, [&] { return allowed_chars[dist(gen)]; });
+  return ret;
+}
+
+std::string eows::auth::generate(const int& length)
+{
+  return random_string(length);
+}
+
+//std::string eows::auth::generate(const int& length)
+//{
+//  unsigned char nonce[length];
+//  int rc = RAND_bytes(nonce, sizeof(nonce));
+////  unsigned long err = ERR_get_error();
+
+//  if (rc != 1) {
+//    // THROW error
+
+////    unsigned long err = ERR_get_error();
+//  }
+//  return to_utf8string(std::string(reinterpret_cast<const char*>(nonce)));
+//}

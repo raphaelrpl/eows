@@ -440,3 +440,18 @@ const std::string eows::core::to_str(const eows::core::query_string_t& query_str
     output.pop_back();
   return output;
 }
+
+std::string eows::core::base64_encode(const std::string& raw_string)
+{
+  using namespace boost::archive::iterators;
+  using It = base64_from_binary<transform_width<std::string::const_iterator, 6, 8>>;
+  auto tmp = std::string(It(std::begin(raw_string)), It(std::end(raw_string)));
+  return tmp.append((3 - raw_string.size() % 3) % 3, '=');
+}
+
+std::vector<std::string> eows::core::split(const std::string& str, char delimiter, std::vector<std::string>& roles)
+{
+  boost::split(roles, str, boost::is_any_of("\t"+delimiter));
+
+  return roles;
+}

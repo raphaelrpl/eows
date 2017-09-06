@@ -81,13 +81,20 @@ namespace eows
          * \param client_id Client OAuth2 requested
          * \param oresp Target output oauth parameters based in valid client
          */
-        void validate_client(const std::string &client_id, oauth_parameters &oresp);
+        oauth_client* validate_client(const std::string &client_id, oauth_parameters &oresp);
+
+        /*!
+         * \brief Performs User credentials validation
+         * \param request
+         * \param response
+         */
+        void validate_credentials(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
 
         /*!
          * \brief Performs OAuth2 scope validation and set the result to output parameters
          * \param oresp
          */
-        void validate_scope(oauth_parameters& oresp);
+        bool validate_roles(oauth_parameters& oresp, std::vector<std::string>& roles);
 
       protected:
         oauth_parameters params_;

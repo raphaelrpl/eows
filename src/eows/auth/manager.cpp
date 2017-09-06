@@ -2,9 +2,11 @@
 #include "defines.hpp"
 #include "exception.hpp"
 #include "data_types.hpp"
+#include "utils.hpp"
 
 // EOWS OAuth2
 #include "oauth2/data_types.hpp"
+#include "oauth2/utils.hpp"
 
 // EOWS Core
 #include "../core/app_settings.hpp"
@@ -26,14 +28,15 @@
 struct eows::auth::manager::impl
 {
   eows::auth::config_t config;
-  std::vector<eows::auth::user_t> users;
-
+  std::vector<std::unique_ptr<eows::auth::user_t>> users;
   std::vector<std::unique_ptr<eows::auth::oauth_client>> clients;
   std::vector<std::unique_ptr<eows::auth::session>> sessions;
 
   std::string authorize_template;
   std::string login_template;
   std::string error_template;
+
+  int client_id_length = 16;
 
   bool loaded = false;
 
@@ -123,23 +126,23 @@ void eows::auth::manager::initialize()
 
     for(const auto& user_elm: it->value.GetArray())
     {
-      user_t u;
-      u.username = eows::core::read_node_as_string(user_elm, "username");
-      u.password = eows::core::read_node_as_string(user_elm, "password");
-      pimpl_->users.push_back(u);
+      std::unique_ptr<user_t> u(new user_t);
+      u->username = eows::core::read_node_as_string(user_elm, "username");
+      u->password = eows::core::read_node_as_string(user_elm, "password");
+      pimpl_->users.push_back(std::move(u));
     }
-
-    std::unique_ptr<oauth_client> dummy_client(new oauth_client);
-    dummy_client->key = "key_secret";
     std::vector<std::string> dummy_roles;
+    dummy_roles.push_back("user.email");
     dummy_roles.push_back("wcs.all");
     dummy_roles.push_back("wtss.all");
     dummy_roles.push_back("wtsps.all");
     dummy_roles.push_back("global.users");
     dummy_roles.push_back("global.workspace");
-    dummy_client->roles = dummy_roles;
-    dummy_client->type = "public";
-    pimpl_->clients.push_back(std::move(dummy_client));
+    std::vector<std::string> uris;
+    uris.push_back("http://localhost:7654/echo");
+
+    std::string secret;
+    create_client("public", uris, "Teste APP", dummy_roles, secret);
 
     pimpl_->loaded = true;
   }
@@ -151,7 +154,7 @@ eows::auth::oauth_client* eows::auth::manager::find_client(const std::string& cl
                             pimpl_->clients.end(),
                             [&client_id] (const std::unique_ptr<oauth_client>& client)
                             {
-                              return client->key == client_id; // TODO: remove it since client.key will be encrypted
+                              return client->id == client_id; // TODO: remove it since client.key will be encrypted
                             });
   if (found != pimpl_->clients.end())
     return found->get();
@@ -202,20 +205,56 @@ eows::auth::session*eows::auth::manager::find_session(const eows::core::http_req
   return find_session(token);
 }
 
-void eows::auth::manager::create_client(const std::string& type, const std::vector<std::string>& redirect_uris, const std::string& application_name, const std::vector<std::string>& roles, std::string& secret)
+eows::auth::user_t*eows::auth::manager::find_user(const std::string& username) const
+{
+  for(const auto& user: pimpl_->users)
+    if (user->username == username)
+      return user.get();
+  return nullptr;
+}
+
+bool eows::auth::manager::authenticate(const std::string& username, const std::string& password)
+{
+  for(const auto& user: pimpl_->users)
+    if (user->match(username, password))
+      return true;
+  return false;
+}
+
+void eows::auth::manager::create_client(const std::string& type, const std::vector<std::string>& redirect_uris,
+                                        const std::string& application_name, const std::vector<std::string>& roles,
+                                        std::string& secret)
 {
   std::unique_ptr<oauth_client> client(new oauth_client);
 
-  client->id = "unique_id_" + application_name;
+  // Generating Secret based 12 byte length.
+  secret = "some_secret";/*generate(12);*/
+
+  client->id = "some_id";/*generate(pimpl_->client_id_length);*/
 //oauth2.client:value:myfNv849Z1GNuPAN
-  client->key = "encrypted_" + client->id;
+  client->key = encrypt(client->id, secret);
   client->type = type;
   client->application_name = application_name;
   client->roles = roles;
   client->redirect_uris = redirect_uris;
-  secret = "secret_used_to_encrypt_" + client->key;
+
+  std::cout << "Client ID: " << client->id << std::endl;
+  std::cout << "Client KEY: " << client->key << std::endl;
+  std::cout << "Client Secret: " << secret << std::endl;
 
   pimpl_->clients.push_back(std::move(client));
+}
+
+void eows::auth::manager::create_session(const eows::auth::user_t& user)
+{
+  std::unique_ptr<session> s(new session);
+  s->token = generate_token();
+  s->update_time = std::time_t(nullptr);
+  s->user = user.username;
+  std::vector<std::string> roles;
+  roles.push_back("user.email");
+  s->roles = roles;
+  pimpl_->sessions.push_back(std::move(s));
 }
 
 eows::auth::manager::manager()

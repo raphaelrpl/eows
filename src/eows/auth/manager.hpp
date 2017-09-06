@@ -46,6 +46,7 @@ namespace eows
     struct config_t;
     struct oauth_client;
     struct session;
+    struct user_t;
 
     class manager : private boost::noncopyable
     {
@@ -63,12 +64,17 @@ namespace eows
         oauth_client* find_client(const std::string& client_id) const;
         session* find_session(const std::string& token) const;
         session* find_session(const eows::core::http_request& request) const;
+        user_t* find_user(const std::string& username) const;
+
+        bool authenticate(const std::string& username, const std::string& password);
 
         void create_client(const std::string& type,
                            const std::vector<std::string>& redirect_uris,
                            const std::string& application_name,
                            const std::vector<std::string>& roles,
                            std::string& secret);
+
+        void create_session(const user_t& user);
       protected:
         manager();
 

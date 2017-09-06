@@ -87,13 +87,7 @@ namespace eows
 
           eows::core::query_string_t data() const
           {
-            const std::string body = content();
-            std::string::size_type pos = body.find("?");
-
-            if(pos != std::string::npos)
-              return expand(body.substr(pos + 1));
-            else
-              return eows::core::query_string_t();
+            return expand(content());
           }
 
           std::size_t content_length() const

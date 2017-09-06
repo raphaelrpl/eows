@@ -1,5 +1,13 @@
 #include "data_types.hpp"
 
+bool has(const std::vector<std::string> arr, const std::string& str)
+{
+  for(const auto& r: arr)
+    if (r == str)
+      return true;
+  return false;
+}
+
 eows::auth::oauth_parameters::oauth_parameters(const eows::core::query_string_t& query_string)
 {
   set_property(query_string, "authorize", authorize);
@@ -134,4 +142,27 @@ void eows::auth::oauth_parameters::set_property(const eows::core::query_string_t
 
   if (it != query_string.end())
     target.assign(it->second);
+}
+
+bool eows::auth::oauth_client::has_redirect_uri(const std::string& uri) const
+{
+  return has(redirect_uris, uri);
+}
+
+bool eows::auth::oauth_client::has_role(const std::string& role) const
+{
+  return has(roles, role);
+}
+
+bool eows::auth::session::has_role(const std::string& role_name)
+{
+  return has(roles, role_name);
+}
+
+bool eows::auth::session::expired() const
+{
+  std::time_t now = std::time(nullptr);
+  long int seconds = (long int)std::difftime(now, update_time);
+
+  return seconds > 0;
 }

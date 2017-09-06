@@ -1,6 +1,11 @@
 #include "authorization_code.hpp"
+#include "utils.hpp"
+#include "../data_types.hpp"
 #include "../exception.hpp"
 #include "../manager.hpp"
+
+// EOWS Core
+#include "../../core/utils.hpp"
 
 eows::auth::authorization_code::authorization_code(const oauth_parameters& p)
   : params_(p)
@@ -27,15 +32,42 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
    */
   validate_client(params_.client_id, output);
 
-  if (params_.response_type.empty())
-    throw eows_error("Missing response_type parameter");
-  /*Value MUST be set to "code" or one of the OpenID authorization code including
-    response_types "code token", "code id_token", "code token id_token"*/
-  else if (params_.response_type != "none" /*&& ! "code" in response_type !*/)
-    throw eows_error("Unsupported ");
+  if (output.error.empty())
+  {
+    // Set state for CSRF attacks
+    output.state = params_.state;
 
-  // Validate OAuth Scopes
-  validate_scope(output);
+    // Validate credentials, code and authenticate user
+    validate_credentials(output, request, response);
+
+    // On no error,
+    if (output.error.empty())
+    {
+      // Get Roles. TODO: Browser may encode space as "%20" or "+" for spaces. We should transform in single pattern
+      std::vector<std::string> roles;
+      if (params_.code.empty())
+        eows::core::split(params_.scope, '+', roles);
+      else
+      {
+        // Retrieve default roles of Generated Code
+      }
+
+      if (validate_roles(output, roles))
+      {
+        if (params_.response_type == "code")
+        {
+          // Create Code
+//          create_code(output, request, response);
+//          params_.code = client_code.code;
+//          params_.username = client_code.username;
+        }
+        else
+        {
+          // Create Access Token
+        }
+      }
+    }
+  }
 
   return output;
 }
@@ -45,22 +77,96 @@ const std::string eows::auth::authorization_code::information()
   return std::string();
 }
 
-void eows::auth::authorization_code::validate_client(const std::string& client_id, eows::auth::oauth_parameters& oresp)
+eows::auth::oauth_client* eows::auth::authorization_code::validate_client(const std::string& client_id, eows::auth::oauth_parameters& oresp)
 {
   // Find Client in cache/database | Validate
+  auto client = manager::instance().find_client(client_id);
 
-  // If found, validate redirect URI
-  if (!params_.redirect_uri.empty())
+  if (client == nullptr)
+    invalid_request(oresp, "No client found");
+  else
   {
-    // Validate URI
+    // If found, validate redirect URI
+    if (!params_.redirect_uri.empty())
+    {
+      // Validate URI
+      if (!client->has_redirect_uri(params_.redirect_uri))
+        invalid_request(oresp, "No redirect uri found in client");
+      else
+      {
+        oresp.redirect_uri = params_.redirect_uri;
+
+        if (params_.response_type != "code" &&
+            params_.grant_type != "authorization_code")
+          unsupported(oresp);
+      }
+    }
+    else
+      oresp.redirect_uri = ""; // Get default redirect URI. If empty, throw error
+  }
+
+  return client;
+}
+
+void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_parameters& oresp,
+                                                          const eows::core::http_request& request,
+                                                          eows::core::http_response& response)
+{
+  /*
+   * If GrantType is AuthorizationCode, then the user is exchanging a code for access_token
+   */
+  if (params_.grant_type == "authorization_code")
+  {
+    if (params_.code.empty())
+      return access_denied(oresp);
+    // Retrieve Access Token from Code
+
+    /*
+     * Find for user access token using generated code before
+     *
+     * {
+     *   "code": "someHashUsedToRetrieveAccessToken",
+     *   "state": "someHashCRSFToken"
+     * }
+     */
   }
   else
   {
-    oresp.redirect_uri = ""; // Get default redirect URI. If empty, throw error
+    if (!params_.client_secret.empty()) // && is_valid_secret(params_.client_secret))
+      return unauthorized(oresp);
+
+    if (!params_.authorize.empty() && params_.authorize == "authorize")
+    {
+      // Retrieve Session from request/response
+      session* s = manager::instance().find_session(request);
+
+      if (s == nullptr)
+        return access_denied(oresp);
+
+      user_t* u = manager::instance().find_user(s->user);
+
+      if (u == nullptr)
+        return access_denied(oresp);
+    }
+    else
+    {
+      if (params_.username.empty() || params_.password.empty())
+        return access_denied(oresp);
+
+      // Validate User Credentials
+      //
+      user_t* user = manager::instance().find_user(params_.username);
+      //
+      if (user == nullptr || user->password != params_.password) // We should compare password using password hash
+        return access_denied(oresp);
+
+      // Create session
+      manager::instance().create_session(*user);
+    }
   }
 }
 
-void eows::auth::authorization_code::validate_scope(eows::auth::oauth_parameters& oresp)
+bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters& oresp, std::vector<std::string>& roles)
 {
-
+  return false;
 }

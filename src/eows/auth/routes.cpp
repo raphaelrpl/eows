@@ -14,7 +14,6 @@
 
 void reply(eows::core::http_response& res, const eows::auth::oauth_parameters& parameters, std::string tpl, eows::core::http_response::status_t status_code)
 {
-  const auto json = parameters.to_json();
   res.set_status(status_code);
   res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html; charset=utf-8");
 
@@ -41,37 +40,49 @@ void forbidden(eows::core::http_response& res, eows::auth::oauth_parameters& par
 //  res.add_header(eows::core::http_response::LOCATION, location+query_string);
 //}
 
+const std::string referer(const eows::core::http_request& request)
+{
+  std::string ref;
+  const auto headers = request.headers();
+
+  auto it = headers.find("Referer");
+  if (it != headers.end())
+    ref.assign(it->second);
+
+  return ref;
+}
+
 void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   oauth_parameters input_params(req.query_string());
-  oauth_parameters oresp;
 
   // Check required OAuth2 parameters
   if (input_params.error.empty() &&  (input_params.response_type.empty() || input_params.client_id.empty()))
-    return forbidden(res, oresp);
+    return forbidden(res, input_params);
 
   // Check for Authorization roles in session/DB
   auto s = manager::instance().find_session(req);
 
   // Make sure session found or parameters valid. Otherwise, reply login page
   if (s == nullptr || input_params.scope.empty())
-    return reply(res, oresp,
+  // TODO Validate all parameters for login
+    return reply(res, input_params,
                  manager::instance().login_template(),
                  eows::core::http_response::OK);
 
   // Make sure the specified role is in app
   if (!s->has_role(input_params.scope))
-    return forbidden(res, oresp);
+    return forbidden(res, input_params);
 
   // OK, everything is fine
-  return reply(res, oresp,
+  return reply(res, input_params,
                manager::instance().authorize_template(),
                eows::core::http_response::OK);
 }
 
 void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, eows::core::http_response& res)
 {
-  oauth_parameters input_params(req.query_string());
+  oauth_parameters input_params(req.data());
   authorization_code authorization(input_params);
 
   auto output_params = authorization.grant(req, res);
@@ -79,14 +90,19 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
   if (output_params.redirect_uri.empty())
   {
     // Retrieve from HTTP Referer
-//      const auto headers = req.headers();
-//      auto it = headers.find("Referer");
-//      if (it != headers.end())
-//        output_params.redirect_uri = it->second;
+    output_params.redirect_uri = referer(req);
   }
 
+  // For exchanging code to an access_token
   if (output_params.grant_type == "authorization_code")
   {
+    /*
+     *
+     * TODO: Make an request to exchange code for access_token
+     * just for testing purpose, since the it is user's requirement
+     *
+     */
+
     res.set_status(eows::core::http_response::OK);
     const auto json = output_params.to_json();
     return res.write(json.c_str(), json.size());
@@ -95,7 +111,7 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
   res.set_status(eows::core::http_response::moved_permanently);
   const std::string redirect_uri = output_params.redirect_uri;
   output_params.redirect_uri.clear();
-  res.add_header(eows::core::http_response::LOCATION, eows::core::to_str(output_params.to_query_string()) + "&redirect_uri="+redirect_uri);
+  res.add_header(eows::core::http_response::LOCATION, redirect_uri + eows::core::to_str(output_params.to_query_string()));
 }
 
 void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -106,4 +122,14 @@ void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::
 void eows::auth::oauth2_logout::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
 
+}
+
+void eows::auth::dummy::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  const std::string url = "/oauth2/authorize?response_type=code&client_id=some_id&scope=user.email&redirect_uri=http://localhost:7654/echo";
+  const std::string html = "<a target=\"_blank\" onclick=\"window.open('" + url + "', 'name', 'width=1024,height=768')\" "
+                           "href=\""+ url +"\">Log in with E-Sensing EOWS</a>";
+  res.set_status(eows::core::http_response::OK);
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html; charset=utf-8");
+  res.write(html.c_str(), html.size());
 }

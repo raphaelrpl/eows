@@ -154,6 +154,8 @@ namespace eows
               return content_length_;
             case CONTENT_TYPE:
               return content_type_;
+            case LOCATION:
+              return location_;
             default:
               return unknown_;
           }
