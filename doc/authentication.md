@@ -2,7 +2,7 @@
 
 ## Overview
 
-The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token to authenticate a request to API endpoint and use it to access protected resources.
+The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token to authorize a request to API endpoint and use it to access protected resources. **OAuth 2.0 is not an authentication protocol.**
 
 - Resource owner (User) - Entity capable of granting access to some portion of their account;
 - Resource Server (API Server) - Server that provides protected resources, capable of accepting, validating and responding request to protect resources using *access_tokens*;
@@ -27,7 +27,7 @@ The main token type of OAuth2 standard is *Bearer tokens*.
 The [Spec RFC 6750](https://tools.ietf.org/html/rfc6750#section-1.2) defines *Bearer Token* as:
 > A security token with the property that any party in possession ofthe token (a "bearer") can use the token in any way that any other party in possession of it can.  Using a bearer token does not require a bearer to prove possession of cryptographic key material (proof-of-possession).
 
-In other words, when a user authenticates an client application, the authentication server generates a *Bearer Token* (Refresh Token) that can be used to get an access token.
+In other words, when a user authenticates an client application, the authorization server generates a *Bearer Token* (Refresh Token) that can be used to get an access token.
 
 **Note** that *bearer token* should not be passed in page URLS. Instead of that, prefer to pass through HTTP Header (e.g *X-ESENSING-EOWS-TOKEN: BearerTokenHere*)
 
@@ -269,7 +269,18 @@ Description:
 
 ## Implementation
 
-TODO
+- API Structure
+
+* **Users**
+
+| Method  | URI  | Description  |
+|---|---|---|
+| **GET**   | /api/users  | Retrieve all users |
+| **POST**   | /api/users  | Create new user  |
+| **GET**   | /api/users/**user_id**  | Retrieve specific user  |
+| **PUT**   | /api/users/**user_id**  | Update user resource  |
+| **DELETE**   | /api/users/**user_id**  | Delete user  |
+
 
 ### Scopes (Roles)
 
@@ -281,3 +292,4 @@ TODO
 - **4** - [Guide to OAuth2 Grants](https://alexbilbie.com/guide-to-oauth-2-grants/)
 - **5** - [C++ Rest SDK OAuth2 Server - Granada](https://cookinapps.io/2016/06/c++-rest-sdk-oauth-2-0-server/)
 - **6** - [OAuth2 Servers](https://www.oauth.com/oauth2-servers/)
+- **7** - [User Authentication with OAuth2.0](https://oauth.net/articles/authentication/)
