@@ -103,7 +103,7 @@ namespace eows
          * \brief Performs OAuth2 scope validation and set the result to output parameters
          * \param oresp
          */
-        bool validate_roles(oauth_parameters& oresp, std::vector<std::string>& roles);
+        bool validate_roles(oauth_parameters& oresp, std::vector<std::string>& roles, const oauth_client& client);
 
       protected:
         oauth_parameters params_;

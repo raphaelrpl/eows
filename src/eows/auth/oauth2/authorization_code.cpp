@@ -23,7 +23,7 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
    * Check Client ID, perform validations and then
    * fill output parameters
    */
-  validate_client(params_.client_id, output);
+  auto client = validate_client(params_.client_id, output);
 
   if (output.error.empty())
   {
@@ -45,7 +45,7 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
         // Retrieve default roles of Generated Code
       }
 
-      if (validate_roles(output, roles))
+      if (validate_roles(output, roles, *client))
       {
         if (params_.response_type == "code")
         {
@@ -180,7 +180,12 @@ void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_para
 //  }
 }
 
-bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters& oresp, std::vector<std::string>& roles)
+bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters& oresp,
+                                                    std::vector<std::string>& roles,
+                                                    const oauth_client& client)
 {
-  return false;
+  bool has_role = true;
+  for(const auto& role: roles)
+    if (!client.has_role(role))
+      break; // TODO: throw exception
 }
