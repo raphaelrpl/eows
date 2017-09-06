@@ -19,13 +19,6 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
 
   oauth_parameters output;
 
-  // Once grant_type is refresh_token, we should use grant type code as we'll use same resources
-  if (params_.grant_type == "refresh_token")
-  {
-    params_.grant_type = "code";
-    params_.code = params_.refresh_token;
-  }
-
   /*
    * Check Client ID, perform validations and then
    * fill output parameters
@@ -72,6 +65,16 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
   return output;
 }
 
+eows::auth::oauth_parameters eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& oresp, const eows::core::http_request& request, eows::core::http_response& response)
+{
+  // Once grant_type is refresh_token, we should use grant type code as we'll use same resources
+  if (params_.grant_type == "refresh_token")
+  {
+    params_.grant_type = "code";
+    params_.code = params_.refresh_token;
+  }
+}
+
 const std::string eows::auth::authorization_code::information()
 {
   return std::string();
@@ -112,58 +115,69 @@ void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_para
                                                           const eows::core::http_request& request,
                                                           eows::core::http_response& response)
 {
-  /*
-   * If GrantType is AuthorizationCode, then the user is exchanging a code for access_token
-   */
-  if (params_.grant_type == "authorization_code")
+//  /*
+//   * If GrantType is AuthorizationCode, then the user is exchanging a code for access_token
+//   */
+//  if (params_.grant_type == "authorization_code")
+//  {
+//    if (params_.code.empty())
+//      return access_denied(oresp);
+//    // Retrieve Access Token from Code
+
+//    /*
+//     * Find for user access token using generated code before
+//     *
+//     * {
+//     *   "code": "someHashUsedToRetrieveAccessToken",
+//     *   "state": "someHashCRSFToken"
+//     * }
+//     */
+//  }
+//  else
+//  {
+  if (!params_.client_secret.empty()) // && is_valid_secret(params_.client_secret))
+    return unauthorized(oresp);
+
+  if (!params_.authorize.empty() && params_.authorize == "authorize")
   {
-    if (params_.code.empty())
-      return access_denied(oresp);
-    // Retrieve Access Token from Code
+    // Retrieve Session from request/response
+    session* s = manager::instance().find_session(request);
 
-    /*
-     * Find for user access token using generated code before
-     *
-     * {
-     *   "code": "someHashUsedToRetrieveAccessToken",
-     *   "state": "someHashCRSFToken"
-     * }
-     */
-  }
-  else
-  {
-    if (!params_.client_secret.empty()) // && is_valid_secret(params_.client_secret))
-      return unauthorized(oresp);
-
-    if (!params_.authorize.empty() && params_.authorize == "authorize")
+    if (s == nullptr)
     {
-      // Retrieve Session from request/response
-      session* s = manager::instance().find_session(request);
+//      return access_denied(oresp);
 
-      if (s == nullptr)
-        return access_denied(oresp);
-
-      user_t* u = manager::instance().find_user(s->user);
-
-      if (u == nullptr)
-        return access_denied(oresp);
-    }
-    else
-    {
       if (params_.username.empty() || params_.password.empty())
         return access_denied(oresp);
 
-      // Validate User Credentials
-      //
       user_t* user = manager::instance().find_user(params_.username);
-      //
-      if (user == nullptr || user->password != params_.password) // We should compare password using password hash
-        return access_denied(oresp);
 
       // Create session
       manager::instance().create_session(*user);
+      return;
     }
+
+    user_t* u = manager::instance().find_user(s->user);
+
+    if (u == nullptr)
+      return access_denied(oresp);
   }
+  else
+  {
+    if (params_.username.empty() || params_.password.empty())
+      return access_denied(oresp);
+
+    // Validate User Credentials
+    //
+    user_t* user = manager::instance().find_user(params_.username);
+    //
+    if (user == nullptr || user->password != params_.password) // We should compare password using password hash
+      return access_denied(oresp);
+
+    // Create session
+    manager::instance().create_session(*user);
+  }
+//  }
 }
 
 bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters& oresp, std::vector<std::string>& roles)

@@ -55,7 +55,7 @@ namespace eows
         authorization_code(const oauth_parameters& p);
 
         /*!
-         * \brief Try to apply grant execution into web request
+         * \brief Tries to apply grant execution into web request
          *
          * This methods will try validate user request, seeking for required credentials
          *
@@ -66,6 +66,15 @@ namespace eows
          * \return Validated oauth_parameters request
          */
         eows::auth::oauth_parameters grant(const core::http_request& request, core::http_response& response);
+
+        /*!
+         * \brief Tries to exchange generated code for an access_token
+         * \param oresp
+         * \param request
+         * \param response
+         * \return
+         */
+        eows::auth::oauth_parameters exchange(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
 
         /*!
          * \brief Retrieves client data information once everything is validated

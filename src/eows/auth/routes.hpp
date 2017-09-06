@@ -74,6 +74,17 @@ namespace eows
                    eows::core::http_response& res);
     };
 
+    /*!
+     * \brief Handler for exchanging code to an access code
+     */
+    class oauth2_token : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_post(const eows::core::http_request& req,
+                   eows::core::http_response& res);
+    };
+
     //! Handles OAuth2 Info operations
     /*!
       http://localhost:7654/oauth2/info

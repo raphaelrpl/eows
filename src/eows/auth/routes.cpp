@@ -93,21 +93,6 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
     output_params.redirect_uri = referer(req);
   }
 
-  // For exchanging code to an access_token
-  if (output_params.grant_type == "authorization_code")
-  {
-    /*
-     *
-     * TODO: Make an request to exchange code for access_token
-     * just for testing purpose, since the it is user's requirement
-     *
-     */
-
-    res.set_status(eows::core::http_response::OK);
-    const auto json = output_params.to_json();
-    return res.write(json.c_str(), json.size());
-  }
-
   res.set_status(eows::core::http_response::moved_permanently);
   const std::string redirect_uri = output_params.redirect_uri;
   output_params.redirect_uri.clear();
@@ -127,9 +112,35 @@ void eows::auth::oauth2_logout::do_get(const eows::core::http_request& req, eows
 void eows::auth::dummy::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   const std::string url = "/oauth2/authorize?response_type=code&client_id=some_id&scope=user.email&redirect_uri=http://localhost:7654/echo";
-  const std::string html = "<a target=\"_blank\" onclick=\"window.open('" + url + "', 'name', 'width=1024,height=768')\" "
+  const std::string html = "<a target=\"_blank\""
                            "href=\""+ url +"\">Log in with E-Sensing EOWS</a>";
   res.set_status(eows::core::http_response::OK);
   res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html; charset=utf-8");
   res.write(html.c_str(), html.size());
+}
+
+void eows::auth::oauth2_token::do_post(const eows::core::http_request& req, eows::core::http_response& res)
+{
+//  TODO
+  oauth_parameters input_params(req.data());
+  authorization_code authorization(input_params);
+
+  // For exchanging code to an access_token
+  if (input_params.grant_type == "authorization_code")
+  {
+    oauth_parameters oresp;
+    authorization.exchange(oresp, req, res);
+    /*
+     *
+     * TODO: Make an request to exchange code for access_token
+     * just for testing purpose, since the it is user's requirement
+     *
+     */
+
+    res.set_status(eows::core::http_response::OK);
+    const auto json = oresp.to_json();
+    return res.write(json.c_str(), json.size());
+  }
+  // 403
+  return forbidden(res, input_params);
 }
