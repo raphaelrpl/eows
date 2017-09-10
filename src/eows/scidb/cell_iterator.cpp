@@ -51,6 +51,10 @@ class eows::scidb::cell_iterator::impl
 
 //    double get_double(const std::string& attr_name) const;
 
+      float get_float(const std::size_t attr_pos) const;
+
+      float get_float(const std::string& attr_name) const;
+
 //    int64_t get_int64(const std::size_t attr_pos) const;
 
 //    int64_t get_int64(const std::string& attr_name) const;
@@ -146,6 +150,18 @@ eows::scidb::cell_iterator::get_position()
 //{
 //  return pimpl_->get_double(attr_name);
 //}
+
+float
+eows::scidb::cell_iterator::get_float(const std::size_t attr_pos) const
+{
+  return pimpl_->get_float(attr_pos);
+}
+
+float
+eows::scidb::cell_iterator::get_float(const std::string& attr_name) const
+{
+  return pimpl_->get_float(attr_name);
+}
 
 //int64_t
 //eows::scidb::cell_iterator::get_int64(const std::size_t attr_pos) const
@@ -364,6 +380,22 @@ eows::scidb::cell_iterator::impl::get_position()
 //{
 //  return get_double(attribute_pos(attr_name));
 //}
+
+inline float
+eows::scidb::cell_iterator::impl::get_float(const std::size_t pos) const
+{
+  const ::scidb::Value& v = chunks_iterators_[pos]->getItem();
+
+  return v.getFloat();
+}
+
+inline float 
+eows::scidb::cell_iterator::impl::get_float(const std::string& attr_name) const
+{
+  return get_float(attribute_pos(attr_name));
+}
+
+
 
 //inline int64_t
 //eows::scidb::cell_iterator::impl::get_int64(const std::size_t pos) const

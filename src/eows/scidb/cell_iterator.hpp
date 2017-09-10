@@ -68,6 +68,12 @@ namespace eows
 
         //! Returns a float value for the attribute indicated by a given name.
         //double get_double(const std::string& attr_name) const;
+ 
+        //! Returns a float value for the attribute indicated by a given position.
+        float get_float(const std::size_t attr_pos) const;
+ 
+        //! Returns a float value for the attribute indicated by a given name.
+        float get_float(const std::string& attr_name) const;
 
         //! Returns a 64-bit integer for the attribute indicated by a given position.
         //int64_t get_int64(const std::size_t attr_pos) const;
