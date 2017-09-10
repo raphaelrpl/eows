@@ -304,7 +304,7 @@ int64_t eows::core::read_node_as_int64(const rapidjson::Value& node)
   return node.GetInt64();
 }
 
-int64_t eows::core::read_node_as_double(const rapidjson::Value& node, const std::string& member_name)
+double eows::core::read_node_as_double(const rapidjson::Value& node, const std::string& member_name)
 {
   rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
 
@@ -313,7 +313,7 @@ int64_t eows::core::read_node_as_double(const rapidjson::Value& node, const std:
   return read_node_as_double(jit->value);
 }
 
-int64_t eows::core::read_node_as_double(const rapidjson::Value& node)
+double eows::core::read_node_as_double(const rapidjson::Value& node)
 {
   if (!node.IsNumber())
     throw eows::parse_error("Could not read JSON node as number");

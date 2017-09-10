@@ -92,7 +92,7 @@ namespace eows
      * \param member_name - Member to find in node
      * \return Value double
      */
-    int64_t read_node_as_double(const rapidjson::Value& node, const std::string& member_name);
+    double read_node_as_double(const rapidjson::Value& node, const std::string& member_name);
 
     /*!
      * \brief Tries to find a member by name in RapidJSON Node and then read it as double.
@@ -100,7 +100,7 @@ namespace eows
      * \param node - RapidJSON node
      * \return Value double
      */
-    int64_t read_node_as_double(const rapidjson::Value& node);
+    double read_node_as_double(const rapidjson::Value& node);
 
     /**
      * \brief It transforms a string into lowercase
