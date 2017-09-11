@@ -141,26 +141,30 @@ void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_para
   if (!params_.authorize.empty() && params_.authorize == "authorize")
   {
     // Retrieve Session from request/response
-    session* s = manager::instance().find_session(request);
+    user_t* user = manager::instance().find_user(params_.username);
+//    session* s = manager::instance().find_session(request, response);
 
-    if (s == nullptr)
-    {
-//      return access_denied(oresp);
-
-      if (params_.username.empty() || params_.password.empty())
-        return access_denied(oresp);
-
-      user_t* user = manager::instance().find_user(params_.username);
-
-      // Create session
-      manager::instance().create_session(*user);
-      return;
-    }
-
-    user_t* u = manager::instance().find_user(s->user);
-
-    if (u == nullptr)
+    if (user == nullptr || user->password != params_.password)
       return access_denied(oresp);
+
+//    if (s == nullptr)
+//    {
+////      return access_denied(oresp);
+
+//      if (params_.username.empty() || params_.password.empty())
+//        return access_denied(oresp);
+
+//      user_t* user = manager::instance().find_user(params_.username);
+
+//      // Create session
+//      manager::instance().create_session(*user);
+//      return;
+//    }
+
+//    user_t* u = manager::instance().find_user(s->user);
+
+//    if (u == nullptr)
+//      return access_denied(oresp);
   }
   else
   {
@@ -187,5 +191,9 @@ bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters
   bool has_role = true;
   for(const auto& role: roles)
     if (!client.has_role(role))
+    {
+      has_role = false;
       break; // TODO: throw exception
+    }
+  return has_role;
 }

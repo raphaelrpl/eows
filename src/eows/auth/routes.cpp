@@ -61,10 +61,10 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
     return forbidden(res, input_params);
 
   // Check for Authorization roles in session/DB
-  auto s = manager::instance().find_session(req);
+  auto s = manager::instance().find_session(req, res);
 
   // Make sure session found or parameters valid. Otherwise, reply login page
-  if (s == nullptr || input_params.scope.empty())
+  if (s == nullptr || s->user == "" || input_params.scope.empty())
   // TODO Validate all parameters for login
     return reply(res, input_params,
                  manager::instance().login_template(),

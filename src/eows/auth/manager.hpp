@@ -40,6 +40,7 @@ namespace eows
   namespace core
   {
     class http_request;
+    class http_response;
   }
   namespace auth
   {
@@ -63,7 +64,7 @@ namespace eows
 
         oauth_client* find_client(const std::string& client_id) const;
         session* find_session(const std::string& token) const;
-        session* find_session(const eows::core::http_request& request) const;
+        session* find_session(const eows::core::http_request& request, eows::core::http_response& response) const;
         user_t* find_user(const std::string& username) const;
 
         bool authenticate(const std::string& username, const std::string& password);

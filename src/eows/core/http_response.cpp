@@ -32,4 +32,5 @@ const char eows::core::http_response::access_control_allow_origin_[] = "Access-C
 const char eows::core::http_response::content_length_[] = "Content-Length";
 const char eows::core::http_response::content_type_[] = "Content-Type";
 const char eows::core::http_response::location_[] = "Location";
+const char eows::core::http_response::set_cookie_[] = "Set-Cookie";
 const char eows::core::http_response::unknown_[] = "Unknown";

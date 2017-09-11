@@ -87,7 +87,8 @@ namespace eows
           ACCESS_CONTROL_ALLOW_ORIGIN,
           CONTENT_LENGTH,
           CONTENT_TYPE,
-          LOCATION
+          LOCATION,
+          SET_COOKIE
         };
 
         //! Constructor.
@@ -142,6 +143,7 @@ namespace eows
         static const char content_length_[];
         static const char content_type_[];
         static const char location_[];
+        static const char set_cookie_[];
         static const char unknown_[];
       
         static const char * to_str(header_type_t field_name)
@@ -156,6 +158,8 @@ namespace eows
               return content_type_;
             case LOCATION:
               return location_;
+            case SET_COOKIE:
+              return set_cookie_;
             default:
               return unknown_;
           }

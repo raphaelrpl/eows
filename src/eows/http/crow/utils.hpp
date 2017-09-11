@@ -33,6 +33,11 @@
 
 namespace eows
 {
+  namespace core
+  {
+    class http_request;
+  }
+
   namespace http
   {
     namespace crow
@@ -42,6 +47,8 @@ namespace eows
         \exception eows::parse_error Throws an exception if the query string can not be parsed.
        */
       eows::core::query_string_t expand(const std::string& query_str);
+
+      std::map<std::string, std::string> parse_cookies(const eows::core::http_request& request);
 
       void initialize();
 

@@ -90,6 +90,11 @@ namespace eows
             return expand(content());
           }
 
+          std::map<std::string, std::string> cookies() const
+          {
+            return parse_cookies(*this);
+          }
+
           std::size_t content_length() const
           {
             return req_.body.size();

@@ -455,3 +455,13 @@ std::vector<std::string> eows::core::split(const std::string& str, char delimite
 
   return roles;
 }
+
+std::string eows::core::trim(const std::string& str)
+{
+  std::size_t first = str.find_first_not_of(' ');
+  if (first == std::string::npos)
+    return "";
+
+  std::size_t last = str.find_last_not_of(' ');
+  return str.substr(first, (last - first + 1));
+}

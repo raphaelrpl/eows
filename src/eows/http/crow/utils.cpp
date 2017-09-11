@@ -31,7 +31,11 @@
 #include "../../core/http_server_builder.hpp"
 #include "../../core/logger.hpp"
 #include "../../core/utils.hpp"
+#include "../../core/http_request.hpp"
 #include "http_server.hpp"
+
+// STL
+#include <sstream>
 
 // Boost
 #include <boost/tokenizer.hpp>
@@ -101,3 +105,29 @@ eows::http::crow::initialize()
   EOWS_LOG_INFO("Crow support initialized!");
 }
 
+
+std::map<std::string, std::string> eows::http::crow::parse_cookies(const eows::core::http_request& request)
+{
+  std::map<std::string, std::string> cookies;
+  auto headers = request.headers();
+  auto cookie_it = headers.find("Cookie");
+
+  if (cookie_it != headers.end())
+  {
+    std::stringstream ss(cookie_it->second);
+    std::string raw_cookie;
+
+    while(std::getline(ss, raw_cookie, ';'))
+    {
+      std::string cookie = eows::core::trim(raw_cookie);
+      const std::string delimiter("=");
+      const std::size_t delimiter_size(delimiter.size());
+      auto it = std::search(cookie.begin(), cookie.end(), delimiter.c_str(), delimiter.c_str() + delimiter_size);
+
+      if (it != cookie.end())
+        cookies.insert(std::make_pair(std::string(cookie.begin(), it), std::string(it+delimiter_size, cookie.end())));
+    }
+  }
+
+  return cookies;
+}

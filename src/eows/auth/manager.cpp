@@ -174,35 +174,51 @@ eows::auth::session*eows::auth::manager::find_session(const std::string& token) 
   return nullptr;
 }
 
-eows::auth::session*eows::auth::manager::find_session(const eows::core::http_request& request) const
+eows::auth::session*eows::auth::manager::find_session(const eows::core::http_request& request, core::http_response& response) const
 {
   std::string token;
+  const std::string session_label("session_id");
+
+  // Cookies
+  auto cookies = request.cookies();
+
+  auto cookie_it = cookies.find(session_label);
+
+  if (cookie_it != cookies.end())
+    token = cookie_it->second;
 
   // Query String
   auto query_string = request.query_string();
-  auto it = query_string.find("access_token");
+  auto it = query_string.find(session_label);
   if (it != query_string.end())
     token = it->second;
   else
   // Body
   {
     auto body = request.data();
-    auto it = body.find("access_token");
+    auto it = body.find(session_label);
     if (it != body.end())
       token = it->second;
     else
     {
-      // Headers
-      auto headers = request.headers();
-      auto it = headers.find("X-ESENSING-EOWS-TOKEN");
-      if (it != headers.end())
-        token = it->second;
-      else
-      { /* Throw Error */ }
+      /* Throw Error */
     }
   }
 
-  return find_session(token);
+  auto s = find_session(token);
+
+  if (s == nullptr)
+  {
+    // create session
+    std::unique_ptr<session> session_ptr(new session);
+    session_ptr->token = generate_token();
+    session_ptr->update_time = std::time(0);
+
+    response.add_header(eows::core::http_response::SET_COOKIE, session_label+"="+session_ptr->token);
+    s = session_ptr.get();
+    pimpl_->sessions.push_back(std::move(session_ptr));
+  }
+  return s;
 }
 
 eows::auth::user_t*eows::auth::manager::find_user(const std::string& username) const

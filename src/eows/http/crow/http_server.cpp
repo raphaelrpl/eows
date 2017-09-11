@@ -58,7 +58,6 @@ struct ws_handler
         break;
     }
 
-
     res.end();
   }
 };

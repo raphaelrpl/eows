@@ -57,6 +57,8 @@ namespace eows
 
     const std::string to_str(const query_string_t& query_string);
 
+    std::string trim(const std::string& str);
+
     std::vector<std::string> split(const std::string& str, char delimiter, std::vector<std::string>& roles);
 
     /**
