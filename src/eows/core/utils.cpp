@@ -451,7 +451,11 @@ std::string eows::core::base64_encode(const std::string& raw_string)
 
 std::vector<std::string> eows::core::split(const std::string& str, char delimiter, std::vector<std::string>& roles)
 {
-  boost::split(roles, str, boost::is_any_of("\t"+delimiter));
+//  boost::split(roles, str, boost::is_any_of("\t"+delimiter));
+  std::istringstream is(str);
+  std::string reader;
+  while(std::getline(is, reader, delimiter))
+    roles.push_back(reader);
 
   return roles;
 }

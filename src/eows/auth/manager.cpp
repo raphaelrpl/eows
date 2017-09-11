@@ -140,6 +140,8 @@ void eows::auth::manager::initialize()
     dummy_roles.push_back("global.workspace");
     std::vector<std::string> uris;
     uris.push_back("http://localhost:7654/echo");
+    uris.push_back("http://localhost:7654/oauth2/authorize");
+    uris.push_back("http://127.0.0.1:7654/oauth2/authorize");
 
     std::string secret;
     create_client("public", uris, "Teste APP", dummy_roles, secret);
@@ -181,27 +183,30 @@ eows::auth::session*eows::auth::manager::find_session(const eows::core::http_req
 
   // Cookies
   auto cookies = request.cookies();
+  auto headers = request.headers();
 
   auto cookie_it = cookies.find(session_label);
 
   if (cookie_it != cookies.end())
     token = cookie_it->second;
-
-  // Query String
-  auto query_string = request.query_string();
-  auto it = query_string.find(session_label);
-  if (it != query_string.end())
-    token = it->second;
   else
-  // Body
   {
-    auto body = request.data();
-    auto it = body.find(session_label);
-    if (it != body.end())
+    // Query String
+    auto query_string = request.query_string();
+    auto it = query_string.find(session_label);
+    if (it != query_string.end())
       token = it->second;
     else
+    // Body
     {
-      /* Throw Error */
+      auto body = request.data();
+      auto it = body.find(session_label);
+      if (it != body.end())
+        token = it->second;
+      else
+      {
+        /* Throw Error */
+      }
     }
   }
 

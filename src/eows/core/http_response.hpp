@@ -30,6 +30,7 @@
 
 // STL
 #include <string>
+#include <map>
 
 // Boost
 #include <boost/noncopyable.hpp>
@@ -136,6 +137,12 @@ namespace eows
           \note The implementation must not cache the pointer.
          */
         virtual void write(const char* value, const std::size_t size) = 0;
+
+        /*!
+         * \brief Retrieves current headers to sent in HTTP response
+         * \return
+         */
+        virtual std::map<std::string, std::string> headers() = 0;
       
       protected:
     

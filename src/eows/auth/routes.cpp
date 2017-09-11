@@ -111,7 +111,7 @@ void eows::auth::oauth2_logout::do_get(const eows::core::http_request& req, eows
 
 void eows::auth::dummy::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
-  const std::string url = "/oauth2/authorize?response_type=code&client_id=some_id&scope=user.email&redirect_uri=http://localhost:7654/echo";
+  const std::string url = "/oauth2/authorize?response_type=code&client_id=some_id&scope=user.email&redirect_uri=http://127.0.0.1:7654/oauth2/authorize";
   const std::string html = "<a target=\"_blank\""
                            "href=\""+ url +"\">Log in with E-Sensing EOWS</a>";
   res.set_status(eows::core::http_response::OK);

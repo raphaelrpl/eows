@@ -31,7 +31,7 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
     output.state = params_.state;
 
     // Validate credentials, code and authenticate user
-    validate_credentials(output, request, response);
+    user_t* user = validate_credentials(output, request, response);
 
     // On no error,
     if (output.error.empty())
@@ -49,6 +49,15 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
       {
         if (params_.response_type == "code")
         {
+          output.code = "somecode";
+          output.code = user->username;
+          output.client_id = params_.client_id;
+          output.response_type = params_.response_type;
+          output.scope = params_.scope;
+
+          session* s = manager::instance().find_session(request, response);
+          s->user = user->username;
+          s->roles = roles;
           // Create Code
 //          create_code(output, request, response);
 //          params_.code = client_code.code;
@@ -111,9 +120,9 @@ eows::auth::oauth_client* eows::auth::authorization_code::validate_client(const 
   return client;
 }
 
-void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_parameters& oresp,
-                                                          const eows::core::http_request& request,
-                                                          eows::core::http_response& response)
+eows::auth::user_t* eows::auth::authorization_code::validate_credentials(eows::auth::oauth_parameters& oresp,
+                                                                         const eows::core::http_request& request,
+                                                                         eows::core::http_response& response)
 {
 //  /*
 //   * If GrantType is AuthorizationCode, then the user is exchanging a code for access_token
@@ -136,7 +145,10 @@ void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_para
 //  else
 //  {
   if (!params_.client_secret.empty()) // && is_valid_secret(params_.client_secret))
-    return unauthorized(oresp);
+  {
+    unauthorized(oresp);
+    return nullptr;
+  }
 
   if (!params_.authorize.empty() && params_.authorize == "authorize")
   {
@@ -145,7 +157,12 @@ void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_para
 //    session* s = manager::instance().find_session(request, response);
 
     if (user == nullptr || user->password != params_.password)
-      return access_denied(oresp);
+    {
+      access_denied(oresp);
+      return nullptr;
+    }
+
+    return user;
 
 //    if (s == nullptr)
 //    {
@@ -169,17 +186,25 @@ void eows::auth::authorization_code::validate_credentials(eows::auth::oauth_para
   else
   {
     if (params_.username.empty() || params_.password.empty())
-      return access_denied(oresp);
+    {
+      access_denied(oresp);
+      return nullptr;
+    }
 
     // Validate User Credentials
     //
     user_t* user = manager::instance().find_user(params_.username);
     //
     if (user == nullptr || user->password != params_.password) // We should compare password using password hash
-      return access_denied(oresp);
+    {
+      access_denied(oresp);
+      return nullptr;
+    }
+
+    return user;
 
     // Create session
-    manager::instance().create_session(*user);
+//    manager::instance().create_session(*user);
   }
 //  }
 }

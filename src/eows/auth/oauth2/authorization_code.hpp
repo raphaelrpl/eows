@@ -41,6 +41,7 @@ namespace eows
   namespace auth
   {
     struct oauth_parameters;
+    struct user_t;
 
     class authorization_code
     {
@@ -97,7 +98,7 @@ namespace eows
          * \param request
          * \param response
          */
-        void validate_credentials(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
+        eows::auth::user_t* validate_credentials(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
 
         /*!
          * \brief Performs OAuth2 scope validation and set the result to output parameters

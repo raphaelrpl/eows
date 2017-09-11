@@ -76,6 +76,16 @@ namespace eows
             res_.write(bytes);
           }
 
+          std::map<std::string, std::string> headers()
+          {
+            std::map<std::string, std::string> headers;
+
+            for(const auto& it: res_.headers)
+              headers.insert(std::pair<std::string, std::string>(it.first, it.second));
+
+            return headers;
+          }
+
       private:
       
         ::crow::response& res_;
