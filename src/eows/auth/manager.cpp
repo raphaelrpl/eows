@@ -7,6 +7,7 @@
 // EOWS OAuth2
 #include "oauth2/data_types.hpp"
 #include "oauth2/utils.hpp"
+#include "oauth2/generator.hpp"
 
 // EOWS Core
 #include "../core/app_settings.hpp"
@@ -16,7 +17,6 @@
 // STL
 #include <string>
 #include <vector>
-#include <memory>
 #include <fstream>
 
 // RapidJSON
@@ -31,6 +31,7 @@ struct eows::auth::manager::impl
   std::vector<std::unique_ptr<eows::auth::user_t>> users;
   std::vector<std::unique_ptr<eows::auth::oauth_client>> clients;
   std::vector<std::unique_ptr<eows::auth::session>> sessions;
+  std::vector<std::unique_ptr<eows::auth::oauth_code>> codes;
 
   std::string authorize_template;
   std::string login_template;
@@ -110,6 +111,7 @@ void eows::auth::manager::initialize()
     pimpl_->config.oauth2_authorize_uri = eows::core::read_node_as_string(doc, "oauth2_authorize_uri");
     pimpl_->config.oauth2_logout_uri = eows::core::read_node_as_string(doc, "oauth2_logout_uri");
     pimpl_->config.oauth2_info_uri = eows::core::read_node_as_string(doc, "oauth2_info_uri");
+    pimpl_->config.oauth2_token_uri = eows::core::read_node_as_string(doc, "oauth2_token_uri");
     pimpl_->config.oauth2_login_template_path = eows::core::read_node_as_string(doc, "oauth2_login_template_path");
     pimpl_->config.oauth2_message_template_path = eows::core::read_node_as_string(doc, "oauth2_message_template_path");
     pimpl_->config.oauth2_error_template_path = eows::core::read_node_as_string(doc, "oauth2_error_template_path");
@@ -139,6 +141,7 @@ void eows::auth::manager::initialize()
     dummy_roles.push_back("global.users");
     dummy_roles.push_back("global.workspace");
     std::vector<std::string> uris;
+    uris.push_back("http://127.0.0.1:7654/echo");
     uris.push_back("http://localhost:7654/echo");
     uris.push_back("http://localhost:7654/oauth2/authorize");
     uris.push_back("http://127.0.0.1:7654/oauth2/authorize");
@@ -234,12 +237,12 @@ eows::auth::user_t*eows::auth::manager::find_user(const std::string& username) c
   return nullptr;
 }
 
-bool eows::auth::manager::authenticate(const std::string& username, const std::string& password)
+eows::auth::oauth_code* eows::auth::manager::find_code(const std::string& code)
 {
-  for(const auto& user: pimpl_->users)
-    if (user->match(username, password))
-      return true;
-  return false;
+  for(const auto& c: pimpl_->codes)
+    if (c->id == code)
+      return c.get();
+  return nullptr;
 }
 
 void eows::auth::manager::create_client(const std::string& type, const std::vector<std::string>& redirect_uris,
@@ -274,8 +277,26 @@ void eows::auth::manager::create_session(const eows::auth::user_t& user)
   s->user = user.username;
   std::vector<std::string> roles;
   roles.push_back("user.email");
-  s->roles = roles;
+//  s->roles = roles;
   pimpl_->sessions.push_back(std::move(s));
+}
+
+void eows::auth::manager::create_code(std::unique_ptr<eows::auth::oauth_code> code)
+{
+  pimpl_->codes.push_back(std::move(code));
+}
+
+void eows::auth::manager::remove_session(eows::auth::session* s)
+{
+  if (s != nullptr)
+  {
+    std::remove_if(pimpl_->sessions.begin(),
+                   pimpl_->sessions.end(),
+                   [s](const std::unique_ptr<eows::auth::session>& session_ptr)
+                   {
+                     return session_ptr->token == s->token;
+                   });
+  }
 }
 
 eows::auth::manager::manager()

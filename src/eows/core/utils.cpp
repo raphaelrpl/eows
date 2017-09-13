@@ -36,6 +36,7 @@
 
 // STL
 #include <fstream>
+#include <chrono>
 
 // Boost
 #include <boost/log/attributes/current_thread_id.hpp>
@@ -468,4 +469,11 @@ std::string eows::core::trim(const std::string& str)
 
   std::size_t last = str.find_last_not_of(' ');
   return str.substr(first, (last - first + 1));
+}
+
+uint64_t eows::core::unix_timestamp(std::time_t* t)
+{
+  std::time_t st = std::time(t);
+  auto millies = static_cast<std::chrono::milliseconds>(st).count();
+  return static_cast<uint64_t>(millies);
 }

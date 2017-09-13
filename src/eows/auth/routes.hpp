@@ -89,6 +89,18 @@ namespace eows
     /*!
       http://localhost:7654/oauth2/info
      */
+    class dummy_route: public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request& req,
+                  eows::core::http_response& res);
+    };
+
+    //! Handles OAuth2 Info operations
+    /*!
+      http://localhost:7654/oauth2/info
+     */
     class oauth2_info : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;

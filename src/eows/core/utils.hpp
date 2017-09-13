@@ -38,6 +38,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <ctime>
 
 // RapidJSON
 #include <rapidjson/document.h>
@@ -60,6 +61,8 @@ namespace eows
     std::string trim(const std::string& str);
 
     std::vector<std::string> split(const std::string& str, char delimiter, std::vector<std::string>& roles);
+
+    uint64_t unix_timestamp(std::time_t* t = nullptr);
 
     /**
      * \brief Tries to find a member by name in RapidJSON Node and then read it as boolean.

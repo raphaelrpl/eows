@@ -20,6 +20,11 @@
 // Crow
 #include <crow_all.h>
 
+struct eows::http::crow::http_server::impl
+{
+  ::crow::SimpleApp app;
+};
+
 class LogHandler : public ::crow::ILogHandler
 {
   public:
@@ -72,6 +77,19 @@ static void prepare_routes(crow::SimpleApp& app)
 
     app.route_dynamic(std::move(r)).methods(crow::HTTPMethod::GET, crow::HTTPMethod::POST)(h);
   }
+
+  app.route_dynamic("/shutdown").methods(crow::HTTPMethod::GET)([&app](const ::crow::request& req, ::crow::response& res){
+    std::string message("Server is shutting down");
+
+    EOWS_LOG_INFO("Shutting down Web Server ...");
+
+    // TODO: Notify everyone, handling stacked thread requests
+    // Shutting down Crow Server
+    app.stop();
+
+    res.write(message);
+    res.end();
+  });
 }
 
 struct crow_info_t
@@ -137,16 +155,24 @@ static crow_info_t load_config()
   return app_cfg;
 }
 
-int
-eows::http::crow::http_server::run()
+eows::http::crow::http_server::http_server()
+  : pimpl_(new impl)
+{
+
+}
+
+eows::http::crow::http_server::~http_server()
+{
+  delete pimpl_;
+}
+
+int eows::http::crow::http_server::run()
 {
   EOWS_LOG_INFO("Prepararing web server...");
 
   crow_info_t cfg_info = load_config();
-  
-  ::crow::SimpleApp app;
-  
-  prepare_routes(app);
+
+  prepare_routes(pimpl_->app);
 
   LogHandler lh;
 
@@ -156,16 +182,15 @@ eows::http::crow::http_server::run()
   if (cfg_info.ssl_enabled)
   {
     EOWS_LOG_INFO("Configuring HTTPS server...");
-    app.ssl_file(cfg_info.ssl_certificate, cfg_info.ssl_key);
+    pimpl_->app.ssl_file(cfg_info.ssl_certificate, cfg_info.ssl_key);
   }
-  
-  app.bindaddr(cfg_info.listen_address)
-     .port(cfg_info.listening_port)
-     .multithreaded()
-     .concurrency(cfg_info.threads)
-     .run();
-  
-  
+
+  pimpl_->app.bindaddr(cfg_info.listen_address)
+             .port(cfg_info.listening_port)
+             .multithreaded()
+             .concurrency(cfg_info.threads)
+             .run();
+
   return EXIT_SUCCESS;
 }
 

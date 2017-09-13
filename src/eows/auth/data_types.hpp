@@ -39,6 +39,7 @@ namespace eows
       std::string oauth2_authorize_uri;
       std::string oauth2_logout_uri;
       std::string oauth2_info_uri;
+      std::string oauth2_token_uri;
       std::string oauth2_login_template_path;
       std::string oauth2_message_template_path;
       std::string oauth2_error_template_path;

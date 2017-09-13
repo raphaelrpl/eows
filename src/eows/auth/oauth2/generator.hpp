@@ -18,43 +18,39 @@
  */
 
 /*!
-  \file eows/http/crow/http_server.hpp
+  \file eows/auth/oauth2/generator.hpp
 
-  \brief HTTP server based on Crow Library.
+  \brief Nonce Generator for OAuth2 module.
 
-  \author Gilberto Ribeiro de Queiroz
+  \author Raphael Willian da Costa
  */
 
-#ifndef __EOWS_HTTP_CROW_HTTP_SERVER_HPP__
-#define __EOWS_HTTP_CROW_HTTP_SERVER_HPP__
+#ifndef __EOWS_AUTH_OAUTH2_GENERATOR_HPP__
+#define __EOWS_AUTH_OAUTH2_GENERATOR_HPP__
 
-// EOWS
-#include "../../core/http_server.hpp"
+// STL
+#include <string>
+#include <random>
 
 namespace eows
 {
-  namespace http
+  namespace auth
   {
-    namespace crow
+    class nonce_generator
     {
-      //! HTTP server based on Crow Library.
-      class http_server : public eows::core::http_server
-      {
-        public:
+      public:
+        nonce_generator(int length = 32);
+        ~nonce_generator() = default;
 
-          http_server();
+        std::string generate();
+        const int& length() const;
 
-          ~http_server();
+        void set_length(const int length);
+      private:
+        std::mt19937 random_;
+        int length_;
+    };
+  }  // end namespace core
+}    // end namespace eows
 
-          int run();
-
-        private:
-          struct impl;
-          impl* pimpl_;
-      };
-      
-    } // end namespace crow
-  }   // end namespace http
-}     // end namespace eows
-
-#endif  // __EOWS_HTTP_CROW_HTTP_SERVER_HPP__
+#endif  // __EOWS_AUTH_OAUTH2_GENERATOR_HPP__

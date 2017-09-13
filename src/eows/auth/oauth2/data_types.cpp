@@ -61,7 +61,7 @@ const std::string eows::auth::oauth_parameters::to_json() const
     json += ",\"access_token\":\"" + access_token + "\"";
 
   if (!expires_in.empty())
-    json += ",\"expires_in\":\"" + expires_in + "\"";
+    json += ",\"expires_in\": " + expires_in;
 
   if (!refresh_token.empty())
     json += ",\"refresh_token\":\"" + refresh_token + "\"";
@@ -154,15 +154,62 @@ bool eows::auth::oauth_client::has_role(const std::string& role) const
   return has(roles, role);
 }
 
-bool eows::auth::session::has_role(const std::string& role_name)
+bool eows::auth::role_map::has_role(const std::string& role_name)
 {
-  return has(roles, role_name);
+  return roles.find(role_name) != roles.end();
 }
+
+void eows::auth::role_map::set(const std::string& role, const std::string& key, const std::string& value)
+{
+  auto it = roles.find(role);
+  if (it == roles.end())
+  {
+    std::map<std::string,std::string> properties;
+    properties[key] = value;
+    roles[role] = properties;
+  }
+  else
+  {
+    std::map<std::string,std::string> properties = it->second;
+    properties[key] = value;
+    roles[role] = properties;
+  }
+}
+
+void eows::auth::role_map::remove(const std::string& role)
+{
+  roles.erase(role);
+}
+
+void eows::auth::role_map::remove(const std::string& role, const std::string& key)
+{
+  auto it = roles.find(role);
+  if (it != roles.end()){
+    std::map<std::string,std::string> properties = it->second;
+    properties.erase(key);
+    roles[role] = properties;
+  }
+}
+
+bool is_expired_from_now(std::time_t tm)
+{
+  std::time_t now = std::time(nullptr);
+  long int seconds = (long int)std::difftime(now, tm);
+
+  return seconds > 0;
+}
+
+//bool eows::auth::session::has_role(const std::string& role_name)
+//{
+//  return has(roles, role_name);
+//}
 
 bool eows::auth::session::expired() const
 {
-  std::time_t now = std::time(nullptr);
-  long int seconds = (long int)std::difftime(now, update_time);
+  return is_expired_from_now(update_time);
+}
 
-  return seconds > 0;
+bool eows::auth::oauth_code::expired() const
+{
+  return is_expired_from_now(expiration);
 }

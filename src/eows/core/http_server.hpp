@@ -55,7 +55,6 @@ namespace eows
           \excpetion std::exception If unexpected exception occurs.
          */
         virtual int run() = 0;
-
     };
 
   }   // end namespace core

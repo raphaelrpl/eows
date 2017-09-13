@@ -31,6 +31,7 @@
 // STL
 #include <string>
 #include <vector>
+#include <memory>
 
 // Boost
 #include <boost/noncopyable.hpp>
@@ -48,6 +49,7 @@ namespace eows
     struct oauth_client;
     struct session;
     struct user_t;
+    struct oauth_code;
 
     class manager : private boost::noncopyable
     {
@@ -66,8 +68,7 @@ namespace eows
         session* find_session(const std::string& token) const;
         session* find_session(const eows::core::http_request& request, eows::core::http_response& response) const;
         user_t* find_user(const std::string& username) const;
-
-        bool authenticate(const std::string& username, const std::string& password);
+        oauth_code* find_code(const std::string& code);
 
         void create_client(const std::string& type,
                            const std::vector<std::string>& redirect_uris,
@@ -76,6 +77,8 @@ namespace eows
                            std::string& secret);
 
         void create_session(const user_t& user);
+        void create_code(std::unique_ptr<oauth_code> code);
+        void remove_session(session* s);
       protected:
         manager();
 

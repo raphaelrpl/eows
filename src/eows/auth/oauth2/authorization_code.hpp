@@ -30,6 +30,7 @@
 
 // EOWS
 #include "data_types.hpp"
+#include <memory>
 
 namespace eows
 {
@@ -40,8 +41,8 @@ namespace eows
   }
   namespace auth
   {
-    struct oauth_parameters;
     struct user_t;
+    struct nonce_generator;
 
     class authorization_code
     {
@@ -54,6 +55,9 @@ namespace eows
          * \param p Client Request OAuth2 parameters
          */
         authorization_code(const oauth_parameters& p);
+
+        //! Destructor
+        ~authorization_code();
 
         /*!
          * \brief Tries to apply grant execution into web request
@@ -70,12 +74,16 @@ namespace eows
 
         /*!
          * \brief Tries to exchange generated code for an access_token
+         *
+         * \note You can also use this method giving refresh_token in order to generate a new one.
+         *
          * \param oresp
          * \param request
          * \param response
+         *
          * \return
          */
-        eows::auth::oauth_parameters exchange(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
+        void exchange(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
 
         /*!
          * \brief Retrieves client data information once everything is validated
@@ -108,6 +116,7 @@ namespace eows
 
       protected:
         oauth_parameters params_;
+        std::unique_ptr<nonce_generator> generator_;
     };
   }
 }
