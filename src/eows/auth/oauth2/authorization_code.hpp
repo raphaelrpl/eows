@@ -114,6 +114,8 @@ namespace eows
          */
         bool validate_roles(oauth_parameters& oresp, std::vector<std::string>& roles, const oauth_client& client);
 
+        void create_access_token(oauth_parameters& oresp);
+
       protected:
         oauth_parameters params_;
         std::unique_ptr<nonce_generator> generator_;

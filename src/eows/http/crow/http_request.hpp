@@ -31,6 +31,7 @@
 // EOWS
 #include "../../core/http_request.hpp"
 #include "../../core/data_types.hpp"
+#include "../../core/utils.hpp"
 #include "utils.hpp"
 
 // Crow
@@ -75,7 +76,7 @@ namespace eows
             std::string::size_type pos = req_.raw_url.find("?");
 
             if(pos != std::string::npos)
-              return expand(req_.raw_url.substr(pos + 1));
+              return eows::core::expand(req_.raw_url.substr(pos + 1));
             else
               return eows::core::query_string_t();
           }
@@ -87,7 +88,7 @@ namespace eows
 
           eows::core::query_string_t data() const
           {
-            return expand(content());
+            return eows::core::expand(content());
           }
 
           std::map<std::string, std::string> cookies() const

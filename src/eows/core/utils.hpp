@@ -56,6 +56,12 @@ namespace eows
      */
     void initialize();
 
+    //! Split a query string into its components (the query string must be hex encoded).
+    /*!
+      \exception eows::parse_error Throws an exception if the query string can not be parsed.
+     */
+    eows::core::query_string_t expand(const std::string& query_str);
+
     const std::string to_str(const query_string_t& query_string);
 
     std::string trim(const std::string& str);

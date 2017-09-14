@@ -46,6 +46,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/tokenizer.hpp>
 // Boost Base64
 #include <boost/archive/iterators/binary_from_base64.hpp>
 #include <boost/archive/iterators/base64_from_binary.hpp>
@@ -476,4 +477,53 @@ uint64_t eows::core::unix_timestamp(std::time_t* t)
   std::time_t st = std::time(t);
   auto millies = static_cast<std::chrono::milliseconds>(st).count();
   return static_cast<uint64_t>(millies);
+}
+
+eows::core::query_string_t eows::core::expand(const std::string& query_str)
+{
+  eows::core::query_string_t result;
+
+  boost::char_separator<char> kvp_sep("&");
+
+  boost::tokenizer<boost::char_separator<char> > key_value_pairs(query_str, kvp_sep);
+
+  boost::tokenizer<boost::char_separator<char> >::iterator ikv_pair = key_value_pairs.begin();
+
+  while(ikv_pair != key_value_pairs.end())
+  {
+    std::string kv = *ikv_pair;
+
+    boost::char_separator<char> kv_sep("=");
+
+    boost::tokenizer<boost::char_separator<char> > key_value_pair(kv, kv_sep);
+
+    boost::tokenizer<boost::char_separator<char> >::iterator ikv = key_value_pair.begin();
+
+    if(ikv == key_value_pair.end())
+      throw eows::parse_error("Invalid key-value pair format in query string!");
+
+    std::string k = *ikv;
+
+    ++ikv;
+
+    if(ikv == key_value_pair.end())
+      throw eows::parse_error("Invalid key-value pair format in query string!");
+
+    std::string v = *ikv;
+
+    std::string decoded_k = eows::core::decode(k);
+    std::string decoded_v = eows::core::decode(v);
+
+    //boost::network::uri::decode(k.begin(), k.end(), std::back_inserter(decoded_k));
+    //boost::network::uri::decode(v.begin(), v.end(), std::back_inserter(decoded_v));
+
+    result.insert(std::pair<std::string, std::string>(decoded_k, decoded_v));
+
+//    result[decoded_k] = decoded_v;
+//    result[k] = ;
+
+    ++ikv_pair;
+  }
+
+  return result;
 }

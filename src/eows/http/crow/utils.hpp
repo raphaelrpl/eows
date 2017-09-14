@@ -42,12 +42,6 @@ namespace eows
   {
     namespace crow
     {
-      //! Split a query string into its components (the query string must be hex encoded).
-      /*!
-        \exception eows::parse_error Throws an exception if the query string can not be parsed.
-       */
-      eows::core::query_string_t expand(const std::string& query_str);
-
       std::map<std::string, std::string> parse_cookies(const eows::core::http_request& request);
 
       void initialize();

@@ -64,12 +64,16 @@ void register_routes()
 
   eows::core::service_operations_manager::instance().insert(
         "/oauth2/" + config.oauth2_token_uri,
-        std::unique_ptr<eows::auth::oauth2_token>(new eows::auth::oauth2_token)
+        std::unique_ptr<eows::auth::oauth2_token_handler>(new eows::auth::oauth2_token_handler)
         );
 
   eows::core::service_operations_manager::instance().insert(
+        "/template",
+        std::unique_ptr<eows::auth::dummy_login_handler>(new eows::auth::dummy_login_handler));
+
+  eows::core::service_operations_manager::instance().insert(
         "/login",
-        std::unique_ptr<eows::auth::dummy>(new eows::auth::dummy));
+        std::unique_ptr<eows::auth::oauth2_login_handler>(new eows::auth::oauth2_login_handler));
 }
 
 void eows::auth::initialize()

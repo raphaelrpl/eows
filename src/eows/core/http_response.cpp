@@ -29,6 +29,7 @@
 #include "http_response.hpp"
 
 const char eows::core::http_response::access_control_allow_origin_[] = "Access-Control-Allow-Origin";
+const char eows::core::http_response::access_control_allow_credentials_[] = "Access-Control-Allow-Credentials";
 const char eows::core::http_response::content_length_[] = "Content-Length";
 const char eows::core::http_response::content_type_[] = "Content-Type";
 const char eows::core::http_response::location_[] = "Location";

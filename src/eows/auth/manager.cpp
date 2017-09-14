@@ -145,6 +145,7 @@ void eows::auth::manager::initialize()
     uris.push_back("http://localhost:7654/echo");
     uris.push_back("http://localhost:7654/oauth2/authorize");
     uris.push_back("http://127.0.0.1:7654/oauth2/authorize");
+    uris.push_back("http://127.0.0.1:5000/login/authorized");
 
     std::string secret;
     create_client("public", uris, "Teste APP", dummy_roles, secret);
@@ -222,10 +223,10 @@ eows::auth::session*eows::auth::manager::find_session(const eows::core::http_req
     session_ptr->token = generate_token();
     session_ptr->update_time = std::time(0);
 
-    response.add_header(eows::core::http_response::SET_COOKIE, session_label+"="+session_ptr->token);
     s = session_ptr.get();
     pimpl_->sessions.push_back(std::move(session_ptr));
   }
+  response.add_header(eows::core::http_response::SET_COOKIE, session_label+"="+s->token + "; HttpOnly; Path=/");
   return s;
 }
 
@@ -255,7 +256,6 @@ void eows::auth::manager::create_client(const std::string& type, const std::vect
   secret = "some_secret";/*generate(12);*/
 
   client->id = "some_id";/*generate(pimpl_->client_id_length);*/
-//oauth2.client:value:myfNv849Z1GNuPAN
   client->key = encrypt(client->id, secret);
   client->type = type;
   client->application_name = application_name;

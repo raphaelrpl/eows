@@ -76,6 +76,8 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
 {
   oauth_parameters input_params(req.query_string());
 
+  res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+
   // Check required OAuth2 parameters
   if (input_params.error.empty() &&  (input_params.response_type.empty() || input_params.client_id.empty()))
     return forbidden(res, input_params);
@@ -88,14 +90,23 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
 
   // Make sure session found or parameters valid. Otherwise, reply login page
   if (s == nullptr || s->user == "" || input_params.scope.empty())
-  // TODO Validate all parameters for login
+  {
+    std::string redirect = input_params.redirect_uri;
+//    input_params.redirect_uri = "";
+    redirect += eows::core::to_str(input_params.to_query_string());
+
+    input_params.redirect_uri = redirect;
+    // TODO Validate all parameters for login
     return reply(res, input_params,
                  manager::instance().login_template(),
                  eows::core::http_response::OK);
+  }
 
   // Make sure the specified role is in app
-  if (!s->roles.has_role(input_params.scope))
+  if (!s->roles.has_role("oauth2"))
+  {
     return forbidden(res, input_params);
+  }
 
   // OK, everything is fine
   return reply(res, input_params,
@@ -106,20 +117,54 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
 void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, eows::core::http_response& res)
 {
   oauth_parameters input_params(req.data());
+
+  // Current implementation only support Authorization code Grant Type
+  if (input_params.response_type != "code")
+    throw unsupported_response_type_error("The response type provided is not supported");
+
   authorization_code authorization(input_params);
+  oauth_parameters output_params;
 
-  auto output_params = authorization.grant(req, res);
-
-  if (output_params.redirect_uri.empty())
+  try
   {
-    // Retrieve from HTTP Referer
-    output_params.redirect_uri = referer(req);
+    output_params = authorization.grant(req, res);
+
+    if (output_params.redirect_uri.empty())
+    {
+      // Retrieve from HTTP Referer
+      output_params.redirect_uri = referer(req);
+    }
+
+    res.set_status(eows::core::http_response::moved_permanently);
+    const std::string redirect_uri = output_params.redirect_uri;
+    output_params.redirect_uri.clear();
+    return res.add_header(eows::core::http_response::LOCATION, redirect_uri + eows::core::to_str(output_params.to_query_string()));
+  }
+  catch(const eows::auth::unauthorized_error& e)
+  {
+    handle_oauth_error(res, eows::core::http_response::unauthorized, output_params, e);
+  }
+  catch(const eows::auth::invalid_request_error& e)
+  {
+    handle_oauth_error(res, eows::core::http_response::bad_request, output_params, e);
+  }
+  catch(const eows::auth::access_denied_error& e)
+  {
+    handle_oauth_error(res, eows::core::http_response::forbidden, output_params, e);
+  }
+  catch(const eows::auth::temporarily_unavailable_error& e)
+  {
+    handle_oauth_error(res, eows::core::http_response::service_unavailable, output_params, e);
+  }
+  // Handle both any exception or server_error, catch as internal server error
+  catch(const eows::auth::oauth2_error& e)
+  {
+    handle_oauth_error(res, eows::core::http_response::internal_server_error, output_params, e);
   }
 
-  res.set_status(eows::core::http_response::moved_permanently);
-  const std::string redirect_uri = output_params.redirect_uri;
-  output_params.redirect_uri.clear();
-  res.add_header(eows::core::http_response::LOCATION, redirect_uri + eows::core::to_str(output_params.to_query_string()));
+  const auto json_err = output_params.to_json();
+  res.write(json_err.c_str(), json_err.size());
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json;charset=utf-8");
 }
 
 void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -140,7 +185,7 @@ void eows::auth::oauth2_logout::do_get(const eows::core::http_request& req, eows
   res.write(msg.c_str(), msg.size());
 }
 
-void eows::auth::dummy::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+void eows::auth::dummy_login_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   const std::string url = "/oauth2/authorize?response_type=code&client_id=some_id&scope=user.email&redirect_uri=http://127.0.0.1:7654/echo";
   const std::string html = "<a target=\"_blank\""
@@ -150,7 +195,7 @@ void eows::auth::dummy::do_get(const eows::core::http_request& req, eows::core::
   res.write(html.c_str(), html.size());
 }
 
-void eows::auth::oauth2_token::do_post(const eows::core::http_request& req, eows::core::http_response& res)
+void eows::auth::oauth2_token_handler::do_post(const eows::core::http_request& req, eows::core::http_response& res)
 {
 //  TODO
   oauth_parameters input_params(req.data());
@@ -208,4 +253,73 @@ void eows::auth::dummy_route::do_get(const eows::core::http_request& req, eows::
   if (it != query_string.end())
     state.append(it->second);
 
+  s->roles.add("oauth2");
+  s->roles.set("oauth2", "state", state);
+
+  // Request an access token
+  // It should be called with HTTP Requester moduler. But in this example
+  // We'gonna use direct call
+}
+
+void eows::auth::oauth2_login_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  auto s = manager::instance().find_session(req, res);
+
+  if (s->expired() || !s->roles.has_role("oauth2"))
+  {
+    const auto query_string = req.query_string();
+
+    auto it = query_string.find("redirectTo");
+    oauth_parameters params;
+
+    if (it != query_string.end())
+    {
+      params.configure(eows::core::expand(it->second));
+
+      // validate
+
+      return reply(res, params,
+                   manager::instance().login_template(),
+                   eows::core::http_response::OK);
+    }
+  }
+  else
+  {
+    res.add_header(eows::core::http_response::LOCATION, referer(req));
+  }
+}
+
+void eows::auth::oauth2_login_handler::do_post(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  oauth_parameters params(req.query_string());
+
+  const auto body = req.data();
+
+  auto it = body.find("username");
+
+  std::string username = it->second;
+
+  it = body.find("password");
+
+  std::string password = it->second;
+
+  // Retrieve Session from request/response
+  user_t* user = manager::instance().find_user(username);
+
+  if (user == nullptr || user->password != password)
+  {
+    // Redirect to forbidden or even login again with errors
+  }
+  else
+  {
+    session* s = manager::instance().find_session(req, res);
+    s->user = user->username;
+    s->roles.add("oauth2");
+    s->roles.set("oauth2", "username", user->username);
+    params.client_id = body.find("client_id")->second;
+
+    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+    res.add_header(eows::core::http_response::LOCATION, "/oauth2/authorize" + eows::core::to_str(params.to_query_string()));
+    res.set_status(eows::core::http_response::moved_permanently);
+  }
 }

@@ -35,14 +35,13 @@ namespace eows
 {
   namespace auth
   {
-    class dummy : public eows::core::web_service_handler
+    class dummy_login_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
 
       void do_get(const eows::core::http_request& req,
                   eows::core::http_response& res);
     };
-
 
     //! Handles OAuth2 Authorize operations
     /*!
@@ -77,7 +76,7 @@ namespace eows
     /*!
      * \brief Handler for exchanging code to an access code
      */
-    class oauth2_token : public eows::core::web_service_handler
+    class oauth2_token_handler : public eows::core::web_service_handler
     {
       using eows::core::web_service_handler::web_service_handler;
 
@@ -85,9 +84,24 @@ namespace eows
                    eows::core::http_response& res);
     };
 
-    //! Handles OAuth2 Info operations
     /*!
-      http://localhost:7654/oauth2/info
+     * \brief Handler for OAuth2 Login
+     */
+    class oauth2_login_handler : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request &req, eows::core::http_response &res);
+
+      void do_post(const eows::core::http_request& req,
+                   eows::core::http_response& res);
+    };
+
+    //! Handles OAuth2 Code and Access operations
+    //!
+    //! Its a temporary route to simulate an client usage of this server
+    /*!
+      http://localhost:7654/auth
      */
     class dummy_route: public eows::core::web_service_handler
     {

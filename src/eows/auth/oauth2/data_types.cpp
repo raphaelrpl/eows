@@ -10,13 +10,18 @@ bool has(const std::vector<std::string> arr, const std::string& str)
 
 eows::auth::oauth_parameters::oauth_parameters(const eows::core::query_string_t& query_string)
 {
+  configure(query_string);
+}
+
+void eows::auth::oauth_parameters::configure(const eows::core::query_string_t& query_string)
+{
   set_property(query_string, "authorize", authorize);
   set_property(query_string, "code", code);
   set_property(query_string, "username", username);
   set_property(query_string, "password", password);
   set_property(query_string, "access_token", access_token);
   set_property(query_string, "expires_in", expires_in);
-  set_property(query_string, "refrese_token", refresh_token);
+  set_property(query_string, "refresh_token", refresh_token);
   set_property(query_string, "token_type", token_type);
   set_property(query_string, "grant_type", grant_type);
   set_property(query_string, "response_type", response_type);
@@ -157,6 +162,30 @@ bool eows::auth::oauth_client::has_role(const std::string& role) const
 bool eows::auth::role_map::has_role(const std::string& role_name)
 {
   return roles.find(role_name) != roles.end();
+}
+
+bool eows::auth::role_map::has_role(const std::string& role_name, const std::string& key)
+{
+  auto it = roles.find(role_name);
+  if (it != roles.end()){
+    const std::map<std::string,std::string>& properties = it->second;
+    auto it2 = properties.find(key);
+    if(it2 != properties.end()){
+      return true;
+    }
+  }
+  return false;
+
+}
+
+bool eows::auth::role_map::add(const std::string& role)
+{
+  if (!has_role(role))
+  {
+    set(role, "0", "0");
+    return true;
+  }
+  return false;
 }
 
 void eows::auth::role_map::set(const std::string& role, const std::string& key, const std::string& value)

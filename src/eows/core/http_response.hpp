@@ -86,6 +86,7 @@ namespace eows
         enum header_type_t
         {
           ACCESS_CONTROL_ALLOW_ORIGIN,
+          ACCESS_CONTROL_ALLOW_CREDENTIALS,
           CONTENT_LENGTH,
           CONTENT_TYPE,
           LOCATION,
@@ -147,6 +148,7 @@ namespace eows
       protected:
     
         static const char access_control_allow_origin_[];
+        static const char access_control_allow_credentials_[];
         static const char content_length_[];
         static const char content_type_[];
         static const char location_[];

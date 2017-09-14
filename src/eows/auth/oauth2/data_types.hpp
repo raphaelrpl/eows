@@ -67,6 +67,7 @@ namespace eows
       std::string error; //!< Represents error type
       std::string error_description; //!< Represents an extra information for error
 
+      void configure(const eows::core::query_string_t& query_string);
       void clear();
       const std::string to_json() const;
       const eows::core::query_string_t to_query_string() const;
@@ -94,6 +95,7 @@ namespace eows
       std::map<std::string, std::map<std::string, std::string>> roles;
 
       bool has_role(const std::string& role_name);
+      bool has_role(const std::string &role_name, const std::string& key);
       bool add(const std::string& role);
       void set(const std::string& role, const std::string& key, const std::string& value);
       void remove(const std::string& role);
@@ -131,6 +133,7 @@ namespace eows
       std::string redirect_uri; //!< Redirect URI used. Required to be stored since the access token must contain the same redirect URI
       std::time_t expiration;   //!< Code expiration that only lasts in short time
       std::string user_id;      //!< User identification
+      std::vector<std::string> roles; //!< Roles associated with authorization code
 
       /*!
        * \brief Checks if code entity has been expired.
