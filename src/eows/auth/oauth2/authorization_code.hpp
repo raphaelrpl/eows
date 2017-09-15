@@ -77,11 +77,9 @@ namespace eows
          *
          * \note You can also use this method giving refresh_token in order to generate a new one.
          *
-         * \param oresp
-         * \param request
-         * \param response
-         *
-         * \return
+         * \param oresp - OAuth parameters output to overwrite
+         * \param request - HTTP Request Object
+         * \param response - HTTP Response Object
          */
         void exchange(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
 
@@ -107,6 +105,11 @@ namespace eows
          */
         bool validate_roles(oauth_parameters& oresp, std::vector<std::string>& roles, const oauth_client& client);
 
+        /*!
+         * \brief Creates an access token and assign to OAuth parameters
+         *
+         * \param oresp - OAuth parameters output to overwrite
+         */
         void create_access_token(oauth_parameters& oresp);
 
       protected:

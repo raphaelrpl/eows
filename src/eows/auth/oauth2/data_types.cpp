@@ -175,7 +175,6 @@ bool eows::auth::role_map::has_role(const std::string& role_name, const std::str
     }
   }
   return false;
-
 }
 
 bool eows::auth::role_map::add(const std::string& role)
