@@ -311,7 +311,7 @@ int64_t eows::core::read_node_as_int64(const rapidjson::Value& node)
   return node.GetInt64();
 }
 
-int64_t eows::core::read_node_as_double(const rapidjson::Value& node, const std::string& member_name)
+double eows::core::read_node_as_double(const rapidjson::Value& node, const std::string& member_name)
 {
   rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
 
@@ -320,7 +320,7 @@ int64_t eows::core::read_node_as_double(const rapidjson::Value& node, const std:
   return read_node_as_double(jit->value);
 }
 
-int64_t eows::core::read_node_as_double(const rapidjson::Value& node)
+double eows::core::read_node_as_double(const rapidjson::Value& node)
 {
   if (!node.IsNumber())
     throw eows::parse_error("Could not read JSON node as number");
@@ -400,23 +400,6 @@ std::string eows::core::decode(const std::string& encoded_string)
   return output;
 }
 
-void eows::core::response_json(eows::core::http_response& response, http_response::status_t status_code, const std::string& json)
-{
-  response.set_status(status_code);
-  response.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
-  response.write(json.c_str(), json.size());
-}
-
-std::string eows::core::base64_decode(const std::string& encoded_string)
-{
-  using namespace boost::archive::iterators;
-  using It = transform_width<binary_from_base64<std::string::const_iterator>, 8, 6>;
-  return boost::algorithm::trim_right_copy_if(std::string(It(std::begin(encoded_string)),
-                                                          It(std::end(encoded_string))),
-                                                         [](const char c) {
-                                                           return c == '\0';
-  });
-}
 bool eows::core::read_node_as_bool(const rapidjson::Value&node, const std::string&member_name)
 {
   rapidjson::Value::ConstMemberIterator jit = node.FindMember(member_name.c_str());
@@ -443,23 +426,13 @@ const std::string eows::core::to_str(const eows::core::query_string_t& query_str
   return output;
 }
 
-std::string eows::core::base64_encode(const std::string& raw_string)
-{
-  using namespace boost::archive::iterators;
-  using It = base64_from_binary<transform_width<std::string::const_iterator, 6, 8>>;
-  auto tmp = std::string(It(std::begin(raw_string)), It(std::end(raw_string)));
-  return tmp.append((3 - raw_string.size() % 3) % 3, '=');
-}
-
-std::vector<std::string> eows::core::split(const std::string& str, char delimiter, std::vector<std::string>& roles)
+void eows::core::split(const std::string& str, char delimiter, std::vector<std::string>& roles)
 {
 //  boost::split(roles, str, boost::is_any_of("\t"+delimiter));
   std::istringstream is(str);
   std::string reader;
   while(std::getline(is, reader, delimiter))
     roles.push_back(reader);
-
-  return roles;
 }
 
 std::string eows::core::trim(const std::string& str)

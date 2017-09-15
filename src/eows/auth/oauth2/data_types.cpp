@@ -223,15 +223,10 @@ void eows::auth::role_map::remove(const std::string& role, const std::string& ke
 bool is_expired_from_now(std::time_t tm)
 {
   std::time_t now = std::time(nullptr);
-  long int seconds = (long int)std::difftime(now, tm);
+  long int seconds = static_cast<long int>(std::difftime(now, tm));
 
   return seconds > 0;
 }
-
-//bool eows::auth::session::has_role(const std::string& role_name)
-//{
-//  return has(roles, role_name);
-//}
 
 bool eows::auth::session::expired() const
 {

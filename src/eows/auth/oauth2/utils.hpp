@@ -35,13 +35,6 @@ namespace eows
 {
   namespace auth
   {
-    struct oauth_parameters;
-
-    void access_denied(oauth_parameters& parameters);
-    void unauthorized(oauth_parameters& parameters);
-    void unsupported(oauth_parameters& parameters);
-    void invalid_request(oauth_parameters& parameters, const std::string& info);
-
     std::string generate_token();
   }
 }

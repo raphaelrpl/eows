@@ -102,13 +102,6 @@ namespace eows
         oauth_client* validate_client(const std::string &client_id, oauth_parameters &oresp);
 
         /*!
-         * \brief Performs User credentials validation
-         * \param request
-         * \param response
-         */
-        eows::auth::user_t* validate_credentials(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
-
-        /*!
          * \brief Performs OAuth2 scope validation and set the result to output parameters
          * \param oresp
          */

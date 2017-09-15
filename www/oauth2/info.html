@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>E-Sensing EOWS - Authorize</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  </head>
+  
+  <!-- www/oauth2/login.html -->
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 col-md-offset-4 col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2">
+          <h3>An Application is requesting access to the following resources: </h3>
+          <hr>
+          <form id="authorization-form" method="POST" action="/oauth2/authorize" enctype="application/x-www-form-urlencoded">
+
+            <!-- TODO: Display what is being requested -->
+
+            {{ content }}
+
+            <input type="hidden" name="response_type" value="{{ response_type }}">
+            <input type="hidden" name="scope" value="{{ scope }}">
+            <input type="hidden" name="client_id" value="{{ client_id }}">
+            <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+            <input type="hidden" name="state" value="{{ state }}">
+            <input type="hidden" name="authorize" value="authorize">
+    
+            <button class="btn btn-primary btn-block">Authorize</button>
+            <!-- <button class="btn btn-default">Cancel</button> -->
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
+</html>

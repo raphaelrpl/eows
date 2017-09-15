@@ -29,7 +29,11 @@ The [Spec RFC 6750](https://tools.ietf.org/html/rfc6750#section-1.2) defines *Be
 
 In other words, when a user authenticates an client application, the authorization server generates a *Bearer Token* (Refresh Token) that can be used to get an access token.
 
-**Note** that *bearer token* should not be passed in page URLS. Instead of that, prefer to pass through HTTP Header (e.g *X-ESENSING-EOWS-TOKEN: BearerTokenHere*)
+**Notes** 
+
+- *Bearer Token* should not be passed in page URLS. Instead of that, prefer to pass through HTTP Header (e.g *X-ESENSING-EOWS-TOKEN: BearerTokenHere*)
+
+- *OAuth2 Server* must utilizes only HTTPS protocol support.
 
 ## Glossary
 

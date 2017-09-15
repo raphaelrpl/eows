@@ -46,7 +46,6 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
       throw unauthorized_error("User is not authenticated");
 
     // Validate credentials, code and authenticate user
-//    user_t* user = validate_credentials(output, request, response);
     auto user = manager::instance().find_user(s->user);
 
     // Get Roles. TODO: Browser may encode space as "%20" or "+" for spaces. We should transform in single pattern
@@ -127,9 +126,6 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
 
       // Change code by refresh_token
       code->id = oresp.refresh_token;
-
-//      auto s = manager::instance().find_session(request, response);
-//      s->roles.
     }
   }
 }
@@ -169,41 +165,6 @@ eows::auth::oauth_client* eows::auth::authorization_code::validate_client(const 
   }
 
   return client;
-}
-
-eows::auth::user_t* eows::auth::authorization_code::validate_credentials(eows::auth::oauth_parameters& oresp,
-                                                                         const eows::core::http_request& request,
-                                                                         eows::core::http_response& response)
-{
-  if (!params_.client_secret.empty()) // && is_valid_secret(params_.client_secret))
-  {
-    throw unauthorized_error("The client secret not provided.");
-  }
-
-  if (!params_.authorize.empty() && params_.authorize == "authorize")
-  {
-    // Retrieve Session from request/response
-    user_t* user = manager::instance().find_user(params_.username);
-
-    if (user == nullptr || user->password != params_.password)
-      throw access_denied_error("Username or password does not match");
-
-    return user;
-  }
-  else
-  {
-    if (params_.username.empty() || params_.password.empty())
-      throw access_denied_error("Username or password not provided");
-
-    // Validate User Credentials
-    //
-    user_t* user = manager::instance().find_user(params_.username);
-
-    if (user == nullptr || user->password != params_.password) // We should compare password using password hash
-      throw access_denied_error("Username or password does not match");
-
-    return user;
-  }
 }
 
 bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters& oresp,

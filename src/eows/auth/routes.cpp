@@ -76,6 +76,9 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
 {
   oauth_parameters input_params(req.query_string());
 
+  const auto headers = req.headers();
+  const auto cookies = req.cookies();
+
   res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 
   // Check required OAuth2 parameters
@@ -92,7 +95,6 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
   if (s == nullptr || s->user == "" || input_params.scope.empty())
   {
     std::string redirect = input_params.redirect_uri;
-//    input_params.redirect_uri = "";
     redirect += eows::core::to_str(input_params.to_query_string());
 
     input_params.redirect_uri = redirect;
@@ -104,8 +106,30 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
 
   // Make sure the specified role is in app
   if (!s->roles.has_role("oauth2"))
-  {
     return forbidden(res, input_params);
+
+  std::vector<std::string> roles;
+  eows::core::split(input_params.scope, '+', roles);
+
+  bool has_all_roles = true;
+  for(const auto& role: roles)
+  {
+    if (!s->roles.has_role(role))
+    {
+      has_all_roles = false;
+      break;
+    }
+  }
+
+  if (has_all_roles)
+  {
+    const auto redirect_uri = input_params.redirect_uri;
+    input_params.redirect_uri = "";
+    // redirect URI
+    res.set_status(eows::core::http_response::moved_permanently);
+    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+    res.add_header(eows::core::http_response::LOCATION, redirect_uri + eows::core::to_str(input_params.to_query_string()));
+    return;
   }
 
   // OK, everything is fine
@@ -185,16 +209,6 @@ void eows::auth::oauth2_logout::do_get(const eows::core::http_request& req, eows
   res.write(msg.c_str(), msg.size());
 }
 
-void eows::auth::dummy_login_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
-{
-  const std::string url = "/oauth2/authorize?response_type=code&client_id=some_id&scope=user.email&redirect_uri=http://127.0.0.1:7654/echo";
-  const std::string html = "<a target=\"_blank\""
-                           "href=\""+ url +"\">Log in with E-Sensing EOWS</a>";
-  res.set_status(eows::core::http_response::OK);
-  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html; charset=utf-8");
-  res.write(html.c_str(), html.size());
-}
-
 void eows::auth::oauth2_token_handler::do_post(const eows::core::http_request& req, eows::core::http_response& res)
 {
 //  TODO
@@ -236,29 +250,9 @@ void eows::auth::oauth2_token_handler::do_post(const eows::core::http_request& r
   return res.write(json.c_str(), json.size());
 }
 
-void eows::auth::dummy_route::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+void eows::auth::dummy_api_route::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
-  auto s = manager::instance().find_session(req, res);
 
-  std::string code, state;
-
-  auto query_string = req.query_string();
-
-  auto it = query_string.find("code");
-
-  if (it != query_string.end())
-    code.append(it->second);
-
-  it = query_string.find("state");
-  if (it != query_string.end())
-    state.append(it->second);
-
-  s->roles.add("oauth2");
-  s->roles.set("oauth2", "state", state);
-
-  // Request an access token
-  // It should be called with HTTP Requester moduler. But in this example
-  // We'gonna use direct call
 }
 
 void eows::auth::oauth2_login_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)

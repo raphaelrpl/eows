@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>E-Sensing EOWS</title>
+    <!-- CSS elements/includes -->
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  </head>
+  
+  <!-- www/oauth2/login.html -->
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 col-md-offset-4 col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2">
+          <h3>E-Sensing EOWS</h3>
+          <hr>
+          <form id="authorization-form" method="POST" action="/login?redirectTo={{ redirect_uri }}" enctype="application/x-www-form-urlencoded">
+            <div class="form-group">
+              <label for="email">Username:</label>
+              <input class="form-control" type="text" name="username" placeholder="username"><br/>
+            </div>
+      
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input class="form-control" type="password" name="password" placeholder="password"><br/>
+            </div>
+    
+            <input type="hidden" name="response_type" value="{{ response_type }}">
+            <input type="hidden" name="scope" value="{{ scope }}">
+            <input type="hidden" name="client_id" value="{{ client_id }}">
+            <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+            <input type="hidden" name="state" value="{{ state }}">
+    
+            <button class="btn btn-primary btn-block">Sign In</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -68,10 +68,6 @@ void register_routes()
         );
 
   eows::core::service_operations_manager::instance().insert(
-        "/template",
-        std::unique_ptr<eows::auth::dummy_login_handler>(new eows::auth::dummy_login_handler));
-
-  eows::core::service_operations_manager::instance().insert(
         "/login",
         std::unique_ptr<eows::auth::oauth2_login_handler>(new eows::auth::oauth2_login_handler));
 }
@@ -109,21 +105,21 @@ std::string eows::auth::encrypt(const std::string& text, std::string password)
 {
   password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
 
-const int text_size = text.size() + 1;
-unsigned char *text_to_encrypt = new unsigned char[text_size]();
-  memcpy(text_to_encrypt,text.c_str(),text.size()+1);
+  const int text_size = text.size() + 1;
+  unsigned char *text_to_encrypt = new unsigned char[text_size]();
+    memcpy(text_to_encrypt,text.c_str(),text.size()+1);
 
-const int key_size = password.size() + 1;
-unsigned char *key = new unsigned char[key_size]();
+  const int key_size = password.size() + 1;
+  unsigned char *key = new unsigned char[key_size]();
 
-  memcpy(key,password.c_str(),password.size()+1);
-unsigned char enc_out[256];
-  AES_KEY enc_key;
-  AES_set_encrypt_key(key, 256, &enc_key);
-  AES_encrypt(text_to_encrypt, enc_out, &enc_key);
+    memcpy(key,password.c_str(),password.size()+1);
+  unsigned char enc_out[256];
+    AES_KEY enc_key;
+    AES_set_encrypt_key(key, 256, &enc_key);
+    AES_encrypt(text_to_encrypt, enc_out, &enc_key);
 
-delete[] text_to_encrypt;
-delete[] key;
+  delete[] text_to_encrypt;
+  delete[] key;
   return std::string(reinterpret_cast<const char*>(enc_out),256);
 //  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
 
@@ -147,8 +143,8 @@ std::string eows::auth::decrypt(const std::string& text, std::string password)
 {
   password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
 
-const int key_size = password.size() + 1;
-unsigned char *key = new unsigned char[key_size]();
+  const int key_size = password.size() + 1;
+  unsigned char *key = new unsigned char[key_size]();
   memcpy(key,password.c_str(),password.size()+1);
 
   unsigned char dec_out[256];
@@ -159,7 +155,7 @@ unsigned char *key = new unsigned char[key_size]();
   memcpy(crypted_text,text.c_str(),256);
   AES_decrypt(crypted_text, dec_out, &dec_key);
 
-delete[] key;
+  delete[] key;
 
   return std::string(reinterpret_cast<const char*>(dec_out));
 //  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
