@@ -20,7 +20,7 @@
 /*!
   \file eows/auth/data_types.hpp
 
-  \brief Defines for EOWS.
+  \brief Defines datatypes for EOWS Auth module.
 
   \author Raphael Willian da Costa
  */
@@ -28,12 +28,16 @@
 #ifndef __EOWS_AUTH_DATA_TYPES_HPP__
 #define __EOWS_AUTH_DATA_TYPES_HPP__
 
+// STL
 #include <string>
 
 namespace eows
 {
   namespace auth
   {
+    /*!
+     * \brief Represents OAuth2 module settings
+     */
     struct config_t
     {
       std::string oauth2_authorize_uri;
@@ -46,6 +50,9 @@ namespace eows
       bool use_refresh_token;
     };
 
+    /*!
+     * \brief Represents EOWS User
+     */
     struct user_t
     {
       std::string username;

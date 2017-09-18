@@ -2,23 +2,23 @@
 
 ## Overview
 
-The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token to authorize a request to API endpoint and use it to access protected resources. **OAuth 2.0 is not an authentication protocol.**
+The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token for API request authorization endpoint to protected resources. **OAuth 2.0 is not an authentication protocol**. This pattern defines four roles:
 
-- Resource owner (User) - Entity capable of granting access to some portion of their account;
-- Resource Server (API Server) - Server that provides protected resources, capable of accepting, validating and responding request to protect resources using *access_tokens*;
-- Client - Application making protected resource requests on behalf of the resource owner and with its authorization:
-  * Public - Represents clients that are cannot maintain the confidentiality of a *client_secret*. In other words, the secret is not used for these apps (Mobile Apps and Javascripts apps).
+- **Resource owner (User)** - Entity capable of granting access to some portion of their account;
+- **Resource Server (API Server)** - Server that provides protected resources, capable of accepting, validating and responding request to protect resources using *access_tokens*;
+- **Client** - Application making protected resource requests on behalf of the resource owner and with its authorization:
+  * **Public** - Represents clients that are cannot maintain the confidentiality of a *client_secret*. In other words, the secret is not used for these apps (Mobile Apps and Javascripts apps).
 
-  * Confidential - Represents clients which have hability to maintain the confidentiality of the *client_secret*. Typically, they are applications that the source code is not accessible to users. (web-apps)
+  * **Confidential** - Represents clients which have hability to maintain the confidentiality of the *client_secret*. Typically, they are applications that the source code is not accessible to users. (web-apps)
 
-- Authorization Server - Server handler, issuing *access tokens* to the client after successfully authenticating the resource owner. The user approves or denies the request.
+- **Authorization Server** - Server handler, issuing *access tokens* to the client after successfully authenticating the resource owner. The user approves or denies the request.
 
 The OAuth2 concepts has multiple grant type implementations:
 
-- Authorization code grant
-- Implicit Grant
-- Resource Owner password Credentials Grant
-- Client Credentials Grant
+- *Authorization code grant*
+- *Implicit Grant*
+- *Resource Owner password Credentials Grant*
+- *Client Credentials Grant*
 
 **You don't need to implement all of these concepts**. In our scenario, both **Authorization code grant** and **Implicit Grant** works properly. We should be able to display them while creating a new application.
 
@@ -49,7 +49,7 @@ In other words, when a user authenticates an client application, the authorizati
 
 ## Comparison with OAuth 1.0
 
-OAuth 1.0 does not offered a safe way requirements of signing requests with the client ID and secret. OAuth 2 recognizes this difficulty and replaces signatures with requiring HTTPS for all communications between browsers, clients and the API.
+OAuth 1.0 does not offered a safe way requirements of signing requests with the client ID and secret. OAuth 2 recognizes this difficulty and replaces signatures requiring **HTTPS** for all communications between browsers, clients and the API.
 
 This spec also requires that the API server has access to the application's ID and secret. In other words, the Authorization server and Resource server are the same application. It is of course breaks the architecture of most large providers where the both are completely separated. 
 
@@ -259,7 +259,7 @@ Description:
       <input type="hidden" name="client_id" value="{{client_id}}">
       <input type="hidden" name="redirect_uri" value="{{redirect_uri}}">
       <input type="hidden" name="state" value="{{state}}">
-      <button>Authorize</button>
+      <button>Sign In</button>
     </form>
     ```
   
@@ -273,7 +273,9 @@ Description:
 
 ## Token Introspection Endpoint
 
+Whenever an client make a request to the resource server, the resource server needs to verify the access token. Although OAuth 2.0 spec does not define a specific method of how the resource server should verify access tokens, there is another spec called OAuth 2.0 Token Introspection that provides a protocol for return user information through Token originality. In this way, we must define an pattern for token background validity using OAuth 2.0 Token Introspection template to trust in client requests.
 
+The OAuth 2.0 Token Introspection spec has several attributes that may be implemented. The following attributes are essentials to guarantee token originality:
 
 ```
 {

@@ -193,17 +193,3 @@ std::string eows::auth::generate(const int& length)
 {
   return random_string(length);
 }
-
-//std::string eows::auth::generate(const int& length)
-//{
-//  unsigned char nonce[length];
-//  int rc = RAND_bytes(nonce, sizeof(nonce));
-////  unsigned long err = ERR_get_error();
-
-//  if (rc != 1) {
-//    // THROW error
-
-////    unsigned long err = ERR_get_error();
-//  }
-//  return to_utf8string(std::string(reinterpret_cast<const char*>(nonce)));
-//}

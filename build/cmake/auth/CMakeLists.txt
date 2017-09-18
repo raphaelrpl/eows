@@ -6,17 +6,16 @@ source_group("Header Files"  FILES ${EOWS_AUTH_HDR_FILES})
 add_library(eows_auth SHARED ${EOWS_AUTH_HDR_FILES}
                              ${EOWS_AUTH_SRC_FILES})
 
-target_link_libraries(eows_auth   eows_core
-                                  ${Boost_SYSTEM_LIBRARY}
-                                  ${Boost_DATE_TIME_LIBRARY}
-                                  ${Boost_CHRONO_LIBRARY}
-                                  ${Boost_TIMER_LIBRARY}
-                                  ${Boost_FILESYSTEM_LIBRARY}
-                                  ${Boost_THREAD_LIBRARY}
-                                  ${Boost_LOG_LIBRARY}
-                                  ${Boost_LOG_SETUP_LIBRARY}
-                                  ${CMAKE_THREAD_LIBS_INIT}
-                                  ${CASABLANCA_LIBRARY})
+target_link_libraries(eows_auth eows_core
+                                ${Boost_SYSTEM_LIBRARY}
+                                ${Boost_DATE_TIME_LIBRARY}
+                                ${Boost_CHRONO_LIBRARY}
+                                ${Boost_TIMER_LIBRARY}
+                                ${Boost_FILESYSTEM_LIBRARY}
+                                ${Boost_THREAD_LIBRARY}
+                                ${Boost_LOG_LIBRARY}
+                                ${Boost_LOG_SETUP_LIBRARY}
+                                ${CMAKE_THREAD_LIBS_INIT})
 
 set_target_properties(eows_auth  PROPERTIES
                                  VERSION ${EOWS_VERSION_MAJOR}.${EOWS_VERSION_MINOR}

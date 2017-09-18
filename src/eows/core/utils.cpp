@@ -500,3 +500,36 @@ eows::core::query_string_t eows::core::expand(const std::string& query_str)
 
   return result;
 }
+
+std::map<std::string, std::string> eows::core::parse_cookies(const eows::core::http_request& request)
+{
+  std::map<std::string, std::string> cookies;
+  auto headers = request.headers();
+  auto cookie_it = headers.find("Cookie");
+
+  if (cookie_it != headers.end())
+  {
+    std::stringstream ss(cookie_it->second);
+    std::string raw_cookie;
+
+    while(std::getline(ss, raw_cookie, ';'))
+    {
+      std::string cookie = eows::core::trim(raw_cookie);
+      const std::string delimiter("=");
+      const std::size_t delimiter_size(delimiter.size());
+      auto it = std::search(cookie.begin(), cookie.end(), delimiter.c_str(), delimiter.c_str() + delimiter_size);
+
+      /*
+       * Once found, it will contains a cookie value.
+       *
+       * TODO: A cookie often contains metadata information such time expiration, type, domain, etc delimiting by ";"
+       *       We should parse it
+       *
+       */
+      if (it != cookie.end())
+        cookies.insert(std::make_pair(std::string(cookie.begin(), it), std::string(it+delimiter_size, cookie.end())));
+    }
+  }
+
+  return cookies;
+}

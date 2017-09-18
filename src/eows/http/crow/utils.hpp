@@ -42,10 +42,7 @@ namespace eows
   {
     namespace crow
     {
-      std::map<std::string, std::string> parse_cookies(const eows::core::http_request& request);
-
       void initialize();
-
     }   // end namespace crow
   }     // end namespace http
 }       // end namespace eows

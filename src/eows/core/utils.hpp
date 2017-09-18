@@ -63,6 +63,19 @@ namespace eows
     eows::core::query_string_t expand(const std::string& query_str);
 
     /*!
+     * \brief Parses cookies from HTTP Request Header
+     *
+     * A cookie HTTP request header contains stored HTTP cookies previously sent by the
+     * server with the Set-Cookie
+     *
+     * Further informataion in https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Headers/Cookie
+     *
+     * \param request - HTTP Request Header
+     * \return Map information containing HTTP Cookies
+     */
+    std::map<std::string, std::string> parse_cookies(const eows::core::http_request& request);
+
+    /*!
      * \brief Transforms a Query String parameters into string representation
      *
      * \example

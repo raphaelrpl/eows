@@ -32,7 +32,6 @@
 #include "../../core/http_request.hpp"
 #include "../../core/data_types.hpp"
 #include "../../core/utils.hpp"
-#include "utils.hpp"
 
 // Crow
 #include <crow_all.h>
@@ -93,7 +92,7 @@ namespace eows
 
           std::map<std::string, std::string> cookies() const
           {
-            return parse_cookies(*this);
+            return eows::core::parse_cookies(*this);
           }
 
           std::size_t content_length() const
