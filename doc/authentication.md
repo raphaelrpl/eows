@@ -287,58 +287,40 @@ The OAuth 2.0 Token Introspection spec has several attributes that may be implem
 }
 ```
 
-**active** - *Required*. Boolean value for token current active. The value should be “true” if the token has been issued by this authorization                    server, has not been revoked by the user, and has not expired;
-**scope** - Contains list of scopes associated with this *access_token*;
-**client_id** - Client Identifier;
-**username** - User associated with this *access_token*;
-**exp** - Unix timestamp indicating when *access_token* will expire.
+- **active** - *Required*. Boolean value for token current active. The value should be “true” if the token has been issued by this authorization                    server, has not been revoked by the user, and has not expired;
+
+- **scope** - Contains list of scopes associated with this *access_token*;
+
+- **client_id** - Client Identifier;
+
+- **username** - User associated with this *access_token*;
+
+- **exp** - Unix timestamp indicating when *access_token* will expire.
 
 ## Implementation
 
 - API Structure
 
-In order to use EOWS API Server, you must pass header *X-EOWS-ACCESS-TOKEN* with *access_token** generated in OAuth2 module. See [Creating Thirdparty App](#Implementation). **Note** that using directly native E-Sensing EOWS platform, this is already sent implicit by EOWS app.
 
 * **Users**
 
   **This API is not implemented yet**
 
-  | Method  | URI  | Description  |
-  |---|---|---|
-  | **GET**   | /api/users  | Retrieve all users |
-  | **POST**   | /api/users  | Create new user  |
-  | **GET**   | /api/users/**user_id**  | Retrieve specific user  |
-  | **PUT**   | /api/users/**user_id**  | Update user resource  |
-  | **DELETE**   | /api/users/**user_id**  | Delete user  |
-
-
 * **Workspaces**
 
   **This API is not implemented yet**
 
-  | Method  | URI  | Description  |
-  |---|---|---|
-  | **GET**   | /api/workspaces/**user_id**  | Retrieve entire workspace of user |
-  | **GET**   | /api/workspaces/**user_id**/**prefix_id**  | Retrieve subfolder workspace of user  |
-  | **POST**  | /api/workspaces/**user_id**/**prefix_id**  | Create new subfolder or file  |
-  | **PUT**   |   |  |
-  | **DELETE**   |   |   |
-
-
 * **WTSS**
 
-  You must inject the *access_token* in header *X-EOWS-ACCESS-TOKEN*. See [WTSS Doc](doc/wtss.md) for further information.
-
+  **This API is not implemented yet**
 
 * **WCS**
 
-  You must inject the *access_token* in header *X-EOWS-ACCESS-TOKEN*. See [WCS Doc](doc/wcs.md) for further information.
-
+  **This API is not implemented yet**
 
 * **WTSPS**
 
-  You must inject the *access_token* in header *X-EOWS-ACCESS-TOKEN*. See [WTSPS Doc](doc/wtsps.md) for further information.
-
+  **This API is not implemented yet**
 
 
 ### Scopes (Roles)
