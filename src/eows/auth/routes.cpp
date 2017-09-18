@@ -13,15 +13,21 @@
 #include "../core/http_request.hpp"
 #include "../core/http_response.hpp"
 
-//! Helper to reply a HTTP response for OAuth2 model.
-void reply(eows::core::http_response& res, const eows::auth::oauth_parameters& parameters, std::string tpl, eows::core::http_response::status_t status_code)
+
+void reply(eows::core::http_response& res, const eows::core::query_string_t& parameters, std::string tpl, eows::core::http_response::status_t status_code)
 {
   res.set_status(status_code);
   res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html; charset=utf-8");
 
-  eows::auth::replace(tpl, parameters.to_query_string());
+  eows::auth::replace(tpl, parameters);
 
   res.write(tpl.c_str(), tpl.size());
+}
+
+//! Helper to reply a HTTP response for OAuth2 model.
+void reply(eows::core::http_response& res, const eows::auth::oauth_parameters& parameters, std::string tpl, eows::core::http_response::status_t status_code)
+{
+  reply(res, parameters.to_query_string(), tpl, status_code);
 }
 
 //! Helper to reply forbidden page on HTTP OAuth2 Requests
@@ -132,8 +138,22 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
     return;
   }
 
+  eows::core::query_string_t parameters = input_params.to_query_string();
+  std::string html_tpl("<ul class=\"list-group\">");
+
+  for(const auto role: roles)
+  {
+    html_tpl.append("<li class=\"list-group-item\">");
+    html_tpl.append("<span class=\"glyphicon glyphicon-ok\"></span> ");
+    html_tpl.append(role);
+  }
+
+  html_tpl.append("</ul>");
+
+  parameters.insert(std::make_pair("content", html_tpl));
+
   // OK, everything is fine
-  return reply(res, input_params,
+  return reply(res, parameters,
                manager::instance().authorize_template(),
                eows::core::http_response::OK);
 }

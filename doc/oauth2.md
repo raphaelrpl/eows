@@ -1,8 +1,10 @@
-# Authentication
+# OAuth 2.0
 
 ## Overview
 
-The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token for API request authorization endpoint to protected resources. **OAuth 2.0 is not an authentication protocol**. This pattern defines four roles:
+The OAuth2 specification is a flexible framework standard that describes a set of grants for a client app to acquire an access token for API request authorization endpoint to protected resources. **OAuth 2.0 is not an authentication protocol**. While **Authentication** is a process to identify users and their informations, the **Authorization** acts for rule permissions which a approval is required to manipulate partial of user information.
+
+This OAuth 2.0 spec defines four roles:
 
 - **Resource owner (User)** - Entity capable of granting access to some portion of their account;
 - **Resource Server (API Server)** - Server that provides protected resources, capable of accepting, validating and responding request to protect resources using *access_tokens*;
@@ -27,13 +29,13 @@ The main token type of OAuth2 standard is *Bearer tokens*.
 The [Spec RFC 6750](https://tools.ietf.org/html/rfc6750#section-1.2) defines *Bearer Token* as:
 > A security token with the property that any party in possession ofthe token (a "bearer") can use the token in any way that any other party in possession of it can.  Using a bearer token does not require a bearer to prove possession of cryptographic key material (proof-of-possession).
 
-In other words, when a user authenticates an client application, the authorization server generates a *Bearer Token* (Refresh Token) that can be used to get an access token.
+In other words, when a user authenticates an client application, the authorization server generates a *Bearer Token* that can be used to get an access token.
 
 **Notes** 
 
 - *Bearer Token* should not be passed in page URLS. Instead of that, prefer to pass through HTTP Header (e.g *X-ESENSING-EOWS-TOKEN: BearerTokenHere*)
 
-- *OAuth2 Server* must utilizes only HTTPS protocol support.
+- *OAuth2 Server* must run only over HTTPS protocol support.
 
 ## Glossary
 
@@ -221,6 +223,7 @@ All configurations are defined in `share/eows/config/auth.json`
 ```
 {
   "session_expiration": integer,
+  "oauth2_code_expiration": integer,
   "oauth2_authorize_uri": string,
   "oauth2_logout_uri": string,
   "oauth2_info_uri": string,
@@ -234,6 +237,8 @@ All configurations are defined in `share/eows/config/auth.json`
 Description:
 
   * **session_expiration** - Defines a session timeout expiration in seconds. Default is a day (86400 seconds).
+
+  * **oauth2_code_expiration** - Defines a max lifetime of code (in seconds) used to exchange for an access_token. Default is 90.
 
   * **oauth2_authorize_uri** - Defines subaddress of oauth handlers. Usually are "auth" or "authorize".
   
@@ -289,13 +294,18 @@ The OAuth 2.0 Token Introspection spec has several attributes that may be implem
 
 - **active** - *Required*. Boolean value for token current active. The value should be “true” if the token has been issued by this authorization                    server, has not been revoked by the user, and has not expired;
 
-- **scope** - Contains list of scopes associated with this *access_token*;
+- **scope** - *Optional*. Contains list of scopes associated with this *access_token*;
 
-- **client_id** - Client Identifier;
+- **client_id** - *Optional* Client Identifier;
 
-- **username** - User associated with this *access_token*;
+- **username** - *Optional* User associated with this *access_token*;
 
-- **exp** - Unix timestamp indicating when *access_token* will expire.
+- **exp** - *Optional*. Unix timestamp indicating when *access_token* will expire.
+
+The following libraries are implemented in C++11 using JWT Tokens (Spec that implements OAuth 2.0 Token Introspection)
+- [**jwtxx**](https://github.com/madf/jwtxx)
+- [**Jwt-cpp**](https://github.com/pokowaka/jwt-cpp)
+
 
 ## Implementation
 
@@ -324,6 +334,11 @@ The OAuth 2.0 Token Introspection spec has several attributes that may be implem
 
 
 ### Scopes (Roles)
+
+| Name | Description |
+|---|---|
+| `user.email` | Allow to read user information |
+|  |  |
 
 ## References
 
