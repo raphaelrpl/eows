@@ -132,10 +132,8 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
     const auto redirect_uri = input_params.redirect_uri;
     input_params.redirect_uri = "";
     // redirect URI
-    res.set_status(eows::core::http_response::moved_permanently);
     res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-    res.add_header(eows::core::http_response::LOCATION, redirect_uri + eows::core::to_str(input_params.to_query_string()));
-    return;
+    return res.redirect_to(redirect_uri + eows::core::to_str(input_params.to_query_string()));
   }
 
   eows::core::query_string_t parameters = input_params.to_query_string();
@@ -151,6 +149,9 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
   html_tpl.append("</ul>");
 
   parameters.insert(std::make_pair("content", html_tpl));
+
+  auto client = manager::instance().find_client(input_params.client_id);
+  parameters.insert(std::make_pair("app_name", client->application_name));
 
   // OK, everything is fine
   return reply(res, parameters,
@@ -179,10 +180,9 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
       output_params.redirect_uri = referer(req);
     }
 
-    res.set_status(eows::core::http_response::moved_permanently);
     const std::string redirect_uri = output_params.redirect_uri;
     output_params.redirect_uri.clear();
-    return res.add_header(eows::core::http_response::LOCATION, redirect_uri + eows::core::to_str(output_params.to_query_string()));
+    return res.redirect_to(redirect_uri + eows::core::to_str(output_params.to_query_string()));
   }
   catch(const eows::auth::unauthorized_error& e)
   {
@@ -270,11 +270,6 @@ void eows::auth::oauth2_token_handler::do_post(const eows::core::http_request& r
   return res.write(json.c_str(), json.size());
 }
 
-void eows::auth::dummy_api_route::do_get(const eows::core::http_request& req, eows::core::http_response& res)
-{
-
-}
-
 void eows::auth::oauth2_login_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   auto s = manager::instance().find_session(req, res);
@@ -286,6 +281,7 @@ void eows::auth::oauth2_login_handler::do_get(const eows::core::http_request& re
     auto it = query_string.find("redirectTo");
     oauth_parameters params;
 
+    // Use OAuth 2.0 Template. Otherwise, render EOWS Login page
     if (it != query_string.end())
     {
       params.configure(eows::core::expand(it->second));
@@ -296,11 +292,14 @@ void eows::auth::oauth2_login_handler::do_get(const eows::core::http_request& re
                    manager::instance().login_template(),
                    eows::core::http_response::OK);
     }
+    else
+    {
+      const std::string eows_login_template = "<h1>Login page</h1>";
+      res.write(eows_login_template.c_str(), eows_login_template.size());
+    }
   }
   else
-  {
-    res.add_header(eows::core::http_response::LOCATION, referer(req));
-  }
+    return res.redirect_to(referer(req));
 }
 
 void eows::auth::oauth2_login_handler::do_post(const eows::core::http_request& req, eows::core::http_response& res)
@@ -333,7 +332,6 @@ void eows::auth::oauth2_login_handler::do_post(const eows::core::http_request& r
     params.client_id = body.find("client_id")->second;
 
     res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-    res.add_header(eows::core::http_response::LOCATION, "/oauth2/authorize" + eows::core::to_str(params.to_query_string()));
-    res.set_status(eows::core::http_response::moved_permanently);
+    return res.redirect_to("/oauth2/authorize" + eows::core::to_str(params.to_query_string()));
   }
 }

@@ -35,3 +35,9 @@ const char eows::core::http_response::content_type_[] = "Content-Type";
 const char eows::core::http_response::location_[] = "Location";
 const char eows::core::http_response::set_cookie_[] = "Set-Cookie";
 const char eows::core::http_response::unknown_[] = "Unknown";
+
+void eows::core::http_response::redirect_to(const std::string& url)
+{
+  add_header(eows::core::http_response::LOCATION, url);
+  set_status(eows::core::http_response::moved_permanently);
+}

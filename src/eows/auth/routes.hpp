@@ -83,24 +83,33 @@ namespace eows
     {
       using eows::core::web_service_handler::web_service_handler;
 
+      /*!
+       * \brief Render Login interface for both default EOWS login and OAuth2 template
+       *
+       * Tries to identify HTTP Request.
+       *
+       * - If a provided client_id, use OAuth2 template:
+       *   - In this way, we should use a first redirect URI. (TODO)
+       *
+       * - If no argument provided, show EOWS Login Page.
+       *
+       * \note It may redirect to previous URL (HTTP Referer) if a session is found and still valid
+       *
+       * \param req - HTTP Request
+       * \param res - HTTP Response
+       */
       void do_get(const eows::core::http_request &req, eows::core::http_response &res);
 
+      /*!
+       * \brief Handle Login Authentication
+       *
+       * \note For now, it is only working for OAuth2.0 context, redirecting to authorize URI.
+       *
+       * \param req - HTTP Request
+       * \param res - HTTP Response
+       */
       void do_post(const eows::core::http_request& req,
                    eows::core::http_response& res);
-    };
-
-    //! Handles OAuth2 Code and Access operations
-    //!
-    //! Its a temporary route to simulate an client usage of this server
-    /*!
-      http://localhost:7654/auth
-     */
-    class dummy_api_route: public eows::core::web_service_handler
-    {
-      using eows::core::web_service_handler::web_service_handler;
-
-      void do_get(const eows::core::http_request& req,
-                  eows::core::http_response& res);
     };
 
     //! Handles OAuth2 Info operations

@@ -96,8 +96,6 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
 
   bool refresh_token = false;
 
-  oauth_code* code = nullptr;
-
   if (params_.grant_type == "refresh_token")
   {
     params_.grant_type = "code";
@@ -105,7 +103,7 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
     refresh_token = true;
   }
 
-  code = manager::instance().find_code(params_.code);
+  auto code = manager::instance().find_code(params_.code);
 
   if (code == nullptr)
     throw unauthorized_error("The code provided is invalid");

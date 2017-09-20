@@ -216,8 +216,52 @@ With this grant type, the user provides their credentials directly to the servic
 
 **Note** *this grant type should only be enabled on the authorization server if other flows are not viable. Also, it should only be used if the application is trusted by the user (e.g. it is owned by the service, or the user's desktop OS). [2]*
 
+## Authorization Interface
 
-## Configuration
+Once user authenticates in EOWS platform, the Authorization server should redirect either to the Authorize interface (if it is not allowed yet) or to provided redirect URI (if it is valid URI in app).
+
+TODO: Display Authorize Page
+
+The interface must display what is being accessed from user account:
+  - You may provide checkboxes of permissions and let user decide if specific role is allowed to be accessed. If provided, you must
+    send a parameters for revoking the specified roles.
+
+TODO: DISPLAY IMAGE
+
+## Token Introspection Endpoint
+
+Whenever an client make a request to the resource server, the resource server needs to verify the access token. Although OAuth 2.0 spec does not define a specific method of how the resource server should verify access tokens, there is another spec called OAuth 2.0 Token Introspection that provides a protocol for return user information through Token originality. In this way, we must define an pattern for token background validity using OAuth 2.0 Token Introspection template to trust in client requests.
+
+The OAuth 2.0 Token Introspection spec has several attributes that may be implemented. The following attributes are essentials to guarantee token originality:
+
+```
+{
+  "active":    bool,
+  "scope":     string,
+  "client_id": string,
+  "username":  string,
+  "exp":       number
+}
+```
+
+- **active** - *Required*. Boolean value for token current active. The value should be “true” if the token has been issued by this authorization                    server, has not been revoked by the user, and has not expired;
+
+- **scope** - *Optional*. Contains list of scopes associated with this *access_token*;
+
+- **client_id** - *Optional* Client Identifier;
+
+- **username** - *Optional* User associated with this *access_token*;
+
+- **exp** - *Optional*. Unix timestamp indicating when *access_token* will expire.
+
+The following libraries are implemented in C++11 using JWT Tokens (Spec that implements OAuth 2.0 Token Introspection)
+- [**jwtxx**](https://github.com/madf/jwtxx)
+- [**Jwt-cpp**](https://github.com/pokowaka/jwt-cpp)
+
+
+## Implementation
+
+### Configuration
 
 All configurations are defined in `share/eows/config/auth.json`
 ```
@@ -276,40 +320,8 @@ Description:
 
   * **use_refresh_token** - Bool value used to ask for code grant type with refresh_token.
 
-## Token Introspection Endpoint
 
-Whenever an client make a request to the resource server, the resource server needs to verify the access token. Although OAuth 2.0 spec does not define a specific method of how the resource server should verify access tokens, there is another spec called OAuth 2.0 Token Introspection that provides a protocol for return user information through Token originality. In this way, we must define an pattern for token background validity using OAuth 2.0 Token Introspection template to trust in client requests.
-
-The OAuth 2.0 Token Introspection spec has several attributes that may be implemented. The following attributes are essentials to guarantee token originality:
-
-```
-{
-  "active":    bool,
-  "scope":     string,
-  "client_id": string,
-  "username":  string,
-  "exp":       number
-}
-```
-
-- **active** - *Required*. Boolean value for token current active. The value should be “true” if the token has been issued by this authorization                    server, has not been revoked by the user, and has not expired;
-
-- **scope** - *Optional*. Contains list of scopes associated with this *access_token*;
-
-- **client_id** - *Optional* Client Identifier;
-
-- **username** - *Optional* User associated with this *access_token*;
-
-- **exp** - *Optional*. Unix timestamp indicating when *access_token* will expire.
-
-The following libraries are implemented in C++11 using JWT Tokens (Spec that implements OAuth 2.0 Token Introspection)
-- [**jwtxx**](https://github.com/madf/jwtxx)
-- [**Jwt-cpp**](https://github.com/pokowaka/jwt-cpp)
-
-
-## Implementation
-
-- API Structure
+### API Structure
 
 
 * **Users**

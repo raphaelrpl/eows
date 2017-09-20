@@ -140,6 +140,15 @@ namespace eows
         virtual void write(const char* value, const std::size_t size) = 0;
 
         /*!
+         * \brief Redirect HTTP Response to url provided.
+         *
+         * \note It adds LOCATION header and set status code to 302 (moved_permanently)
+         *
+         * \param url - Target URL
+         */
+        virtual void redirect_to(const std::string& url);
+
+        /*!
          * \brief Retrieves current headers to sent in HTTP response
          * \return
          */
