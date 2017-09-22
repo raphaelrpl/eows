@@ -35,19 +35,24 @@ namespace eows
 {
   namespace auth
   {
+    //! Represents a default Sessin Token Identifier
+    static const std::string session_label("session_id");
+
     /*!
      * \brief Represents OAuth2 module settings
      */
     struct config_t
     {
-      std::string oauth2_authorize_uri;
-      std::string oauth2_logout_uri;
-      std::string oauth2_info_uri;
-      std::string oauth2_token_uri;
-      std::string oauth2_login_template_path;
-      std::string oauth2_message_template_path;
-      std::string oauth2_error_template_path;
-      bool use_refresh_token;
+      std::string oauth2_authorize_uri; //!< Represents path to Authorize URI
+      std::string oauth2_logout_uri;    //!< Represents path to Logout URI
+      std::string oauth2_info_uri;      //!< Represents path to token information
+      std::string oauth2_token_uri;     //!< Represents path to token exchange
+      std::string oauth2_login_template_path;   //!< Represents path to OAuth2.0 Login template
+      std::string oauth2_message_template_path; //!< Represemts path to OAuth2.0 Authorization template
+      std::string oauth2_error_template_path;   //!< Represents path to OAuth2.0 Page error
+      std::size_t session_expiration;     //!< Represents User session lifetime cycle.
+      std::size_t oauth2_code_expiration; //!< Represents OAuth2 code lifetime cycle.
+      bool use_refresh_token; //!< Represents if OAuth2.0 module will support Refresh tokens.
     };
 
     /*!

@@ -63,7 +63,7 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
     {
       std::unique_ptr<oauth_code> code(new oauth_code);
       code->id = generator_->generate();
-      code->expiration = eows::core::unix_timestamp() + 86400; // Last a //day// minute
+      code->expiration = eows::core::unix_timestamp() + manager::instance().settings().oauth2_code_expiration; // Last a //day// minute
       code->redirect_uri = output.redirect_uri;
       code->user_id = user->username;
       code->client_id = params_.client_id;
@@ -92,6 +92,11 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
 
 void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& oresp, const eows::core::http_request& request, eows::core::http_response& response)
 {
+  if (params_.client_secret.empty())
+    throw unauthorized_error("The client secret has not provided");
+
+  // validate client secret
+
   // Once grant_type is refresh_token, we should use grant type code as we'll use same resources
 
   bool refresh_token = false;
@@ -133,7 +138,8 @@ const std::string eows::auth::authorization_code::information()
   return std::string();
 }
 
-eows::auth::oauth_client* eows::auth::authorization_code::validate_client(const std::string& client_id, eows::auth::oauth_parameters& oresp)
+eows::auth::oauth_client* eows::auth::authorization_code::validate_client(const std::string& client_id,
+                                                                          eows::auth::oauth_parameters& oresp)
 {
   // Find Client in cache/database | Validate
   auto client = manager::instance().find_client(client_id);
@@ -185,7 +191,7 @@ void eows::auth::authorization_code::create_access_token(eows::auth::oauth_param
   eows::auth::nonce_generator g(86);
   oresp.access_token = g.generate();
   oresp.token_type = "Bearer";
-  oresp.expires_in = "86400"; /* day */
+  oresp.expires_in = std::to_string(manager::instance().settings().session_expiration);
   oresp.state = params_.state;
   oresp.refresh_token = generator_->generate();
 }

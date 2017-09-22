@@ -13,8 +13,14 @@
 #include "../core/http_request.hpp"
 #include "../core/http_response.hpp"
 
+// STL
+#include <iostream>
 
-void reply(eows::core::http_response& res, const eows::core::query_string_t& parameters, std::string tpl, eows::core::http_response::status_t status_code)
+
+void reply(eows::core::http_response& res,
+           const eows::core::query_string_t& parameters,
+           std::string tpl,
+           eows::core::http_response::status_t status_code)
 {
   res.set_status(status_code);
   res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html; charset=utf-8");
@@ -25,7 +31,10 @@ void reply(eows::core::http_response& res, const eows::core::query_string_t& par
 }
 
 //! Helper to reply a HTTP response for OAuth2 model.
-void reply(eows::core::http_response& res, const eows::auth::oauth_parameters& parameters, std::string tpl, eows::core::http_response::status_t status_code)
+void reply(eows::core::http_response& res,
+           const eows::auth::oauth_parameters& parameters,
+           std::string tpl,
+           eows::core::http_response::status_t status_code)
 {
   reply(res, parameters.to_query_string(), tpl, status_code);
 }
@@ -81,9 +90,6 @@ const std::string referer(const eows::core::http_request& request)
 void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   oauth_parameters input_params(req.query_string());
-
-  const auto headers = req.headers();
-  const auto cookies = req.cookies();
 
   res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 

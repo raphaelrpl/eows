@@ -1,3 +1,30 @@
+/*
+  Copyright (C) 2017 National Institute For Space Research (INPE) - Brazil.
+
+  This file is part of Earth Observation Web Services (EOWS).
+
+  EOWS is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 3 as
+  published by the Free Software Foundation.
+
+  EOWS is distributed  "AS-IS" in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY OF ANY KIND; without even the implied warranty
+  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with EOWS. See LICENSE. If not, write to
+  e-sensing team at <esensing-team@dpi.inpe.br>.
+ */
+
+/*!
+  \file eows/auth/manager.cpp
+
+  \brief Implementation of manager for Auth configurations.
+
+  \author Raphael Willian da Costa
+ */
+
 #include "manager.hpp"
 #include "defines.hpp"
 #include "exception.hpp"
@@ -116,6 +143,8 @@ void eows::auth::manager::initialize()
     pimpl_->config.oauth2_message_template_path = eows::core::read_node_as_string(doc, "oauth2_message_template_path");
     pimpl_->config.oauth2_error_template_path = eows::core::read_node_as_string(doc, "oauth2_error_template_path");
     pimpl_->config.use_refresh_token = eows::core::read_node_as_bool(doc, "use_refresh_token");
+    pimpl_->config.session_expiration = eows::core::read_node_as_int64(doc, "session_expiration");
+    pimpl_->config.oauth2_code_expiration = eows::core::read_node_as_int64(doc, "oauth2_code_expiration");
     // Loading HTML Templates
     pimpl_->load_templates();
 
@@ -183,7 +212,6 @@ eows::auth::session*eows::auth::manager::find_session(const std::string& token) 
 eows::auth::session*eows::auth::manager::find_session(const eows::core::http_request& request, core::http_response& response) const
 {
   std::string token;
-  const std::string session_label("session_id");
 
   // Cookies
   auto cookies = request.cookies();

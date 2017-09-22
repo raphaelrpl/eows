@@ -40,9 +40,7 @@ namespace eows
   namespace auth
   {
     /*!
-     * \brief Defines an OAuth2 Request Parameters
-     *
-     * TODO
+     * \brief Defines common parameters used in OAuth 2.0 Request.
      */
     struct oauth_parameters
     {
