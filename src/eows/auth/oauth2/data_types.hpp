@@ -229,7 +229,7 @@ namespace eows
     };
 
     /*!
-     * \brief OAuth2 Code for access code exchange process
+     * \brief OAuth2 Code for access token exchange process
      *
      * The OAuth 2.0 spec recommends a maximum lifetime of 10 minutes for authorization code.
      *

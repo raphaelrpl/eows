@@ -533,3 +533,15 @@ std::map<std::string, std::string> eows::core::parse_cookies(const eows::core::h
 
   return cookies;
 }
+
+const std::string eows::core::referer(const eows::core::http_request& request)
+{
+  std::string ref;
+  const auto headers = request.headers();
+
+  auto it = headers.find("Referer");
+  if (it != headers.end())
+    ref.assign(it->second);
+
+  return ref;
+}

@@ -63,6 +63,21 @@ namespace eows
     eows::core::query_string_t expand(const std::string& query_str);
 
     /*!
+     * \brief Retrieves a HTTP Referer from request. Used to redirect next uri
+     *
+     * The Referer request header contains the URI of the previous web page, allowing servers to
+     * identify where people are visiting them FROM.
+     *
+     * See more in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer
+     *
+     * \todo It must be moved to eows::core since it belongs to HTTP Request and there is no special behavior for retrieve URI handling.
+     *
+     * \param request
+     * \return
+     */
+    const std::string referer(const eows::core::http_request& request);
+
+    /*!
      * \brief Parses cookies from HTTP Request Header
      *
      * A cookie HTTP request header contains stored HTTP cookies previously sent by the

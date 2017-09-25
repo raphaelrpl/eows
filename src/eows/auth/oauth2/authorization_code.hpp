@@ -18,9 +18,9 @@
  */
 
 /*!
-  \file eows/auth/defines.hpp
+  \file eows/auth/authorization_code.hpp
 
-  \brief Defines for EOWS.
+  \brief Defines OAuth 2.0 Authorization Code grant type.
 
   \author Raphael Willian da Costa
  */

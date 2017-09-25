@@ -54,16 +54,50 @@ namespace eows
     class manager : private boost::noncopyable
     {
       public:
+        //! Destructor
         virtual ~manager();
+
+        //! Singleton
         static manager& instance();
 
+        //! Retrieves OAuth2 settings
         const config_t& settings() const;
 
+        //! Retrieves OAuth2 Login HTML Template
         const std::string& login_template() const;
+
+        /*!
+         * \brief Retrieves cached OAuth2 HTML Template for Authorization
+         *
+         * You must populate the authorization values using eows::auth::replace.
+         *
+         * \return Retrieves OAuth2 Authorize template
+         */
         const std::string& authorize_template() const;
+
+        /*!
+         * \brief Retrieves cached OAuth2 HTML Template for errors
+         *
+         * You must populate the error values using eows::auth::replace.
+         *
+         * \return Retrieves OAuth2 error template
+         */
         const std::string& error_template() const;
+
+        /*!
+         * \brief Initializes Manager instance, loading objects in memory
+         *
+         * \throws eows::parse_error When could not parse JSON object
+         */
         void initialize();
 
+        /*!
+         * \brief Search for OAuth2 client.
+         *
+         * \param client_id - Client Identifier
+         *
+         * \return Returns a pointer to client or nullptr
+         */
         oauth_client* find_client(const std::string& client_id) const;
         session* find_session(const std::string& token) const;
         session* find_session(const eows::core::http_request& request, eows::core::http_response& response) const;

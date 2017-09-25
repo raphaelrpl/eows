@@ -92,10 +92,15 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
 
 void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& oresp, const eows::core::http_request& request, eows::core::http_response& response)
 {
+  // Current implementation only support Authorization code Grant Type
+  if (params_.grant_type != "authorization_code")
+    throw unsupported_response_type_error("The grant type provided is not supported");
+
   if (params_.client_secret.empty())
-    throw unauthorized_error("The client secret has not provided");
+    throw unauthorized_error("The client secret was not provided");
 
   // validate client secret
+//  auto client = manager::instance().find_client();
 
   // Once grant_type is refresh_token, we should use grant type code as we'll use same resources
 

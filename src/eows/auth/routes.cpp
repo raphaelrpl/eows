@@ -62,31 +62,6 @@ void handle_oauth_error(eows::core::http_response& res,
   res.set_status(status_code);
 }
 
-/*!
- * \brief Retrieves a HTTP Referer from request. Used to redirect next uri
- *
- * The Referer request header contains the URI of the previous web page, allowing servers to
- * identify where people are visiting them FROM.
- *
- * See more in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer
- *
- * \todo It must be moved to eows::core since it belongs to HTTP Request and there is no special behavior for retrieve URI handling.
- *
- * \param request
- * \return
- */
-const std::string referer(const eows::core::http_request& request)
-{
-  std::string ref;
-  const auto headers = request.headers();
-
-  auto it = headers.find("Referer");
-  if (it != headers.end())
-    ref.assign(it->second);
-
-  return ref;
-}
-
 void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   oauth_parameters input_params(req.query_string());
@@ -183,7 +158,7 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
     if (output_params.redirect_uri.empty())
     {
       // Retrieve from HTTP Referer
-      output_params.redirect_uri = referer(req);
+      output_params.redirect_uri = eows::core::referer(req);
     }
 
     const std::string redirect_uri = output_params.redirect_uri;
