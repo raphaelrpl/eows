@@ -201,7 +201,6 @@ int main(int argc, char *argv[])
     eows::auth::initialize();
 #endif
 
-
 #ifdef EOWS_OGC_OWS_ENABLED
     eows::ogc::ows::initialize();
 #endif

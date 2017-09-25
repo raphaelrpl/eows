@@ -324,10 +324,6 @@ install(DIRECTORY ${EOWS_ABSOLUTE_ROOT_DIR}/share/
 #
 add_subdirectory(core)
 
-#
-# Modules definitions
-#
-
 if(EOWS_HTTP_CPPNETLIB_ENABLED)
   add_definitions(-DEOWS_HTTP_CPPNETLIB_ENABLED)
   add_subdirectory(http_cppnetlib)

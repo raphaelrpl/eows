@@ -90,7 +90,9 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
   return output;
 }
 
-void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& oresp, const eows::core::http_request& request, eows::core::http_response& response)
+void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& oresp,
+                                              const eows::core::http_request& request,
+                                              eows::core::http_response& response)
 {
   // Current implementation only support Authorization code Grant Type
   if (params_.grant_type != "authorization_code")
