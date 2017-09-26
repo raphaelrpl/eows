@@ -1,5 +1,4 @@
 #include "authorization_code.hpp"
-#include "utils.hpp"
 #include "generator.hpp"
 #include "../data_types.hpp"
 #include "exception.hpp"
@@ -16,10 +15,10 @@ eows::auth::authorization_code::authorization_code(const oauth_parameters& p)
 
 eows::auth::authorization_code::~authorization_code()
 {
-
 }
 
-eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::core::http_request& request, eows::core::http_response& response)
+eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::core::http_request& request,
+                                                                   eows::core::http_response& response)
 {
   if (params_.client_id.empty())
     throw unauthorized_error("The client identifier is empty.");
@@ -56,6 +55,10 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
     {
       // Retrieve default roles of Generated Code
       auto code = manager::instance().find_code(params_.code);
+
+      if (code == nullptr)
+        throw access_denied_error("Invalid code provided");
+
       roles = code->roles;
     }
 
@@ -101,11 +104,9 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
   if (params_.client_secret.empty())
     throw unauthorized_error("The client secret was not provided");
 
-  // validate client secret
-//  auto client = manager::instance().find_client();
+  /* TODO: Validate Client. Remember that client may send only client secret or both (client id and secret).*/
 
   // Once grant_type is refresh_token, we should use grant type code as we'll use same resources
-
   bool refresh_token = false;
 
   if (params_.grant_type == "refresh_token")
@@ -122,10 +123,8 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
   else
   {
     if (refresh_token)
-    {
       // The token is still valid.. TODO: Should reply same token or generate a new one?
       create_access_token(oresp);
-    }
     else
     {
       if (code->expired())

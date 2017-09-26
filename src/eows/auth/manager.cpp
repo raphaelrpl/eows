@@ -33,7 +33,6 @@
 
 // EOWS OAuth2
 #include "oauth2/data_types.hpp"
-#include "oauth2/utils.hpp"
 #include "oauth2/generator.hpp"
 
 // EOWS Core
@@ -215,7 +214,6 @@ eows::auth::session*eows::auth::manager::find_session(const eows::core::http_req
 
   // Cookies
   auto cookies = request.cookies();
-  auto headers = request.headers();
 
   auto cookie_it = cookies.find(session_label);
 
@@ -248,7 +246,7 @@ eows::auth::session*eows::auth::manager::find_session(const eows::core::http_req
   {
     // create session
     std::unique_ptr<session> session_ptr(new session);
-    session_ptr->token = generate_token();
+    session_ptr->token = generate(12);
     session_ptr->update_time = std::time(0);
 
     s = session_ptr.get();
@@ -300,7 +298,7 @@ void eows::auth::manager::create_client(const std::string& type, const std::vect
 void eows::auth::manager::create_session(const eows::auth::user_t& user)
 {
   std::unique_ptr<session> s(new session);
-  s->token = generate_token();
+  s->token = generate(12);
   s->update_time = std::time_t(nullptr);
   s->user = user.username;
   std::vector<std::string> roles;
@@ -330,5 +328,4 @@ void eows::auth::manager::remove_session(eows::auth::session* s)
 eows::auth::manager::manager()
   : pimpl_(new impl)
 {
-
 }

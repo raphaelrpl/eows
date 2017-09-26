@@ -47,7 +47,6 @@ namespace eows
           error(err),
           error_description(err_description)
       {
-
       }
     };
 
