@@ -42,17 +42,13 @@ namespace eows
       {
         public:
 
-          http_server();
+          http_server() = default;
 
-          ~http_server();
+          ~http_server() = default;
 
           int run();
-
-        private:
-          struct impl;
-          impl* pimpl_;
       };
-      
+
     } // end namespace crow
   }   // end namespace http
 }     // end namespace eows
