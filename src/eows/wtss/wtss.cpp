@@ -713,8 +713,10 @@ eows::wtss::fill_time_series(std::vector<double>& values,
       values[cell_idx] = cell_it->get_uint16(attr_name);
     else if(id == ::scidb::TID_INT32)
       values[cell_idx] = cell_it->get_int32(attr_name);
-    else if(id == ::scidb::TID_INT32)
-      values[cell_idx] = cell_it->get_int32(attr_name);
+    else if(id == ::scidb::TID_UINT32)
+      values[cell_idx] = cell_it->get_uint32(attr_name);
+    else if(id == ::scidb::TID_FLOAT)
+      values[cell_idx] = cell_it->get_float(attr_name);
     else
       throw std::runtime_error("Could not fill values vector with iterator items: data type not supported.");
 

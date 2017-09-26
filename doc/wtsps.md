@@ -1,10 +1,10 @@
-# Web Time Series Classification Service
+# Web Time Series Processing Service
 
-Web Time Series Classification Service, or WTSCS for short, is a web service for classification of time series data from remote sensing imagery.
+Web Time Series Processing Service, or WTSPS for short, is a web service for processing of time series data from remote sensing imagery.
 
-In WTSCS a coverage is a three dimensional array with spatial and temporal dimensions.
+In WTSPS a coverage is a three dimensional array with spatial and temporal dimensions.
 
-WTSCS is based on the following operations:
+WTSPS is based on the following operations:
 * ```list_algorithms```: ???.
 * ```run_process```: ???.
 * ```cancel_process```: ???.
@@ -59,7 +59,7 @@ Via HTTP Post:
 
 Response:
 ```json
-{ "UUID": "0AFB88990AFB88990AFB88990AFB8899" }
+{ "UUID": "WTSPSde9c687b4699465780a59a50e7e0457b" }
 ```
 
 patterns:
@@ -103,7 +103,7 @@ patterns:
 
 Via HTTP Get:
 ```
-http://myserver/wtscs/cancel_process?UUID=0AFB88990AFB88990AFB88990AFB8899
+http://myserver/wtscs/cancel_process?UUID=WTSPSde9c687b4699465780a59a50e7e0457b
 ```
 
 Response:
@@ -121,7 +121,7 @@ http://myserver/wtscs/status?UUID=0AFB88990AFB88990AFB88990AFB8899
 
 Response:
 ```json
-{ "status": "Scheduled" or "In progress" or "Completed" or "Cancelled" }
+{ "status": "None" or "Scheduled" or "In progress" or "Completed" or "Cancelled" }
 ```
 
 
