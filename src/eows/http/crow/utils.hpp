@@ -28,16 +28,8 @@
 #ifndef __EOWS_HTTP_CROW_UTILS_HPP__
 #define __EOWS_HTTP_CROW_UTILS_HPP__
 
-// EOWS
-#include "../../core/data_types.hpp"
-
 namespace eows
 {
-  namespace core
-  {
-    class http_request;
-  }
-
   namespace http
   {
     namespace crow

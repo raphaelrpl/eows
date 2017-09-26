@@ -27,11 +27,8 @@
 
 // EOWS
 #include "utils.hpp"
-#include "../../exception.hpp"
 #include "../../core/http_server_builder.hpp"
 #include "../../core/logger.hpp"
-#include "../../core/utils.hpp"
-#include "../../core/http_request.hpp"
 #include "http_server.hpp"
 
 std::unique_ptr<eows::core::http_server> build_http_server()

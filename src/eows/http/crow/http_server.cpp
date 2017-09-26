@@ -179,6 +179,5 @@ eows::http::crow::http_server::run()
      .concurrency(cfg_info.threads)
      .run();
 
-
   return EXIT_SUCCESS;
 }

@@ -163,11 +163,6 @@ void eows::auth::manager::initialize()
     }
     std::vector<std::string> dummy_roles;
     dummy_roles.push_back("user.email");
-    dummy_roles.push_back("wcs.all");
-    dummy_roles.push_back("wtss.all");
-    dummy_roles.push_back("wtsps.all");
-    dummy_roles.push_back("global.users");
-    dummy_roles.push_back("global.workspace");
     std::vector<std::string> uris;
     uris.push_back("http://127.0.0.1:7654/echo");
     uris.push_back("http://localhost:7654/echo");
