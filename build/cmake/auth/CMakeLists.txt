@@ -1,3 +1,5 @@
+include_directories(${JWTXX_INCLUDE_DIR})
+
 file(GLOB_RECURSE EOWS_AUTH_SRC_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/auth/*.cpp)
 file(GLOB_RECURSE EOWS_AUTH_HDR_FILES ${EOWS_ABSOLUTE_ROOT_DIR}/src/eows/auth/*.hpp)
 
@@ -15,7 +17,9 @@ target_link_libraries(eows_auth eows_core
                                 ${Boost_THREAD_LIBRARY}
                                 ${Boost_LOG_LIBRARY}
                                 ${Boost_LOG_SETUP_LIBRARY}
-                                ${CMAKE_THREAD_LIBS_INIT})
+                                ${CMAKE_THREAD_LIBS_INIT}
+                                ${JANSSON_LIBRARIES}
+                                ${JWTXX_LIBRARY})
 
 set_target_properties(eows_auth  PROPERTIES
                                  VERSION ${EOWS_VERSION_MAJOR}.${EOWS_VERSION_MINOR}

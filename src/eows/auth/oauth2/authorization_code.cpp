@@ -62,31 +62,30 @@ eows::auth::oauth_parameters eows::auth::authorization_code::grant(const eows::c
       roles = code->roles;
     }
 
-    if (validate_roles(output, roles, *client))
+    if (!validate_roles(output, roles, *client))
+      throw invalid_scope_error("The scope provided is invalid.");
+
+    std::unique_ptr<oauth_code> code(new oauth_code);
+    code->id = generator_->generate();
+    code->expiration = eows::core::unix_timestamp() + manager::instance().settings().oauth2_code_expiration; // Last a //day// minute
+    code->redirect_uri = output.redirect_uri;
+    code->user_id = user->username;
+    code->client_id = params_.client_id;
+    code->roles = roles;
+
+    output.code = code->id;
+    params_.code = output.code;
+    params_.username = user->username;
+
+    manager::instance().create_code(std::move(code));
+
+    s->user = user->username;
+    s->roles.add("oauth2");
+    s->roles.set("oauth2", "username", user->username);
+    for(const auto& role: roles)
     {
-      std::unique_ptr<oauth_code> code(new oauth_code);
-      code->id = generator_->generate();
-      code->expiration = eows::core::unix_timestamp() + manager::instance().settings().oauth2_code_expiration; // Last a //day// minute
-      code->redirect_uri = output.redirect_uri;
-      code->user_id = user->username;
-      code->client_id = params_.client_id;
-      code->roles = roles;
-
-      output.code = code->id;
-      params_.code = output.code;
-      params_.username = user->username;
-
-      manager::instance().create_code(std::move(code));
-
-      session* s = manager::instance().find_session(request, response);
-      s->user = user->username;
-      s->roles.add("oauth2");
-      s->roles.set("oauth2", "username", user->username);
-      for(const auto& role: roles)
-      {
-        s->roles.add(role);
-        s->roles.set(role, "username", user->username);
-      }
+      s->roles.add(role);
+      s->roles.set(role, "username", user->username);
     }
   }
 

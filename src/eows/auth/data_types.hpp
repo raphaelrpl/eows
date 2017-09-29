@@ -60,6 +60,7 @@ namespace eows
      */
     struct user_t
     {
+      std::string full_name;
       std::string username;
       std::string password;
 

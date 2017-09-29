@@ -99,6 +99,12 @@ namespace eows
          * \return Returns a pointer to client or nullptr
          */
         oauth_client* find_client(const std::string& client_id) const;
+
+        /*!
+         * \brief Search for Session using Cookie Token
+         * \param token
+         * \return
+         */
         session* find_session(const std::string& token) const;
         session* find_session(const eows::core::http_request& request, eows::core::http_response& response) const;
         user_t* find_user(const std::string& username) const;

@@ -13,10 +13,6 @@
 #include "../core/http_request.hpp"
 #include "../core/http_response.hpp"
 
-// STL
-#include <iostream>
-
-
 void reply(eows::core::http_response& res,
            const eows::core::query_string_t& parameters,
            std::string tpl,
@@ -194,7 +190,30 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
 
 void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
+  auto headers = req.headers();
+  auto it = headers.find("Authorization");
 
+  if (it == headers.end())
+  {
+    oauth_parameters error_params;
+    handle_oauth_error(res, eows::core::http_response::unauthorized, error_params, eows::auth::unauthorized_error("No authorization provided"));
+  }
+
+  eows::core::authorization_t auth_header(it->second);
+
+  const std::string token = auth_header.value;
+
+  /*
+    Find Session With OAuth2 Token
+
+    Find User associated with Token
+
+    Serialize User as JSON
+  */
+  const std::string response("{}");
+
+  res.write(response.c_str(), response.size());
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json;charset=utf-8");
 }
 
 void eows::auth::oauth2_logout::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -280,7 +299,7 @@ void eows::auth::oauth2_login_handler::do_get(const eows::core::http_request& re
     }
   }
   else
-    return res.redirect_to(referer(req));
+    return res.redirect_to(eows::core::referer(req));
 }
 
 void eows::auth::oauth2_login_handler::do_post(const eows::core::http_request& req, eows::core::http_response& res)

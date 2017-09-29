@@ -67,7 +67,14 @@ struct eows::auth::manager::impl
 
   bool loaded = false;
 
+  /*!
+   * \brief Open file contents
+   * \param file_path Path to the file
+   * \return File contents
+   */
   std::string open_file(const std::string& file_path);
+
+  //! Loads every OAuth2 Template in memory
   void load_templates();
 };
 
@@ -157,6 +164,7 @@ void eows::auth::manager::initialize()
     for(const auto& user_elm: it->value.GetArray())
     {
       std::unique_ptr<user_t> u(new user_t);
+      u->full_name = eows::core::read_node_as_string(user_elm, "full_name");
       u->username = eows::core::read_node_as_string(user_elm, "username");
       u->password = eows::core::read_node_as_string(user_elm, "password");
       pimpl_->users.push_back(std::move(u));

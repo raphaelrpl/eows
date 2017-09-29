@@ -98,6 +98,14 @@ namespace eows
       }
     };
 
+    struct invalid_client_error : public virtual oauth2_error
+    {
+      invalid_client_error(const std::string& err_description)
+        : oauth2_error("invalid_client", err_description)
+      {
+      }
+    };
+
     struct unsupported_response_type_error : public virtual oauth2_error
     {
       unsupported_response_type_error(const std::string& err_description)

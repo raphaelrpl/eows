@@ -227,6 +227,17 @@ else()
     message(STATUS "EOWS: Could not find GDAL Library. Building without it")
 endif()
 
+find_package(jwtxx QUIET)
+
+if (jwtxx_FOUND)
+    find_package(Jansson REQUIRED)
+    if (JANSSON_FOUND)
+        message(STATUS "EOWS: jwtxx Library found")
+    else()
+        message(STATUS "Jansson not found")
+    endif()
+endif()
+
 #
 # Build options.
 #

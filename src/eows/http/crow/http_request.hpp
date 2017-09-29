@@ -105,7 +105,7 @@ namespace eows
             std::map<std::string, std::string> headers;
 
             for(const auto& it: req_.headers)
-              headers.insert(std::pair<std::string, std::string>(it.first, it.second));
+              headers.insert(std::make_pair(it.first, it.second));
   
             return headers;
           }
