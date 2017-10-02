@@ -20,9 +20,9 @@
     "listening_port": 7654,
     "threads": 16,
     "ssl": {
-      "enabled": true,
-      "certificate": "@EOWS_USER_HOME@/Documents/server.crt",
-      "key": "@EOWS_USER_HOME@/Documents/server.key"
+      "enabled": false,
+      "certificate": "",
+      "key": ""
     }
   },
   "tmp_data_dir": "@EOWS_USER_HOME@/eows/tmp/data"
