@@ -2,7 +2,6 @@
 #include "exception.hpp"
 
 // STL
-#include <unordered_map>
 #include <memory>
 
 // JWT
@@ -14,9 +13,17 @@ struct eows::auth::token_t::impl
 {
   std::string token;
   std::unique_ptr<JWTXX::JWT> jwt;
-  std::unordered_map<std::string, std::string> values;
   bool initialized = false;
+
+  void initialize(const eows::auth::token_t::metadata_t& information);
 };
+
+inline void eows::auth::token_t::impl::initialize(const eows::auth::token_t::metadata_t& information)
+{
+  initialized = true;
+  jwt.reset(new JWTXX::JWT(algorithm, information));
+  token = jwt->token("secret");
+}
 
 eows::auth::token_t::token_t(const std::string& token)
   : pimpl_(new impl)
@@ -38,8 +45,7 @@ eows::auth::token_t::token_t(const std::string& token)
 eows::auth::token_t::token_t(const metadata_t& information)
   : pimpl_(new impl)
 {
-  pimpl_->jwt.reset(new JWTXX::JWT(algorithm, information));
-  pimpl_->token = pimpl_->jwt->token("secret");
+  pimpl_->initialize(information);
 }
 
 eows::auth::token_t::~token_t()
@@ -47,20 +53,13 @@ eows::auth::token_t::~token_t()
   delete pimpl_;
 }
 
-void eows::auth::token_t::digest()
-{
-  pimpl_->initialized = true;
-  pimpl_->jwt.reset(new JWTXX::JWT(JWTXX::Algorithm::RS512, pimpl_->values));
-  pimpl_->token = pimpl_->jwt->token("secret");
-}
+//void eows::auth::token_t::attach(const std::string& key, const std::string& value)
+//{
+//  if (!pimpl_->initialized)
+//    pimpl_->values.insert(std::make_pair(key, value));
+//}
 
-void eows::auth::token_t::attach(const std::string& key, const std::string& value)
-{
-  if (!pimpl_->initialized)
-    pimpl_->values.insert(std::make_pair(key, value));
-}
-
-const std::string eows::auth::token_t::claim(const std::string& key)
+const std::string eows::auth::token_t::claim(const std::string& key) const
 {
   return pimpl_->jwt->claim(key);
 }
@@ -69,6 +68,7 @@ const eows::auth::token_t::metadata_t eows::auth::token_t::claim() const
 {
   if (!expired())
     return pimpl_->jwt->claims();
+
   return eows::auth::token_t::metadata_t();
 }
 
@@ -94,4 +94,32 @@ bool eows::auth::token_t::expired() const
   {
     return true;
   }
+}
+
+const std::string eows::auth::token_t::to_json() const
+{
+  std::string json;
+
+  // If token is already expired, just reply active as false.
+  if (expired())
+    json = "{\"active\": false}";
+  else
+  {
+    auto metadata = claim();
+
+    json += ",\"active\": true";
+
+    for(const auto& it: metadata)
+      json += ",\"" + it.first + "\": \"" + it.second + "\"";
+
+    if (json.empty())
+      json = "{}";
+    else
+    {
+      json[0] = '{';
+      json += "}";
+    }
+  }
+
+  return json;
 }

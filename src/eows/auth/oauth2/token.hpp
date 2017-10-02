@@ -37,23 +37,74 @@ namespace eows
 {
   namespace auth
   {
+    /*!
+     * \brief Represents class for Token introspection generation
+     *
+     * This class implements a JWT token format (RFC-7519).
+     *
+     * See more in https://tools.ietf.org/html/rfc7519
+     *
+     * \todo In order to generate or to compare a token, we need a secret key. Should we
+     *       use an external key or client app secret?
+     */
     class token_t
     {
       public:
         typedef std::unordered_map<std::string, std::string> metadata_t;
 
+        /*!
+         * \brief Token Introspection Metadata structure
+         *
+         * This struct contains all values associated in token generation.
+         *
+         * \example
+         * TODO
+         *
+         * \todo Use this structure for Token metadata handling
+         */
+        struct information_t
+        {
+          std::string scope; //!< Scopes associated with generated token
+          std::string client_id;  //!< Client app identifier
+          std::string username;   //!< User associated with generated token
+          std::string token_type; //!< Type of token used.
+          std::string sub; //!< Subject of the token.
+          std::string aud; //!< Service specific string identifier
+          std::string iss; //!< Issuer of this token
+          std::string jti; //!< Identifier for the token
+          std::time_t exp; //!< Indicates when token will expire (number in seconds)
+          std::time_t iat; //!< Indicates when token was originally issued.
+          std::time_t nbf; //!< Indicates when token is not to be used before
+          metadata_t metadata; //!< Extra information
+        };
+
         token_t(const std::string& token);
         token_t(const metadata_t& information);
         ~token_t();
 
-        void digest();
-        void attach(const std::string& key, const std::string& value);
-        const std::string claim(const std::string& key);
+//        void attach(const std::string& key, const std::string& value);
+        const std::string claim(const std::string& key) const;
         const metadata_t claim() const;
         const std::string token() const;
 
+        /*!
+         * \brief Check Token availability.
+         *
+         * Creates a temporary JWT object to check token expiration.
+         *
+         * \note It also checks for "active" claim in JWT object.
+         *
+         * \return Token state
+         */
         bool expired() const;
 
+        /*!
+         * \brief Retrieves JSON representation of Token. Include all claims
+         *
+         * \note If token is expired, it will display only key "active".
+         *
+         * \return JSON String representation
+         */
         const std::string to_json() const;
 
       private:

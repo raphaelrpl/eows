@@ -109,8 +109,9 @@ namespace eows
          * \brief Creates an access token and assign to OAuth parameters
          *
          * \param oresp - OAuth parameters output to overwrite
+         * \param user - Current User to set in Token
          */
-        void create_access_token(oauth_parameters& oresp);
+        void create_access_token(oauth_parameters& oresp, const std::string& user);
 
       protected:
         oauth_parameters params_;

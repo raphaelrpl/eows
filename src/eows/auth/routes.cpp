@@ -3,6 +3,8 @@
 #include "data_types.hpp"
 #include "utils.hpp"
 
+#include "oauth2/token.hpp"
+
 // EOWS OAuth
 #include "oauth2/data_types.hpp"
 #include "oauth2/authorization_code.hpp"
@@ -203,6 +205,21 @@ void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::
 
   const std::string token = auth_header.value;
 
+  std::string response("{}");
+
+  try
+  {
+    token_t token_handler(token);
+
+    response = token_handler.to_json();
+  }
+  catch(const invalid_client_error& e)
+  {
+    oauth_parameters p;
+    handle_oauth_error(res, eows::core::http_response::forbidden, p, e);
+    response = p.to_json();
+  }
+
   /*
     Find Session With OAuth2 Token
 
@@ -210,7 +227,6 @@ void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::
 
     Serialize User as JSON
   */
-  const std::string response("{}");
 
   res.write(response.c_str(), response.size());
   res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json;charset=utf-8");

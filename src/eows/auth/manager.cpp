@@ -298,18 +298,6 @@ void eows::auth::manager::create_client(const std::string& type, const std::vect
   pimpl_->clients.push_back(std::move(client));
 }
 
-void eows::auth::manager::create_session(const eows::auth::user_t& user)
-{
-  std::unique_ptr<session> s(new session);
-  s->token = generate(12);
-  s->update_time = std::time_t(nullptr);
-  s->user = user.username;
-  std::vector<std::string> roles;
-  roles.push_back("user.email");
-//  s->roles = roles;
-  pimpl_->sessions.push_back(std::move(s));
-}
-
 void eows::auth::manager::create_code(std::unique_ptr<eows::auth::oauth_code> code)
 {
   pimpl_->codes.push_back(std::move(code));

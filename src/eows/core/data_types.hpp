@@ -79,11 +79,11 @@ namespace eows
        */
       enum class type_t
       {
-        basic, //!< Base64-encoded credentials
+        basic,  //!< Base64-encoded credentials
         bearer, //!< Bearer tokens - OAuth 2.0
-        digest, //!<
-        hoba, //!< Http origin bound authentication (digital signature based)
-        mutual //!< Mutual authentication assures the user that server truly knows the user's encrypted password
+        digest, //!< Nonce Hashed credentials (SHA-256/512, MD5). See RFC-7616.
+        hoba,   //!< Http origin bound authentication (digital signature based)
+        mutual  //!< Mutual authentication assures the user that server truly knows the user's encrypted password
       };
 
       /*!

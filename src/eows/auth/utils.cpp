@@ -29,8 +29,6 @@
 #include "manager.hpp"
 #include "routes.hpp"
 #include "data_types.hpp"
-#include <jwtxx/jwt.h>
-#include "oauth2/token.hpp"
 
 // EOWS Core
 #include "../core/logger.hpp"
@@ -72,59 +70,6 @@ void register_routes()
   eows::core::service_operations_manager::instance().insert(
         "/login",
         std::unique_ptr<eows::auth::oauth2_login_handler>(new eows::auth::oauth2_login_handler));
-
-  // Create
-  std::time_t now = std::time(0) /* a hour */;
-  const std::string now_str(std::to_string(now));
-  JWTXX::JWT jwt(JWTXX::Algorithm::HS256,
-                {
-                  {"scope", "user.email"},
-                  {"client_id", "some_id"},
-                  {"sub", "user"},
-                  {"iss", "madf"},
-                  {"exp", now_str}
-                });
-  auto token = jwt.token("secret-key");
-
-  eows::auth::token_t::metadata_t meta;
-  meta.insert(std::make_pair("client_id", "some_id"));
-  meta.insert(std::make_pair("scope", "user.email"));
-  meta.insert(std::make_pair("exp", now_str));
-  meta.insert(std::make_pair("abacate", "abacatero"));
-  meta.insert(std::make_pair("cache_information", "SOMEHASH"));
-
-  // Parse
-  try
-  {
-    eows::auth::token_t t(meta);
-
-    if (t.expired())
-      std::cout << "Token expired" << std::endl;
-    else
-    {
-      for(const auto& v: t.claim())
-      {
-        std::cout << "Key: " << v.first << std::endl
-                  << "Value: " << v.second << std::endl << std::endl;
-      }
-    }
-//    JWTXX::JWT jwt2(token, JWTXX::Key(JWTXX::Algorithm::HS256, "secret-key"));
-//    std::cout << "Algorithm: " << algToString(jwt2.alg()) << std::endl
-//              << "Subject:   " << jwt2.claim("sub") << std::endl
-//              << "Issuer:    " << jwt2.claim("iss") << std::endl
-//              << "Scope:     " << jwt2.claim("scope") << std::endl
-//              << "ClientID:  " << jwt2.claim("client_id") << std::endl
-//              << "exp:       " << jwt2.claim("exp") << std::endl;
-  }
-  catch (const JWTXX::JWT::Error& error)
-  {
-      std::cerr << "Error parsing token: " << error.what() << std::endl;
-  }
-  catch(const std::exception& e)
-  {
-    std::cerr << e.what() << std::endl;
-  }
-
 }
 
 void eows::auth::initialize()

@@ -4,6 +4,8 @@
 #include "exception.hpp"
 #include "../manager.hpp"
 
+#include "token.hpp"
+
 // EOWS Core
 #include "../../core/utils.hpp"
 
@@ -123,14 +125,14 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
   {
     if (refresh_token)
       // The token is still valid.. TODO: Should reply same token or generate a new one?
-      create_access_token(oresp);
+      create_access_token(oresp, code->user_id);
     else
     {
       if (code->expired())
         throw unauthorized_error("The code provided has expired");
 
       // Creating token
-      create_access_token(oresp);
+      create_access_token(oresp, code->user_id);
 
       // Change code by refresh_token
       code->id = oresp.refresh_token;
@@ -190,13 +192,24 @@ bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters
   return has_role;
 }
 
-void eows::auth::authorization_code::create_access_token(eows::auth::oauth_parameters& oresp)
+void eows::auth::authorization_code::create_access_token(eows::auth::oauth_parameters& oresp, const std::string& user)
 {
   // Creating token
   eows::auth::nonce_generator g(86);
-  oresp.access_token = g.generate();
+
+  const auto token_expiration = std::time(nullptr) + manager::instance().settings().session_expiration;
+
+  token_t::metadata_t token_metadata;
+  token_metadata.insert(std::make_pair("exp", std::to_string(token_expiration)));
+  token_metadata.insert(std::make_pair("scope", oresp.scope));
+  token_metadata.insert(std::make_pair("username", user));
+
+  token_t handler(token_metadata);
+
+//  oresp.access_token = g.generate();
+  oresp.access_token = handler.token();
   oresp.token_type = "Bearer";
-  oresp.expires_in = std::to_string(manager::instance().settings().session_expiration);
+  oresp.expires_in = std::to_string(token_expiration);
   oresp.state = params_.state;
   oresp.refresh_token = generator_->generate();
 }

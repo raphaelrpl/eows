@@ -116,7 +116,6 @@ namespace eows
                            const std::vector<std::string>& roles,
                            std::string& secret);
 
-        void create_session(const user_t& user);
         void create_code(std::unique_ptr<oauth_code> code);
         void remove_session(session* s);
       protected:

@@ -177,6 +177,20 @@ else
   echo "geotiff already installed!"
 fi
 
+#
+# Jansson (OAuth - JWTXX Dependency)
+# Dependencies: openssl
+#
+jansson_test=`dpkg -s libjansson-dev | grep Status`
+
+if [ "$jansson_test" != "Status: install ok installed" ]; then
+  sudo apt-get -y install libjansson-dev
+  valid $? "Error: could not install jansson! Please, install readline: sudo apt-get -y install libjansson-dev" 
+  echo "jansson installed!"
+else
+  echo "jansson already installed!"
+fi
+
 
 #
 # RapidJSON
@@ -261,6 +275,30 @@ if [ ! -f "$EOWS_LIBS_DIR/lib/libgdal.so" ]; then
 
   PREFIX=$EOWS_LIBS_DIR make install -j 4
   valid $? "Error: Could not install GDAL into $EOWS_LIBS_DIR"
+
+  cd ..
+fi
+
+#
+# jwtxx-1.1.6
+#
+if [ ! -f "$EOWS_LIBS_DIR/lib/libjwtxx.a" ]; then
+  echo "Installing jwtxx..."
+
+  tar zxf jwtxx-1.1.6.tar.gz
+  valid $? "Error: Could not extract jwtxx-1.1.6.tar.gz"
+
+  cd jwtxx
+  valid $? "Error: Could not enter jwtxx directory"
+  
+  mkdir -p build-release  
+  cd build-release
+  
+  cmake -DCMAKE_BUILD_TYPE:STRING="Release" -DCMAKE_PREFIX_PATH="$EOWS_LIBS_DIR" -DCMAKE_CXX_FLAGS="-fPIC" -DCMAKE_INSTALL_PREFIX="$EOWS_LIBS_DIR" ../
+  valid $? "Error: Could not configure cmake build for jwtxx"
+
+  make install
+  valid $? "Error: Could not compile or install jwtxx"
 
   cd ..
 fi

@@ -232,6 +232,7 @@ find_package(jwtxx QUIET)
 if (jwtxx_FOUND)
     find_package(Jansson REQUIRED)
     if (JANSSON_FOUND)
+        SET(EOWS_AUTH_DEPENDENCIES ON)
         message(STATUS "EOWS: jwtxx Library found")
     else()
         message(STATUS "Jansson not found")
@@ -259,7 +260,7 @@ option(EOWS_APP_SERVER_ENABLED "Build application web server?" ON)
 
 option(EOWS_SERVICE_ECHO_ENABLED "Build echo service?" OFF)
 
-CMAKE_DEPENDENT_OPTION(EOWS_AUTH_ENABLED "Build webserver with authentication support?" ON "EOWS_APP_SERVER_ENABLED;EOWS_WEBSERVER_CROW_ENABLED" OFF)
+CMAKE_DEPENDENT_OPTION(EOWS_AUTH_ENABLED "Build webserver with authentication support?" ON "EOWS_APP_SERVER_ENABLED;EOWS_AUTH_DEPENDENCIES" OFF)
 
 CMAKE_DEPENDENT_OPTION(EOWS_OGC_OWS_ENABLED "Build OGC OWS support?" OFF "EOWS_GEOARRAY_ENABLED" OFF)
 
