@@ -129,6 +129,22 @@ namespace eows
       {
       }
     };
+
+    struct insufficient_scope_error : public virtual oauth2_error
+    {
+      insufficient_scope_error(const std::string& err_description)
+        : oauth2_error("insufficient_scope", err_description)
+      {
+      }
+    };
+
+    struct invalid_token_error : public virtual oauth2_error
+    {
+      invalid_token_error(const std::string& err_description)
+        : oauth2_error("invalid_token_error", err_description)
+      {
+      }
+    };
   }  // end namespace core
 }    // end namespace eows
 

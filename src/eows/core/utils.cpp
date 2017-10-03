@@ -428,7 +428,6 @@ const std::string eows::core::to_str(const eows::core::query_string_t& query_str
 
 void eows::core::split(const std::string& str, char delimiter, std::vector<std::string>& roles)
 {
-//  boost::split(roles, str, boost::is_any_of("\t"+delimiter));
   std::istringstream is(str);
   std::string reader;
   while(std::getline(is, reader, delimiter))
@@ -524,7 +523,6 @@ std::map<std::string, std::string> eows::core::parse_cookies(const eows::core::h
        *
        * TODO: A cookie often contains metadata information such time expiration, type, domain, etc delimiting by ";"
        *       We should parse it
-       *
        */
       if (it != cookie.end())
         cookies.insert(std::make_pair(std::string(cookie.begin(), it), std::string(it+delimiter_size, cookie.end())));
@@ -552,7 +550,7 @@ eows::core::authorization_t eows::core::authorization(const eows::core::http_req
   auto it = headers.find("Authorization");
 
   if (it == headers.end())
-    throw eows::parse_error("No authorization header found.");
+    return authorization_t();
 
   return authorization_t(it->second);
 }

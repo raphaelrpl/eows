@@ -209,36 +209,50 @@ bool eows::auth::has_permission_to(const std::string& role_name,
                                    const eows::core::http_request& request,
                                    eows::core::http_response& response)
 {
+  std::string error_code;
   try
   {
     eows::core::authorization_t authorization = eows::core::authorization(request);
 
     if (authorization.type != eows::core::authorization_t::type_t::bearer)
-      throw eows::eows_error("Unsupported authorization type. Expected \"Bearer\".");
+      throw invalid_request_error("Unsupported authorization type. Expected \"Bearer\".");
 
     token_t token_handler(authorization.value);
 
     if (token_handler.expired())
-      return false;
+      throw invalid_token_error("Token expired");
 
     const auto scope_str = token_handler.claim("scope");
 
     if (scope_str.empty())
-      return false;
+      throw invalid_scope_error("No scope found");
 
     std::vector<std::string> scopes;
     eows::core::split(scope_str, ' ', scopes);
 
     auto found = std::find(scopes.begin(), scopes.end(), role_name);
 
-    return found != scopes.end();
+    if (found == scopes.end())
+      throw insufficient_scope_error("Insufficient scope. Requires \""+role_name+"\"");
+
+    return true;
   }
-//  catch(const invalid_client_error& e)
-//  {
-//    return fals
-//  }
-  catch(...)
+  catch(const invalid_request_error& e)
   {
-    return false;
+    response.set_status(eows::core::http_response::bad_request);
+    error_code.append(e.error);
   }
+  catch(const invalid_token_error& e)
+  {
+    response.set_status(eows::core::http_response::unauthorized);
+    error_code.append(e.error);
+  }
+  catch(const insufficient_scope_error& e)
+  {
+    response.set_status(eows::core::http_response::forbidden);
+    error_code.append(e.error);
+  }
+
+  response.add_header(eows::core::http_response::WWW_AUTHENTICATE, "Bearer,scope=\""+role_name+"\",error="+error_code);
+  return false;
 }

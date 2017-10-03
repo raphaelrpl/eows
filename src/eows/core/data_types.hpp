@@ -96,6 +96,11 @@ namespace eows
         configure(str);
       }
 
+      //! Constructor
+      authorization_t()
+        : type(), value()
+      {}
+
       /*!
        * \brief Performs authorization validation, mapping type and value
        *

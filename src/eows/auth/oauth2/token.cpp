@@ -35,11 +35,15 @@ eows::auth::token_t::token_t(const std::string& token)
     pimpl_->jwt.reset(new JWTXX::JWT(pimpl_->token,
                                      JWTXX::Key(algorithm, "secret")));
   }
+  catch(const JWTXX::JWT::Error& e)
+  {
+    throw invalid_token_error(e.what());
+  }/*
   catch(const JWTXX::JWT::Error& error)
   {
     // TODO: check https://www.oauth.com/oauth2-servers/token-introspection-endpoint/#error
     throw invalid_client_error("The client authentication was invalid");
-  }
+  }*/
 }
 
 eows::auth::token_t::token_t(const metadata_t& information)

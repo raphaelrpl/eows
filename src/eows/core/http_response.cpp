@@ -34,6 +34,7 @@ const char eows::core::http_response::content_length_[] = "Content-Length";
 const char eows::core::http_response::content_type_[] = "Content-Type";
 const char eows::core::http_response::location_[] = "Location";
 const char eows::core::http_response::set_cookie_[] = "Set-Cookie";
+const char eows::core::http_response::www_authenticate_[] = "WWW-Authenticate";
 const char eows::core::http_response::unknown_[] = "Unknown";
 
 void eows::core::http_response::redirect_to(const std::string& url)

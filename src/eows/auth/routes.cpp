@@ -348,7 +348,9 @@ void eows::auth::oauth2_login_handler::do_post(const eows::core::http_request& r
     params.client_id = body.find("client_id")->second;
 
     res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-    return res.redirect_to("/oauth2/authorize" + eows::core::to_str(params.to_query_string()));
+    return res.redirect_to("/oauth2/" +
+                           manager::instance().settings().oauth2_authorize_uri +
+                           eows::core::to_str(params.to_query_string()));
   }
 }
 
@@ -362,8 +364,11 @@ void eows::auth::oauth2_example::do_get(const eows::core::http_request& req, eow
   }
   else
   {
+    // Once error, we must set 401 (Unauthorized) and include WWW-Authenticate header
+    // with "Bearer" notation. That should be used to gain access to a resource
     body.append("You don't have permission");
     res.set_status(eows::core::http_response::status_t::unauthorized);
+    res.add_header(eows::core::http_response::WWW_AUTHENTICATE, "Bearer");
   }
 
   res.write(body.c_str(), body.size());

@@ -49,8 +49,33 @@ namespace eows
      */
     void initialize();
 
+    /*!
+     * \brief Replaces special tags from template using map information.
+     *
+     * \param tpl - String  template to replace
+     * \param values - Map values to replace for.
+     * \param prefix - Tag prefix to match
+     * \param postfix - Tag postfix to match
+     */
     void replace(std::string& tpl, const std::multimap<std::string, std::string>& values, const std::string& prefix = "{{", const std::string& postfix = "}}");
 
+    /*!
+     * \brief Checks if provided access_token is valids and contains specified role.
+     *
+     * This methods retrieves an access_token from Authorization Header and then applies token validation.
+     *
+     * \note Injects 401 (Unauthorized) when token is invalid and 200 (OK) for successfully validation.
+     *
+     * \note Injects WWW-Authenticate with required scope When token is invalid or insufficient permissions.
+     *
+     * \todo Should throw specific exception such invalid_request_error|token_error etc
+     *       for handling permission state?
+     *
+     * \param role_name - Role name to compare
+     * \param request - HTTP Request to retrieve Authorization Header
+     * \param response - HTTP Response
+     * \return True for valid access_token. Otherwise, False
+     */
     bool has_permission_to(const std::string& role_name,
                            const eows::core::http_request& request,
                            eows::core::http_response& response);

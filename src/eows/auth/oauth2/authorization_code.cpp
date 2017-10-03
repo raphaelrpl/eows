@@ -194,10 +194,7 @@ void eows::auth::authorization_code::create_access_token(eows::auth::oauth_param
   const auto now = std::time(nullptr);
   const auto token_expiration = now + manager::instance().settings().session_expiration;
 
-//  std::ostream_iterator<std::string> ostream;
-
   std::string scope = eows::core::join(roles.begin(), roles.end(), std::string(" "));
-//  std::copy(roles.begin(), roles.end(), ostream<std::string>(s, ' '));
 
   token_t::metadata_t token_metadata;
   token_metadata.insert(std::make_pair("exp", std::to_string(token_expiration)));
@@ -207,7 +204,6 @@ void eows::auth::authorization_code::create_access_token(eows::auth::oauth_param
 
   token_t handler(token_metadata);
 
-//  oresp.access_token = g.generate();
   oresp.access_token = handler.token();
   oresp.token_type = "Bearer";
   oresp.expires_in = std::to_string(token_expiration);

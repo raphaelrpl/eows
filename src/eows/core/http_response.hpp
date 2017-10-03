@@ -90,7 +90,8 @@ namespace eows
           CONTENT_LENGTH,
           CONTENT_TYPE,
           LOCATION,
-          SET_COOKIE
+          SET_COOKIE,
+          WWW_AUTHENTICATE
         };
 
         //! Constructor.
@@ -162,6 +163,7 @@ namespace eows
         static const char content_type_[];
         static const char location_[];
         static const char set_cookie_[];
+        static const char www_authenticate_[];
         static const char unknown_[];
       
         static const char * to_str(header_type_t field_name)
@@ -178,6 +180,8 @@ namespace eows
               return location_;
             case SET_COOKIE:
               return set_cookie_;
+            case WWW_AUTHENTICATE:
+              return www_authenticate_;
             default:
               return unknown_;
           }
