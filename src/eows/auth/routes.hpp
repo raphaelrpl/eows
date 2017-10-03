@@ -135,6 +135,18 @@ namespace eows
       void do_get(const eows::core::http_request& req,
                   eows::core::http_response& res);
     };
+
+    //! Handles OAuth2 Example
+    /*!
+      http://localhost:7654/oauth2/example
+     */
+    class oauth2_example : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request& req,
+                  eows::core::http_response& res);
+    };
   }
 }
 

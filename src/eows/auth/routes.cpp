@@ -351,3 +351,21 @@ void eows::auth::oauth2_login_handler::do_post(const eows::core::http_request& r
     return res.redirect_to("/oauth2/authorize" + eows::core::to_str(params.to_query_string()));
   }
 }
+
+void eows::auth::oauth2_example::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  std::string body;
+  if (has_permission_to("user.email", req, res))
+  {
+    body.append("Magic ;D");
+    res.set_status(eows::core::http_response::status_t::OK);
+  }
+  else
+  {
+    body.append("You don't have permission");
+    res.set_status(eows::core::http_response::status_t::unauthorized);
+  }
+
+  res.write(body.c_str(), body.size());
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html;charset=utf-8");
+}

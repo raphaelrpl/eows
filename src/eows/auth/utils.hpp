@@ -34,6 +34,11 @@
 
 namespace eows
 {
+  namespace core
+  {
+    class http_request;
+    class http_response;
+  }
   namespace auth
   {
     struct oauth_parameters;
@@ -45,6 +50,10 @@ namespace eows
     void initialize();
 
     void replace(std::string& tpl, const std::multimap<std::string, std::string>& values, const std::string& prefix = "{{", const std::string& postfix = "}}");
+
+    bool has_permission_to(const std::string& role_name,
+                           const eows::core::http_request& request,
+                           eows::core::http_response& response);
 
     std::string encrypt(const std::string& text, std::string password);
     std::string decrypt(const std::string& text, std::string password);

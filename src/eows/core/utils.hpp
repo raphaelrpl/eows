@@ -39,6 +39,7 @@
 #include <string>
 #include <utility>
 #include <ctime>
+#include <vector>
 
 // RapidJSON
 #include <rapidjson/document.h>
@@ -78,6 +79,16 @@ namespace eows
     const std::string referer(const eows::core::http_request& request);
 
     /*!
+     * \brief Retrieves a HTTP Authozation header from request.
+     *
+     * \throws eows::parse_error When could not find Authorization header in HTTP Request
+     *
+     * \param request - HTTP Request
+     * \return Parsed HTTP Authorization header
+     */
+    authorization_t authorization(const eows::core::http_request& request);
+
+    /*!
      * \brief Parses cookies from HTTP Request Header
      *
      * A cookie HTTP request header contains stored HTTP cookies previously sent by the
@@ -106,6 +117,9 @@ namespace eows
      * \return String representation of query parameters
      */
     const std::string to_str(const query_string_t& query_string);
+
+    template<class output_type_t, class iterator_t>
+    output_type_t join(const iterator_t& begin, const iterator_t& end, const output_type_t& t);
 
     /*!
      * \brief Applies ltrim and rtrim operation
@@ -315,6 +329,21 @@ eows::core::copy_string_array(const rapidjson::Value& jvalues,
 
     *result++ = jelement.GetString();
   }
+}
+
+template<class output_type_t, class iterator_t>
+output_type_t eows::core::join(const iterator_t& begin, const iterator_t& end, const output_type_t& t)
+{
+  output_type_t result;
+
+  for(iterator_t it = begin; it != end; ++it)
+  {
+    if (!result.empty())
+      result.append(t);
+    result.append(*it);
+  }
+
+  return result;
 }
 
 #endif  // __EOWS_CORE_UTILS_HPP__

@@ -545,3 +545,14 @@ const std::string eows::core::referer(const eows::core::http_request& request)
 
   return ref;
 }
+
+eows::core::authorization_t eows::core::authorization(const eows::core::http_request& request)
+{
+  auto headers = request.headers();
+  auto it = headers.find("Authorization");
+
+  if (it == headers.end())
+    throw eows::parse_error("No authorization header found.");
+
+  return authorization_t(it->second);
+}

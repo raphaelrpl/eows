@@ -84,12 +84,6 @@ namespace eows
         void exchange(oauth_parameters& oresp, const core::http_request& request, core::http_response& response);
 
         /*!
-         * \brief Retrieves client data information once everything is validated
-         * \return JSON information
-         */
-        const std::string information();
-
-        /*!
          * \brief Performs OAuth2 client validations
          *
          * This methods checks client_id identity, looking into cache elements and then credentials validations
@@ -111,7 +105,9 @@ namespace eows
          * \param oresp - OAuth parameters output to overwrite
          * \param user - Current User to set in Token
          */
-        void create_access_token(oauth_parameters& oresp, const std::string& user);
+        void create_access_token(oauth_parameters& oresp,
+                                 const std::string& user,
+                                 const std::vector<std::string>& roles);
 
       protected:
         oauth_parameters params_;

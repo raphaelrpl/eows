@@ -29,11 +29,18 @@
 #include "manager.hpp"
 #include "routes.hpp"
 #include "data_types.hpp"
+#include "exception.hpp"
+
+// EOWS OAuth2
+#include "oauth2/token.hpp"
+#include "oauth2/exception.hpp"
 
 // EOWS Core
 #include "../core/logger.hpp"
 #include "../core/service_operations_manager.hpp"
 #include "../core/utils.hpp"
+#include "../core/http_request.hpp"
+#include "../core/http_response.hpp"
 
 // STL
 #include <cstring>
@@ -70,6 +77,10 @@ void register_routes()
   eows::core::service_operations_manager::instance().insert(
         "/login",
         std::unique_ptr<eows::auth::oauth2_login_handler>(new eows::auth::oauth2_login_handler));
+
+  eows::core::service_operations_manager::instance().insert(
+        "/oauth2/example",
+        std::unique_ptr<eows::auth::oauth2_example>(new eows::auth::oauth2_example));
 }
 
 void eows::auth::initialize()
@@ -192,4 +203,42 @@ std::string random_string(size_t len = 15, std::string const &allowed_chars = de
 std::string eows::auth::generate(const int& length)
 {
   return random_string(length);
+}
+
+bool eows::auth::has_permission_to(const std::string& role_name,
+                                   const eows::core::http_request& request,
+                                   eows::core::http_response& response)
+{
+  try
+  {
+    eows::core::authorization_t authorization = eows::core::authorization(request);
+
+    if (authorization.type != eows::core::authorization_t::type_t::bearer)
+      throw eows::eows_error("Unsupported authorization type. Expected \"Bearer\".");
+
+    token_t token_handler(authorization.value);
+
+    if (token_handler.expired())
+      return false;
+
+    const auto scope_str = token_handler.claim("scope");
+
+    if (scope_str.empty())
+      return false;
+
+    std::vector<std::string> scopes;
+    eows::core::split(scope_str, ' ', scopes);
+
+    auto found = std::find(scopes.begin(), scopes.end(), role_name);
+
+    return found != scopes.end();
+  }
+//  catch(const invalid_client_error& e)
+//  {
+//    return fals
+//  }
+  catch(...)
+  {
+    return false;
+  }
 }

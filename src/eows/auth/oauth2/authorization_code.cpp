@@ -125,24 +125,19 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
   {
     if (refresh_token)
       // The token is still valid.. TODO: Should reply same token or generate a new one?
-      create_access_token(oresp, code->user_id);
+      create_access_token(oresp, code->user_id, code->roles);
     else
     {
       if (code->expired())
         throw unauthorized_error("The code provided has expired");
 
       // Creating token
-      create_access_token(oresp, code->user_id);
+      create_access_token(oresp, code->user_id, code->roles);
 
       // Change code by refresh_token
       code->id = oresp.refresh_token;
     }
   }
-}
-
-const std::string eows::auth::authorization_code::information()
-{
-  return std::string();
 }
 
 eows::auth::oauth_client* eows::auth::authorization_code::validate_client(const std::string& client_id,
@@ -192,17 +187,23 @@ bool eows::auth::authorization_code::validate_roles(eows::auth::oauth_parameters
   return has_role;
 }
 
-void eows::auth::authorization_code::create_access_token(eows::auth::oauth_parameters& oresp, const std::string& user)
+void eows::auth::authorization_code::create_access_token(eows::auth::oauth_parameters& oresp,
+                                                         const std::string& user,
+                                                         const std::vector<std::string>& roles)
 {
-  // Creating token
-  eows::auth::nonce_generator g(86);
+  const auto now = std::time(nullptr);
+  const auto token_expiration = now + manager::instance().settings().session_expiration;
 
-  const auto token_expiration = std::time(nullptr) + manager::instance().settings().session_expiration;
+//  std::ostream_iterator<std::string> ostream;
+
+  std::string scope = eows::core::join(roles.begin(), roles.end(), std::string(" "));
+//  std::copy(roles.begin(), roles.end(), ostream<std::string>(s, ' '));
 
   token_t::metadata_t token_metadata;
   token_metadata.insert(std::make_pair("exp", std::to_string(token_expiration)));
-  token_metadata.insert(std::make_pair("scope", oresp.scope));
+  token_metadata.insert(std::make_pair("scope", scope));
   token_metadata.insert(std::make_pair("username", user));
+  token_metadata.insert(std::make_pair("iat", std::to_string(now)));
 
   token_t handler(token_metadata);
 
