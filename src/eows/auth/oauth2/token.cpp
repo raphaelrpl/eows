@@ -13,14 +13,12 @@ struct eows::auth::token_t::impl
 {
   std::string token;
   std::unique_ptr<JWTXX::JWT> jwt;
-  bool initialized = false;
 
   void initialize(const eows::auth::token_t::metadata_t& information);
 };
 
 inline void eows::auth::token_t::impl::initialize(const eows::auth::token_t::metadata_t& information)
 {
-  initialized = true;
   jwt.reset(new JWTXX::JWT(algorithm, information));
   token = jwt->token("secret");
 }
@@ -38,12 +36,7 @@ eows::auth::token_t::token_t(const std::string& token)
   catch(const JWTXX::JWT::Error& e)
   {
     throw invalid_token_error(e.what());
-  }/*
-  catch(const JWTXX::JWT::Error& error)
-  {
-    // TODO: check https://www.oauth.com/oauth2-servers/token-introspection-endpoint/#error
-    throw invalid_client_error("The client authentication was invalid");
-  }*/
+  }
 }
 
 eows::auth::token_t::token_t(const metadata_t& information)
@@ -56,12 +49,6 @@ eows::auth::token_t::~token_t()
 {
   delete pimpl_;
 }
-
-//void eows::auth::token_t::attach(const std::string& key, const std::string& value)
-//{
-//  if (!pimpl_->initialized)
-//    pimpl_->values.insert(std::make_pair(key, value));
-//}
 
 const std::string eows::auth::token_t::claim(const std::string& key) const
 {

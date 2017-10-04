@@ -3,12 +3,11 @@
 #include "data_types.hpp"
 #include "utils.hpp"
 
-#include "oauth2/token.hpp"
-
 // EOWS OAuth
 #include "oauth2/data_types.hpp"
 #include "oauth2/authorization_code.hpp"
 #include "oauth2/exception.hpp"
+#include "oauth2/token.hpp"
 
 // EOWS Core
 #include "../core/utils.hpp"
@@ -192,16 +191,13 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
 
 void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
-  auto headers = req.headers();
-  auto it = headers.find("Authorization");
+  auto auth_header = eows::core::authorization(req);
 
-  if (it == headers.end())
+  if (auth_header.type != eows::core::authorization_t::type_t::bearer)
   {
     oauth_parameters error_params;
     handle_oauth_error(res, eows::core::http_response::unauthorized, error_params, eows::auth::unauthorized_error("No authorization provided"));
   }
-
-  eows::core::authorization_t auth_header(it->second);
 
   const std::string token = auth_header.value;
 
@@ -219,12 +215,9 @@ void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::
     handle_oauth_error(res, eows::core::http_response::forbidden, p, e);
     response = p.to_json();
   }
-
   /*
     Find Session With OAuth2 Token
-
     Find User associated with Token
-
     Serialize User as JSON
   */
 
@@ -358,18 +351,11 @@ void eows::auth::oauth2_example::do_get(const eows::core::http_request& req, eow
 {
   std::string body;
   if (has_permission_to("user.email", req, res))
-  {
     body.append("Magic ;D");
-    res.set_status(eows::core::http_response::status_t::OK);
-  }
   else
-  {
-    // Once error, we must set 401 (Unauthorized) and include WWW-Authenticate header
-    // with "Bearer" notation. That should be used to gain access to a resource
+    // Once error, that status code may be either 400 (Bad Request), 401 (Unauthorized) or 403 (Forbidden)
+    // and a header named WWW-Authenticate is set with respective error
     body.append("You don't have permission");
-    res.set_status(eows::core::http_response::status_t::unauthorized);
-    res.add_header(eows::core::http_response::WWW_AUTHENTICATE, "Bearer");
-  }
 
   res.write(body.c_str(), body.size());
   res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html;charset=utf-8");

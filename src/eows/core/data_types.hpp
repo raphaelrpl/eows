@@ -83,7 +83,8 @@ namespace eows
         bearer, //!< Bearer tokens - OAuth 2.0
         digest, //!< Nonce Hashed credentials (SHA-256/512, MD5). See RFC-7616.
         hoba,   //!< Http origin bound authentication (digital signature based)
-        mutual  //!< Mutual authentication assures the user that server truly knows the user's encrypted password
+        mutual,  //!< Mutual authentication assures the user that server truly knows the user's encrypted password
+        none
       };
 
       /*!
@@ -91,14 +92,14 @@ namespace eows
        * \param str Authorization string. Example: "Basic someBase64Code"
        */
       authorization_t(const std::string& str)
-        : type(), value()
+        : type(type_t::none), value()
       {
         configure(str);
       }
 
       //! Constructor
       authorization_t()
-        : type(), value()
+        : type(type_t::none), value()
       {}
 
       /*!
@@ -119,14 +120,16 @@ namespace eows
         type_t t;
         if (wrapper == "Basic")
           t = type_t::basic;
-        if (wrapper == "Bearer")
+        else if (wrapper == "Bearer")
           t = type_t::bearer;
-        if (wrapper == "Digest")
+        else if (wrapper == "Digest")
           t = type_t::digest;
-        if (wrapper == "hoba")
+        else if (wrapper == "hoba")
           t = type_t::hoba;
-        if (wrapper == "mutual")
+        else if (wrapper == "mutual")
           t = type_t::mutual;
+        else
+          t = type_t::none;
 
         type = t;
         value = str.substr(pos+1, str.size());

@@ -5,7 +5,6 @@
 
 static const std::string allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-
 eows::auth::nonce_generator::nonce_generator(int length)
   : random_(static_cast<unsigned int>(eows::core::unix_timestamp(nullptr))),
     length_(length)

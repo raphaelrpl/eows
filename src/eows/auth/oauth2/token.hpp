@@ -51,7 +51,6 @@ namespace eows
     {
       public:
         typedef std::unordered_map<std::string, std::string> metadata_t;
-
         /*!
          * \brief Token Introspection Metadata structure
          *
@@ -82,7 +81,6 @@ namespace eows
         token_t(const metadata_t& information);
         ~token_t();
 
-//        void attach(const std::string& key, const std::string& value);
         const std::string claim(const std::string& key) const;
         const metadata_t claim() const;
         const std::string token() const;

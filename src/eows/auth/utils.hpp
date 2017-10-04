@@ -31,6 +31,7 @@
 // STL
 #include <string>
 #include <map>
+#include <vector>
 
 namespace eows
 {
@@ -62,6 +63,20 @@ namespace eows
     /*!
      * \brief Checks if provided access_token is valids and contains specified role.
      *
+     * \note This method calls has_permission_to passing role_name as vector.
+     *
+     * \param role_name - Role name to compare
+     * \param request - HTTP Request to retrieve Authorization Header
+     * \param response - HTTP Response
+     * \return True for valid access_token. Otherwise, False
+     */
+    bool has_permission_to(const std::string& role_name,
+                           const eows::core::http_request& request,
+                           eows::core::http_response& response);
+
+    /*!
+     * \brief Checks if provided access_token is valids and contains specified role.
+     *
      * This methods retrieves an access_token from Authorization Header and then applies token validation.
      *
      * \note Injects 401 (Unauthorized) when token is invalid and 200 (OK) for successfully validation.
@@ -76,7 +91,7 @@ namespace eows
      * \param response - HTTP Response
      * \return True for valid access_token. Otherwise, False
      */
-    bool has_permission_to(const std::string& role_name,
+    bool has_permission_to(const std::vector<std::string> roles,
                            const eows::core::http_request& request,
                            eows::core::http_response& response);
 

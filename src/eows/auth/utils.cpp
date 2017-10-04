@@ -117,37 +117,19 @@ std::string eows::auth::encrypt(const std::string& text, std::string password)
   password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
 
   const int text_size = text.size() + 1;
-  unsigned char *text_to_encrypt = new unsigned char[text_size]();
-    memcpy(text_to_encrypt,text.c_str(),text.size()+1);
+  std::unique_ptr<unsigned char> text_to_encrypt(new unsigned char[text_size]);
+  std::memcpy(text_to_encrypt.get(), text.c_str(), text.size() + 1);
 
   const int key_size = password.size() + 1;
-  unsigned char *key = new unsigned char[key_size]();
+  std::unique_ptr<unsigned char> key(new unsigned char[key_size]);
 
-    memcpy(key,password.c_str(),password.size()+1);
+  std::memcpy(key.get(), password.c_str(), password.size() + 1);
   unsigned char enc_out[256];
-    AES_KEY enc_key;
-    AES_set_encrypt_key(key, 256, &enc_key);
-    AES_encrypt(text_to_encrypt, enc_out, &enc_key);
+  AES_KEY enc_key;
+  AES_set_encrypt_key(key.get(), 256, &enc_key);
+  AES_encrypt(text_to_encrypt.get(), enc_out, &enc_key);
 
-  delete[] text_to_encrypt;
-  delete[] key;
   return std::string(reinterpret_cast<const char*>(enc_out),256);
-//  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
-
-//  const int text_size = text.size() + 1;
-//  std::unique_ptr<unsigned char> text_to_encrypt(new unsigned char[text_size]);
-//  std::memcpy(text_to_encrypt.get(), text.c_str(), text.size() + 1);
-
-//  const int key_size = password.size() + 1;
-//  std::unique_ptr<unsigned char> key(new unsigned char[key_size]);
-
-//  std::memcpy(key.get(), password.c_str(), password.size() + 1);
-//  unsigned char enc_out[256];
-//  AES_KEY enc_key;
-//  AES_set_encrypt_key(key.get(), 256, &enc_key);
-//  AES_encrypt(text_to_encrypt.get(), enc_out, &enc_key);
-
-//  return std::string(reinterpret_cast<const char*>(enc_out),256);
 }
 
 std::string eows::auth::decrypt(const std::string& text, std::string password)
@@ -155,35 +137,18 @@ std::string eows::auth::decrypt(const std::string& text, std::string password)
   password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
 
   const int key_size = password.size() + 1;
-  unsigned char *key = new unsigned char[key_size]();
-  memcpy(key,password.c_str(),password.size()+1);
+  std::unique_ptr<unsigned char> key(new unsigned char[key_size]);
+  std::memcpy(key.get(), password.c_str(), password.size()+1);
 
   unsigned char dec_out[256];
   AES_KEY dec_key;
-  AES_set_decrypt_key(key,256,&dec_key);
+  AES_set_decrypt_key(key.get(), 256, &dec_key);
 
   unsigned char crypted_text[256];
-  memcpy(crypted_text,text.c_str(),256);
+  memcpy(crypted_text, text.c_str(), 256);
   AES_decrypt(crypted_text, dec_out, &dec_key);
 
-  delete[] key;
-
   return std::string(reinterpret_cast<const char*>(dec_out));
-//  password += "qwertyuiopasdfghjklzxcvbnmqwertyqwertyuiopasdfghjklzxcvbnmqwerty";
-
-//  const int key_size = password.size() + 1;
-//  std::unique_ptr<unsigned char> key(new unsigned char[key_size]);
-//  std::memcpy(key.get(), password.c_str(), password.size()+1);
-
-//  unsigned char dec_out[256];
-//  AES_KEY dec_key;
-//  AES_set_decrypt_key(key.get(), 256, &dec_key);
-
-//  unsigned char crypted_text[256];
-//  memcpy(crypted_text, text.c_str(), 256);
-//  AES_decrypt(crypted_text, dec_out, &dec_key);
-
-//  return std::string(reinterpret_cast<const char*>(dec_out));
 }
 
 static const std::string default_chars = "abcdefghijklmnaoqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -209,6 +174,16 @@ bool eows::auth::has_permission_to(const std::string& role_name,
                                    const eows::core::http_request& request,
                                    eows::core::http_response& response)
 {
+  std::vector<std::string> roles;
+  roles.push_back(role_name);
+
+  return has_permission_to(roles, request, response);
+}
+
+bool eows::auth::has_permission_to(const std::vector<std::string> roles,
+                                   const eows::core::http_request& request,
+                                   eows::core::http_response& response)
+{
   std::string error_code;
   try
   {
@@ -230,11 +205,15 @@ bool eows::auth::has_permission_to(const std::string& role_name,
     std::vector<std::string> scopes;
     eows::core::split(scope_str, ' ', scopes);
 
-    auto found = std::find(scopes.begin(), scopes.end(), role_name);
+    for(const auto& role: roles)
+    {
+      auto found = std::find(scopes.begin(), scopes.end(), role);
 
-    if (found == scopes.end())
-      throw insufficient_scope_error("Insufficient scope. Requires \""+role_name+"\"");
+      if (found == scopes.end())
+        throw insufficient_scope_error("Insufficient scope. Requires \""+role+"\"");
+    }
 
+    response.set_status(eows::core::http_response::status_t::OK);
     return true;
   }
   catch(const invalid_request_error& e)
@@ -253,6 +232,8 @@ bool eows::auth::has_permission_to(const std::string& role_name,
     error_code.append(e.error);
   }
 
-  response.add_header(eows::core::http_response::WWW_AUTHENTICATE, "Bearer,scope=\""+role_name+"\",error="+error_code);
+  const auto required_roles = eows::core::join(roles.begin(), roles.end(), std::string(" "));
+  response.add_header(eows::core::http_response::WWW_AUTHENTICATE,
+                      "Bearer,scope=\""+required_roles+"\",error="+error_code);
   return false;
 }
