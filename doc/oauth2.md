@@ -350,7 +350,12 @@ Description:
 | Name | Description |
 |---|---|
 | `user.email` | Allow to read user information |
+| `wcs` | Allow to execute WCS operations |
 |  |  |
+
+### TODOs
+
+- Define a standard for token scopes. Currently, it creates a new access token whenever a new scope is requested. In this way, the OAuth2 client should be able to handle multiple access tokens. We need **to investigate** the possibility to increment an access token or even generate a new one with all scopes. Keep in mind that using single tokens **we may face** security issues.
 
 ## References
 

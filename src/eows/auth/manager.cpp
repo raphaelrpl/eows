@@ -171,12 +171,14 @@ void eows::auth::manager::initialize()
     }
     std::vector<std::string> dummy_roles;
     dummy_roles.push_back("user.email");
+    dummy_roles.push_back("wcs");
     std::vector<std::string> uris;
     uris.push_back("http://127.0.0.1:7654/echo");
     uris.push_back("http://localhost:7654/echo");
     uris.push_back("http://localhost:7654/oauth2/authorize");
     uris.push_back("http://127.0.0.1:7654/oauth2/authorize");
     uris.push_back("http://127.0.0.1:5000/login/authorized");
+    uris.push_back("http://127.0.0.1:5000/callback");
 
     std::string secret;
     create_client("public", uris, "Teste APP", dummy_roles, secret);
@@ -282,9 +284,9 @@ void eows::auth::manager::create_client(const std::string& type, const std::vect
   std::unique_ptr<oauth_client> client(new oauth_client);
 
   // Generating Secret based 12 byte length.
-  secret = "some_secret";/*generate(12);*/
+  secret = "some_secret";//generate(12);
 
-  client->id = "some_id";/*generate(pimpl_->client_id_length);*/
+  client->id = "some_id";//generate(pimpl_->client_id_length);
   client->key = encrypt(client->id, secret);
   client->type = type;
   client->application_name = application_name;

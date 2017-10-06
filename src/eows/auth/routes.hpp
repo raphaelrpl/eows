@@ -147,6 +147,14 @@ namespace eows
       void do_get(const eows::core::http_request& req,
                   eows::core::http_response& res);
     };
+
+    class oauth2_example2 : public eows::core::web_service_handler
+    {
+      using eows::core::web_service_handler::web_service_handler;
+
+      void do_get(const eows::core::http_request& req,
+                  eows::core::http_response& res);
+    };
   }
 }
 

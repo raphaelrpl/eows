@@ -102,10 +102,11 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
   if (params_.grant_type != "authorization_code")
     throw unsupported_response_type_error("The grant type provided is not supported");
 
-  if (params_.client_secret.empty())
-    throw unauthorized_error("The client secret was not provided");
+  if (params_.client_id.empty())
+    throw unauthorized_error("The client id was not provided");
 
   /* TODO: Validate Client. Remember that client may send only client secret or both (client id and secret).*/
+  validate_client(params_.client_id, oresp);
 
   // Once grant_type is refresh_token, we should use grant type code as we'll use same resources
   bool refresh_token = false;
@@ -124,8 +125,10 @@ void eows::auth::authorization_code::exchange(eows::auth::oauth_parameters& ores
   else
   {
     if (refresh_token)
+    {
       // The token is still valid.. TODO: Should reply same token or generate a new one?
       create_access_token(oresp, code->user_id, code->roles);
+    }
     else
     {
       if (code->expired())
@@ -155,7 +158,7 @@ eows::auth::oauth_client* eows::auth::authorization_code::validate_client(const 
     {
       // Validate URI
       if (!client->has_redirect_uri(params_.redirect_uri))
-        throw invalid_request_error("The redirect URI is not in client app.");
+        throw invalid_request_error("The redirect URI \"" + params_.redirect_uri + "\" is not in client app.");
       else
       {
         if (params_.response_type != "code" &&
@@ -202,11 +205,25 @@ void eows::auth::authorization_code::create_access_token(eows::auth::oauth_param
   token_metadata.insert(std::make_pair("username", user));
   token_metadata.insert(std::make_pair("iat", std::to_string(now)));
 
+  /*
+   * A Refresh token never expires, but it need contains scope information
+   * to re-generate with same contexts.
+   * The OAuth 2 servers providers recommends that the new tokens should be issued
+   * with a short expiration time so that applications is forced to continually refresh
+   * them, giving the service a change to revoke application's access if needed.
+   *
+   * See more in https://www.oauth.com/oauth2-servers/access-tokens/access-token-lifetime/
+   */
+  token_t::metadata_t refresh_metadata;
+  refresh_metadata.insert(std::make_pair("scope", scope));
+
   token_t handler(token_metadata);
+
+  token_t refresh_token(refresh_metadata);
 
   oresp.access_token = handler.token();
   oresp.token_type = "Bearer";
   oresp.expires_in = std::to_string(token_expiration);
   oresp.state = params_.state;
-  oresp.refresh_token = generator_->generate();
+  oresp.refresh_token = refresh_token.token();
 }

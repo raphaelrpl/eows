@@ -207,7 +207,6 @@ namespace eows
      * \note All session values is stored in server side
      *
      * \example
-     *
      * // Find User session or create a new one. Once retrieves, it already add "Set-Cookie" in response object
      * auto s = manager::instance().find_session(request, response);
      *

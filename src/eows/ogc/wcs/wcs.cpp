@@ -36,6 +36,11 @@
 // WCS Operations
 #include "operations/factory.hpp"
 #include "operations/error_handler.hpp"
+
+#ifdef EOWS_AUTH_ENABLED
+// EOWS Auth
+#include "../../auth/utils.hpp"
+#endif
 // STL
 #include <memory>
 
@@ -51,6 +56,10 @@ void make_response_error(eows::core::http_response& response, const std::string&
 void eows::ogc::wcs::handler::do_get(const eows::core::http_request& req,
                                      eows::core::http_response& res)
 {
+#ifdef EOWS_AUTH_ENABLED
+  if (!eows::auth::has_permission_to("wcs", req, res))
+    return;
+#endif
   try
   {
     // Putting every request parameters keys to lowercase

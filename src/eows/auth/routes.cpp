@@ -48,17 +48,6 @@ void forbidden(eows::core::http_response& res, eows::auth::oauth_parameters& par
         eows::core::http_response::forbidden);
 }
 
-void handle_oauth_error(eows::core::http_response& res,
-                        eows::core::http_response::status_t status_code,
-                        eows::auth::oauth_parameters& params,
-                        const eows::auth::oauth2_error& e)
-{
-  params.clear();
-  params.error = e.error;
-  params.error_description = e.error_description;
-  res.set_status(status_code);
-}
-
 void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, eows::core::http_response& res)
 {
   oauth_parameters input_params(req.query_string());
@@ -95,33 +84,35 @@ void eows::auth::oauth2_authorize::do_get(const eows::core::http_request& req, e
   std::vector<std::string> roles;
   eows::core::split(input_params.scope, '+', roles);
 
-  bool has_all_roles = true;
-  for(const auto& role: roles)
-  {
-    if (!s->roles.has_role(role))
-    {
-      has_all_roles = false;
-      break;
-    }
-  }
+//  bool has_all_roles = true;
+//  for(const auto& role: roles)
+//  {
+//    if (!s->roles.has_role(role))
+//    {
+//      has_all_roles = false;
+//      break;
+//    }
+//  }
 
-  if (has_all_roles)
-  {
-    const auto redirect_uri = input_params.redirect_uri;
-    input_params.redirect_uri = "";
-    // redirect URI
-    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-    return res.redirect_to(redirect_uri + eows::core::to_str(input_params.to_query_string()));
-  }
+  // Check if it is necessary to return code generation in order to ask passphase
+//  if (has_all_roles)
+//  {
+//    const auto redirect_uri = input_params.redirect_uri;
+//    input_params.redirect_uri = "";
+//    // redirect URI
+//    res.add_header(eows::core::http_response::ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+//    return res.redirect_to(redirect_uri + eows::core::to_str(input_params.to_query_string()));
+//  }
 
   eows::core::query_string_t parameters = input_params.to_query_string();
   std::string html_tpl("<ul class=\"list-group\">");
 
-  for(const auto role: roles)
+  for(const auto& role: roles)
   {
     html_tpl.append("<li class=\"list-group-item\">");
     html_tpl.append("<span class=\"glyphicon glyphicon-ok\"></span> ");
     html_tpl.append(role);
+    html_tpl.append("</li>");
   }
 
   html_tpl.append("</ul>");
@@ -164,29 +155,25 @@ void eows::auth::oauth2_authorize::do_post(const eows::core::http_request& req, 
   }
   catch(const eows::auth::unauthorized_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::unauthorized, output_params, e);
+    handle_oauth_error(e, res, eows::core::http_response::unauthorized);
   }
   catch(const eows::auth::invalid_request_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::bad_request, output_params, e);
+    handle_oauth_error(e, res, eows::core::http_response::bad_request);
   }
   catch(const eows::auth::access_denied_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::forbidden, output_params, e);
+    handle_oauth_error(e, res, eows::core::http_response::forbidden);
   }
   catch(const eows::auth::temporarily_unavailable_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::service_unavailable, output_params, e);
+    handle_oauth_error(e, res, eows::core::http_response::service_unavailable);
   }
   // Handle both any exception or server_error, catch as internal server error
   catch(const eows::auth::oauth2_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::internal_server_error, output_params, e);
+    handle_oauth_error(e, res, eows::core::http_response::internal_server_error);
   }
-
-  const auto json_err = output_params.to_json();
-  res.write(json_err.c_str(), json_err.size());
-  res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json;charset=utf-8");
 }
 
 void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -196,33 +183,32 @@ void eows::auth::oauth2_info::do_get(const eows::core::http_request& req, eows::
   if (auth_header.type != eows::core::authorization_t::type_t::bearer)
   {
     oauth_parameters error_params;
-    handle_oauth_error(res, eows::core::http_response::unauthorized, error_params, eows::auth::unauthorized_error("No authorization provided"));
+    return handle_oauth_error(eows::auth::unauthorized_error("No authorization provided"),
+                              res, eows::core::http_response::unauthorized);
   }
 
   const std::string token = auth_header.value;
 
-  std::string response("{}");
 
   try
   {
     token_t token_handler(token);
 
-    response = token_handler.to_json();
-  }
-  catch(const invalid_client_error& e)
-  {
-    oauth_parameters p;
-    handle_oauth_error(res, eows::core::http_response::forbidden, p, e);
-    response = p.to_json();
-  }
-  /*
-    Find Session With OAuth2 Token
-    Find User associated with Token
-    Serialize User as JSON
-  */
+    const auto response = token_handler.to_json();
 
-  res.write(response.c_str(), response.size());
-  res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json;charset=utf-8");
+    /*
+      Find Session With OAuth2 Token
+      Find User associated with Token
+      Serialize User as JSON
+    */
+
+    res.write(response.c_str(), response.size());
+    res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json;charset=utf-8");
+  }
+  catch(const invalid_token_error& e)
+  {
+    return handle_oauth_error(e, res, eows::core::http_response::forbidden);
+  }
 }
 
 void eows::auth::oauth2_logout::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -250,33 +236,33 @@ void eows::auth::oauth2_token_handler::do_post(const eows::core::http_request& r
     // Exchange Code or Refresh token for An Access Token and write in oresp object
     authorization.exchange(oresp, req, res);
     res.set_status(eows::core::http_response::OK);
+
+    // Replying
+    const auto json = oresp.to_json();
+    res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
+    return res.write(json.c_str(), json.size());
   }
   catch(const eows::auth::unauthorized_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::unauthorized, oresp, e);
+    handle_oauth_error(e, res, eows::core::http_response::unauthorized);
   }
   catch(const eows::auth::invalid_request_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::bad_request, oresp, e);
+    handle_oauth_error(e, res, eows::core::http_response::bad_request);
   }
   catch(const eows::auth::access_denied_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::forbidden, oresp, e);
+    handle_oauth_error(e, res, eows::core::http_response::forbidden);
   }
   catch(const eows::auth::temporarily_unavailable_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::service_unavailable, oresp, e);
+    handle_oauth_error(e, res, eows::core::http_response::service_unavailable);
   }
   // Handle both any exception or server_error, catch as internal server error
   catch(const eows::auth::oauth2_error& e)
   {
-    handle_oauth_error(res, eows::core::http_response::internal_server_error, oresp, e);
+    handle_oauth_error(e, res, eows::core::http_response::internal_server_error);
   }
-
-  // Replying
-  const auto json = oresp.to_json();
-  res.add_header(eows::core::http_response::CONTENT_TYPE, "application/json; charset=utf-8");
-  return res.write(json.c_str(), json.size());
 }
 
 void eows::auth::oauth2_login_handler::do_get(const eows::core::http_request& req, eows::core::http_response& res)
@@ -356,6 +342,20 @@ void eows::auth::oauth2_example::do_get(const eows::core::http_request& req, eow
     // Once error, that status code may be either 400 (Bad Request), 401 (Unauthorized) or 403 (Forbidden)
     // and a header named WWW-Authenticate is set with respective error
     body.append("You don't have permission");
+
+  res.write(body.c_str(), body.size());
+  res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html;charset=utf-8");
+}
+
+void eows::auth::oauth2_example2::do_get(const eows::core::http_request& req, eows::core::http_response& res)
+{
+  std::string body;
+  if (has_permission_to("workspace.all", req, res))
+    body.append("You are allowed to edit workspaces");
+  else
+    // Once error, that status code may be either 400 (Bad Request), 401 (Unauthorized) or 403 (Forbidden)
+    // and a header named WWW-Authenticate is set with respective error
+    body.append("Whoops, you don't have permission");
 
   res.write(body.c_str(), body.size());
   res.add_header(eows::core::http_response::CONTENT_TYPE, "text/html;charset=utf-8");

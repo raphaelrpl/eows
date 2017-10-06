@@ -28,6 +28,9 @@
 #ifndef __EOWS_AUTH_UTILS_HPP__
 #define __EOWS_AUTH_UTILS_HPP__
 
+// EOWS Core
+#include "../core/http_response.hpp"
+
 // STL
 #include <string>
 #include <map>
@@ -42,6 +45,8 @@ namespace eows
   }
   namespace auth
   {
+    struct oauth2_error;
+
     struct oauth_parameters;
     /*!
      * \brief Performs Authentication module initialization
@@ -58,7 +63,12 @@ namespace eows
      * \param prefix - Tag prefix to match
      * \param postfix - Tag postfix to match
      */
-    void replace(std::string& tpl, const std::multimap<std::string, std::string>& values, const std::string& prefix = "{{", const std::string& postfix = "}}");
+    void replace(std::string& tpl, const std::multimap<std::string, std::string>& values,
+                 const std::string& prefix = "{{", const std::string& postfix = "}}");
+
+    void handle_oauth_error(const eows::auth::oauth2_error& e,
+                            eows::core::http_response& response,
+                            eows::core::http_response::status_t code);
 
     /*!
      * \brief Checks if provided access_token is valids and contains specified role.

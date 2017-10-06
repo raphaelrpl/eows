@@ -19,6 +19,10 @@ target_link_libraries(eows_wcs    eows_core
                                   ${Boost_THREAD_LIBRARY}
                                   ${Boost_LOG_LIBRARY})
 
+if(EOWS_AUTH_ENABLED)
+  target_link_libraries(eows_wcs eows_auth)
+endif()
+
 set_target_properties(eows_wcs
                       PROPERTIES VERSION ${EOWS_VERSION_MAJOR}.${EOWS_VERSION_MINOR}
                                  SOVERSION ${EOWS_VERSION_MAJOR}.${EOWS_VERSION_MINOR})

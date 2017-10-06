@@ -34,13 +34,13 @@
 // EOWS OAuth2
 #include "oauth2/token.hpp"
 #include "oauth2/exception.hpp"
+#include "oauth2/data_types.hpp"
 
 // EOWS Core
 #include "../core/logger.hpp"
 #include "../core/service_operations_manager.hpp"
 #include "../core/utils.hpp"
 #include "../core/http_request.hpp"
-#include "../core/http_response.hpp"
 
 // STL
 #include <cstring>
@@ -81,6 +81,10 @@ void register_routes()
   eows::core::service_operations_manager::instance().insert(
         "/oauth2/example",
         std::unique_ptr<eows::auth::oauth2_example>(new eows::auth::oauth2_example));
+
+  eows::core::service_operations_manager::instance().insert(
+        "/oauth2/example2",
+        std::unique_ptr<eows::auth::oauth2_example2>(new eows::auth::oauth2_example2));
 }
 
 void eows::auth::initialize()
@@ -177,7 +181,7 @@ bool eows::auth::has_permission_to(const std::string& role_name,
   std::vector<std::string> roles;
   roles.push_back(role_name);
 
-  return has_permission_to(roles, request, response);
+  return has_permission_to(std::move(roles), request, response);
 }
 
 bool eows::auth::has_permission_to(const std::vector<std::string> roles,
@@ -189,10 +193,13 @@ bool eows::auth::has_permission_to(const std::vector<std::string> roles,
   {
     eows::core::authorization_t authorization = eows::core::authorization(request);
 
-    if (authorization.type != eows::core::authorization_t::type_t::bearer)
-      throw invalid_request_error("Unsupported authorization type. Expected \"Bearer\".");
+    if (authorization.value.empty())
+      throw invalid_token_error("Unauthorized");
 
     token_t token_handler(authorization.value);
+
+    if (authorization.type != eows::core::authorization_t::type_t::bearer)
+      throw invalid_request_error("Unsupported authorization type. Expected 'Bearer'.");
 
     if (token_handler.expired())
       throw invalid_token_error("Token expired");
@@ -218,22 +225,35 @@ bool eows::auth::has_permission_to(const std::vector<std::string> roles,
   }
   catch(const invalid_request_error& e)
   {
-    response.set_status(eows::core::http_response::bad_request);
-    error_code.append(e.error);
+    handle_oauth_error(e, response, eows::core::http_response::bad_request);
   }
   catch(const invalid_token_error& e)
   {
-    response.set_status(eows::core::http_response::unauthorized);
-    error_code.append(e.error);
+    handle_oauth_error(e, response, eows::core::http_response::unauthorized);
   }
   catch(const insufficient_scope_error& e)
   {
-    response.set_status(eows::core::http_response::forbidden);
-    error_code.append(e.error);
+    handle_oauth_error(e, response, eows::core::http_response::forbidden);
   }
 
   const auto required_roles = eows::core::join(roles.begin(), roles.end(), std::string(" "));
+
   response.add_header(eows::core::http_response::WWW_AUTHENTICATE,
                       "Bearer,scope=\""+required_roles+"\",error="+error_code);
   return false;
+}
+
+void eows::auth::handle_oauth_error(const eows::auth::oauth2_error& e,
+                                    eows::core::http_response& response,
+                                    eows::core::http_response::status_t code)
+{
+  eows::auth::oauth_parameters params;
+  params.error = e.error;
+  params.error_description = e.error_description;
+
+  const auto json = params.to_json();
+  response.set_status(code);
+  response.write(json.c_str(), json.size());
+
+  response.add_header(eows::core::http_response::CONTENT_TYPE, "application/json");
 }

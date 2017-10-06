@@ -7,6 +7,7 @@
 // JWT
 #include <jwtxx/jwt.h>
 
+// Defines Global Algorithm for Token handling
 static JWTXX::Algorithm algorithm = JWTXX::Algorithm::HS256;
 
 struct eows::auth::token_t::impl
@@ -32,6 +33,10 @@ eows::auth::token_t::token_t(const std::string& token)
   {
     pimpl_->jwt.reset(new JWTXX::JWT(pimpl_->token,
                                      JWTXX::Key(algorithm, "secret")));
+  }
+  catch(const JWTXX::JWT::ParseError& e)
+  {
+    throw invalid_request_error("No token provided");
   }
   catch(const JWTXX::JWT::Error& e)
   {
