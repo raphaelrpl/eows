@@ -53,7 +53,7 @@
 #include "../proj4/utils.hpp"
 #endif
 
-#ifdef EOWS_GDAL2_ENABLED
+#ifdef EOWS_GDAL_ENABLED
 #include "../gdal/utils.hpp"
 #endif
 
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     eows::proj4::initialize();
 #endif
 
-#ifdef EOWS_GDAL2_ENABLED
+#ifdef EOWS_GDAL_ENABLED
     eows::gdal::initialize();
 #endif
 
