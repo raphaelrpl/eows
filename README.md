@@ -29,7 +29,7 @@ $ git clone http://github.com/e-sensing/eows ~/eows/codebase
 EOWS is built on top of the following libraries:
 - [SciDB C++ API](http://www.paradigm4.com/): the SciDB development libraries and header files must be installed. For instance, in SciDB 15.12 the ```libscidbclient.so``` can be found at ```/opt/scidb/15.12/lib``` and the header files are located at ```/opt/scidb/15.12/include```.
 - [Boost Libraries](http://www.boost.org): we recommend to use the same version used and installed by SciDB (1.54.0). In general, it is installed under a folder such as ```/opt/scidb/15.12/3rdparty/boost```.
-- [GDAL](http://www.gdal.org): Geospatial Data Abstraction Library. Version 2.13 or above is required.
+- [GDAL](http://www.gdal.org): Geospatial Data Abstraction Library. Version 1.10 or above is required.
 - [Proj.4](http://proj4.org): Cartographic projection library. Version 4.8.0 or above is required.
 - [RapidJSON](https://github.com/miloyip/rapidjson): a fast JSON parser for C++. Version 1.1.0 is required.
 - [Crow](https://github.com/ipkn/crow): a micro web framework in C++. Version. 
