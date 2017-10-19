@@ -1,5 +1,5 @@
 {
-  "log_file": "@EOWS_USER_HOME@/eows/log/eows_%Y-%m-%d_%H-%M-%S.%N.log",
+  "log_file": "@EOWS_INSTALL_LOG_DIR@/eows_%Y-%m-%d_%H-%M-%S.%N.log",
   "http_server": "crow",
   "scidb_clusters": [
     {
@@ -25,5 +25,5 @@
       "key": ""
     }
   },
-  "tmp_data_dir": "@EOWS_USER_HOME@/eows/tmp/data"
+  "tmp_data_dir": "@EOWS_INSTALL_TMP_DIR@/data"
 }

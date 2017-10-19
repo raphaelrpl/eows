@@ -66,6 +66,10 @@ message(STATUS "EOWS: codebase path in: '${EOWS_ABSOLUTE_ROOT_DIR}'")
 #
 add_definitions(-DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_VERSION=3 -DBOOST_UBLAS_TYPE_CHECK=0 -DBOOST_LOG_DYN_LINK )
 
+if(NOT DEFINED EOWS_BUILD_AS_DEV)
+  SET(EOWS_BUILD_AS_DEV OFF CACHE BOOL "Build for Developers?")
+endif()
+
 #
 # Set maximum instantiation depth for template classes to 32
 #
@@ -258,6 +262,12 @@ CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WMS_ENABLED "Build OGC WMS service?" OFF "Li
 
 CMAKE_DEPENDENT_OPTION(EOWS_SERVICE_WTSCS_ENABLED "Build Web Time Series Classification service?" ON "EOWS_GEOARRAY_ENABLED" OFF)
 
+if(EOWS_BUILD_AS_DEV)
+  set(EOWS_BASE_ARTIFACTS_DIR "$ENV{HOME}/eows")
+else()
+  set(EOWS_BASE_ARTIFACTS_DIR "${CMAKE_INSTALL_PREFIX}")
+endif()
+
 #
 # Define installation directories
 #
@@ -265,19 +275,14 @@ set(EOWS_INSTALL_LIB_DIR lib)
 set(EOWS_INSTALL_BIN_DIR bin)
 set(EOWS_INSTALL_INCLUDE_DIR include)
 set(EOWS_INSTALL_SHARE_DIR share)
+set(EOWS_INSTALL_LOG_DIR "${EOWS_BASE_ARTIFACTS_DIR}/log")
+set(EOWS_INSTALL_TMP_DIR "${EOWS_BASE_ARTIFACTS_DIR}/tmp")
 
 if(WIN32 AND NOT CYGWIN)
   set(EOWS_INSTALL_CMAKE_DIR cmake)
 else()
   set(EOWS_INSTALL_CMAKE_DIR lib/cmake/eows-${EOWS_VERSION_STRING})
 endif()
-
-# Detecting User home directory to create EOWS log execution
-IF(UNIX)
-  set(EOWS_USER_HOME "$ENV{HOME}")
-ELSE()
-  set(EOWS_USER_HOME "$ENV{USERPROFILE}")
-ENDIF()
 
 #
 # Make relative paths absolute: needed to redistribute CMake files
